@@ -1,0 +1,12 @@
+# Goal: The destination coordinates
+float64 target_x
+float64 target_y
+---
+# Result: Final status after the action completes
+bool success
+string message
+---
+# Feedback: Periodic updates while the robot is moving
+float64 current_x
+float64 current_y
+float64 distance_remaining
