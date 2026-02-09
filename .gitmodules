@@ -1,3 +1,6 @@
 [submodule "kachaka-main/kachaka-api"]
 	path = kachaka-main/kachaka-api
 	url = https://github.com/pf-robotics/kachaka-api
+[submodule "robot_ws"]
+	path = robot_ws
+	url = https://github.com/chillzuqq/roborepo.git
