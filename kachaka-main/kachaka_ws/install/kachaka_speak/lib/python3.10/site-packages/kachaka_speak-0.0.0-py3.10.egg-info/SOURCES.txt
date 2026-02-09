@@ -1,0 +1,14 @@
+README.md
+package.xml
+setup.cfg
+setup.py
+../../../build/kachaka_speak/kachaka_speak.egg-info/PKG-INFO
+../../../build/kachaka_speak/kachaka_speak.egg-info/SOURCES.txt
+../../../build/kachaka_speak/kachaka_speak.egg-info/dependency_links.txt
+../../../build/kachaka_speak/kachaka_speak.egg-info/entry_points.txt
+../../../build/kachaka_speak/kachaka_speak.egg-info/requires.txt
+../../../build/kachaka_speak/kachaka_speak.egg-info/top_level.txt
+../../../build/kachaka_speak/kachaka_speak.egg-info/zip-safe
+kachaka_speak/__init__.py
+kachaka_speak/speak.py
+resource/kachaka_speak

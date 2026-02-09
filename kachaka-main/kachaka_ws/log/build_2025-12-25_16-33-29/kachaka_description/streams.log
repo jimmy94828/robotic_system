@@ -1,0 +1,83 @@
+[0.027s] Invoking command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow:/opt/ros/humble /usr/bin/cmake /home/weichen/project/kachaka/kachaka_ws/src/kachaka_description -DCMAKE_INSTALL_PREFIX=/home/weichen/project/kachaka/kachaka_ws/install/kachaka_description
+[0.291s] -- The C compiler identification is GNU 11.4.0
+[0.658s] -- The CXX compiler identification is GNU 11.4.0
+[0.915s] -- Detecting C compiler ABI info
+[1.071s] -- Detecting C compiler ABI info - done
+[1.077s] -- Check for working C compiler: /usr/bin/cc - skipped
+[1.077s] -- Detecting C compile features
+[1.077s] -- Detecting C compile features - done
+[1.081s] -- Detecting CXX compiler ABI info
+[1.224s] -- Detecting CXX compiler ABI info - done
+[1.232s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[1.232s] -- Detecting CXX compile features
+[1.232s] -- Detecting CXX compile features - done
+[1.234s] -- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)
+[1.397s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[1.514s] -- Found ament_cmake_auto: 1.3.12 (/opt/ros/humble/share/ament_cmake_auto/cmake)
+[2.663s] -- Found rosidl_generator_c: 3.1.7 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[2.668s] -- Found rosidl_adapter: 3.1.7 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[2.676s] -- Found rosidl_generator_cpp: 3.1.7 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[2.688s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[2.703s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[2.806s] -- Found eigen3_cmake_module: 0.1.1 (/opt/ros/humble/share/eigen3_cmake_module/cmake)
+[2.808s] -- Found Eigen3: TRUE (found version "3.4.0") 
+[2.809s] -- Ensuring Eigen3 include directory is part of orocos-kdl CMake target
+[2.852s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[2.858s] -- Found rmw_fastrtps_cpp: 6.2.9 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[4.816s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")  
+[6.993s] -- Found FastRTPS: /opt/ros/humble/include  
+[11.122s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[11.140s] -- Looking for pthread.h
+[11.387s] -- Looking for pthread.h - found
+[11.387s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[11.594s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[11.596s] -- Found Threads: TRUE  
+[14.362s] -- Found ament_lint_auto: 0.12.14 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[14.437s] -- Added test 'copyright' to check source files copyright and LICENSE
+[14.462s] -- Added test 'flake8' to check Python code syntax and style conventions
+[14.463s] -- Added test 'lint_cmake' to check CMake code style
+[14.465s] -- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257
+[14.467s] -- Added test 'xmllint' to check XML markup files
+[14.490s] -- Configuring done
+[14.504s] -- Generating done
+[14.512s] -- Build files have been written to: /home/weichen/project/kachaka/kachaka_ws/build/kachaka_description
+[14.551s] Invoked command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow:/opt/ros/humble /usr/bin/cmake /home/weichen/project/kachaka/kachaka_ws/src/kachaka_description -DCMAKE_INSTALL_PREFIX=/home/weichen/project/kachaka/kachaka_ws/install/kachaka_description
+[14.552s] Invoking command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow:/opt/ros/humble /usr/bin/cmake --build /home/weichen/project/kachaka/kachaka_ws/build/kachaka_description -- -j16 -l16
+[14.627s] Invoked command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow:/opt/ros/humble /usr/bin/cmake --build /home/weichen/project/kachaka/kachaka_ws/build/kachaka_description -- -j16 -l16
+[14.628s] Invoking command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow:/opt/ros/humble /usr/bin/cmake --install /home/weichen/project/kachaka/kachaka_ws/build/kachaka_description
+[14.639s] -- Install configuration: ""
+[14.639s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/config
+[14.640s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/config/display.rviz
+[14.640s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/config/kachaka.rviz
+[14.640s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/launch
+[14.640s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/launch/robot_display.launch.xml
+[14.641s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/launch/robot_description.launch.py
+[14.641s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/robot
+[14.641s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/robot/kachaka.urdf.xacro
+[14.641s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/meshes
+[14.641s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/meshes/kachaka
+[14.641s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/meshes/kachaka/body.stl
+[14.658s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/meshes/kachaka/right_tire.stl
+[14.659s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/meshes/kachaka/left_tire.stl
+[14.659s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/meshes/kachaka/solenoid.stl
+[14.660s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/urdf
+[14.661s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/urdf/_values.urdf.xacro
+[14.661s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/urdf/_materials.urdf.xacro
+[14.661s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/urdf/_kachaka.urdf.xacro
+[14.662s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/ament_index/resource_index/package_run_dependencies/kachaka_description
+[14.663s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/ament_index/resource_index/parent_prefix_path/kachaka_description
+[14.664s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/environment/ament_prefix_path.sh
+[14.664s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/environment/ament_prefix_path.dsv
+[14.665s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/environment/path.sh
+[14.665s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/environment/path.dsv
+[14.665s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/local_setup.bash
+[14.666s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/local_setup.sh
+[14.666s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/local_setup.zsh
+[14.666s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/local_setup.dsv
+[14.667s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/package.dsv
+[14.667s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/ament_index/resource_index/packages/kachaka_description
+[14.668s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/cmake/ament_cmake_export_dependencies-extras.cmake
+[14.668s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/cmake/kachaka_descriptionConfig.cmake
+[14.668s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/cmake/kachaka_descriptionConfig-version.cmake
+[14.669s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/package.xml
+[14.673s] Invoked command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow:/opt/ros/humble /usr/bin/cmake --install /home/weichen/project/kachaka/kachaka_ws/build/kachaka_description

@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "kachaka_interfaces__py",
+		"source" : "/home/weichen/project/kachaka/kachaka_ws/build/kachaka_interfaces/kachaka_interfaces__py"
+	}
+}

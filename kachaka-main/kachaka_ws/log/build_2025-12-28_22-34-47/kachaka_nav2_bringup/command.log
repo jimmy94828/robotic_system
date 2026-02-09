@@ -1,0 +1,4 @@
+Invoking command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_nav2_bringup': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/weichen/project/kachaka/kachaka_ws/build/kachaka_nav2_bringup -- -j16 -l16
+Invoked command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_nav2_bringup' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/weichen/project/kachaka/kachaka_ws/build/kachaka_nav2_bringup -- -j16 -l16
+Invoking command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_nav2_bringup': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/weichen/project/kachaka/kachaka_ws/build/kachaka_nav2_bringup
+Invoked command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_nav2_bringup' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/weichen/project/kachaka/kachaka_ws/build/kachaka_nav2_bringup

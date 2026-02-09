@@ -1,0 +1,9 @@
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_interfaces/rosidl_adapter/kachaka_interfaces:action/ExecKachakaCommand.idl
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_interfaces/rosidl_adapter/kachaka_interfaces:msg/KachakaCommand.idl
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_interfaces/rosidl_adapter/kachaka_interfaces:msg/Location.idl
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_interfaces/rosidl_adapter/kachaka_interfaces:msg/LocationList.idl
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_interfaces/rosidl_adapter/kachaka_interfaces:msg/ObjectDetection.idl
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_interfaces/rosidl_adapter/kachaka_interfaces:msg/ObjectDetectionListStamped.idl
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_interfaces/rosidl_adapter/kachaka_interfaces:msg/Shelf.idl
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_interfaces/rosidl_adapter/kachaka_interfaces:msg/ShelfList.idl
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_interfaces/rosidl_adapter/kachaka_interfaces:msg/ShelfSize.idl

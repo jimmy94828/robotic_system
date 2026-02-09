@@ -1,0 +1,39 @@
+[0.054s] Invoking command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_description': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/weichen/project/kachaka/kachaka_ws/build/kachaka_description -- -j16 -l16
+[0.597s] Invoked command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_description' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/weichen/project/kachaka/kachaka_ws/build/kachaka_description -- -j16 -l16
+[0.600s] Invoking command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_description': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/weichen/project/kachaka/kachaka_ws/build/kachaka_description
+[0.619s] -- Install configuration: ""
+[0.620s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/config
+[0.620s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/config/display.rviz
+[0.621s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/config/kachaka.rviz
+[0.621s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/launch
+[0.622s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/launch/robot_display.launch.xml
+[0.622s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/launch/robot_description.launch.py
+[0.623s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/robot
+[0.623s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/robot/kachaka.urdf.xacro
+[0.623s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/meshes
+[0.624s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/meshes/kachaka
+[0.624s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/meshes/kachaka/body.stl
+[0.625s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/meshes/kachaka/right_tire.stl
+[0.625s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/meshes/kachaka/left_tire.stl
+[0.625s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/meshes/kachaka/solenoid.stl
+[0.626s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/urdf
+[0.626s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/urdf/_values.urdf.xacro
+[0.626s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/urdf/_materials.urdf.xacro
+[0.626s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/urdf/_kachaka.urdf.xacro
+[0.627s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/ament_index/resource_index/package_run_dependencies/kachaka_description
+[0.627s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/ament_index/resource_index/parent_prefix_path/kachaka_description
+[0.627s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/environment/ament_prefix_path.sh
+[0.627s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/environment/ament_prefix_path.dsv
+[0.628s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/environment/path.sh
+[0.628s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/environment/path.dsv
+[0.628s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/local_setup.bash
+[0.628s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/local_setup.sh
+[0.629s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/local_setup.zsh
+[0.629s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/local_setup.dsv
+[0.629s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/package.dsv
+[0.629s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/ament_index/resource_index/packages/kachaka_description
+[0.629s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/cmake/ament_cmake_export_dependencies-extras.cmake
+[0.629s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/cmake/kachaka_descriptionConfig.cmake
+[0.630s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/cmake/kachaka_descriptionConfig-version.cmake
+[0.630s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_description/share/kachaka_description/package.xml
+[0.680s] Invoked command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_description' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/weichen/project/kachaka/kachaka_ws/build/kachaka_description

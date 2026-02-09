@@ -1,0 +1,14 @@
+README.md
+package.xml
+setup.cfg
+setup.py
+../../../build/kachaka_smart_speaker/kachaka_smart_speaker.egg-info/PKG-INFO
+../../../build/kachaka_smart_speaker/kachaka_smart_speaker.egg-info/SOURCES.txt
+../../../build/kachaka_smart_speaker/kachaka_smart_speaker.egg-info/dependency_links.txt
+../../../build/kachaka_smart_speaker/kachaka_smart_speaker.egg-info/entry_points.txt
+../../../build/kachaka_smart_speaker/kachaka_smart_speaker.egg-info/requires.txt
+../../../build/kachaka_smart_speaker/kachaka_smart_speaker.egg-info/top_level.txt
+../../../build/kachaka_smart_speaker/kachaka_smart_speaker.egg-info/zip-safe
+kachaka_smart_speaker/__init__.py
+kachaka_smart_speaker/smart_speaker.py
+resource/kachaka_smart_speaker

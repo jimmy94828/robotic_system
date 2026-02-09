@@ -1,0 +1,3 @@
+[console_scripts]
+follow = kachaka_follow.follow:main
+

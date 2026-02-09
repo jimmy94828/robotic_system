@@ -1,0 +1,9 @@
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_description/CMakeFiles/uninstall.dir
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_description/CMakeFiles/kachaka_description_uninstall.dir
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_description/CMakeFiles/test.dir
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_description/CMakeFiles/edit_cache.dir
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_description/CMakeFiles/rebuild_cache.dir
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_description/CMakeFiles/list_install_components.dir
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_description/CMakeFiles/install.dir
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_description/CMakeFiles/install/local.dir
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_description/CMakeFiles/install/strip.dir

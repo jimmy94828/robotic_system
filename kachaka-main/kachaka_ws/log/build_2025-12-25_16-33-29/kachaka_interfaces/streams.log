@@ -1,0 +1,482 @@
+[0.027s] Invoking command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_interfaces': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow:/opt/ros/humble /usr/bin/cmake /home/weichen/project/kachaka/kachaka_ws/src/kachaka_interfaces -DCMAKE_INSTALL_PREFIX=/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces
+[0.296s] -- The C compiler identification is GNU 11.4.0
+[0.764s] -- The CXX compiler identification is GNU 11.4.0
+[1.036s] -- Detecting C compiler ABI info
+[1.203s] -- Detecting C compiler ABI info - done
+[1.209s] -- Check for working C compiler: /usr/bin/cc - skipped
+[1.209s] -- Detecting C compile features
+[1.209s] -- Detecting C compile features - done
+[1.212s] -- Detecting CXX compiler ABI info
+[1.403s] -- Detecting CXX compiler ABI info - done
+[1.411s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[1.411s] -- Detecting CXX compile features
+[1.412s] -- Detecting CXX compile features - done
+[1.416s] -- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)
+[1.592s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[1.692s] -- Found ament_cmake_auto: 1.3.12 (/opt/ros/humble/share/ament_cmake_auto/cmake)
+[1.996s] -- Found rosidl_generator_c: 3.1.7 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[2.000s] -- Found rosidl_adapter: 3.1.7 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[2.008s] -- Found rosidl_generator_cpp: 3.1.7 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[2.023s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[2.045s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[2.451s] -- Found ament_cmake_ros: 0.10.0 (/opt/ros/humble/share/ament_cmake_ros/cmake)
+[2.940s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[3.123s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[3.325s] -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.10.12", minimum required is "3.6") 
+[3.326s] -- Found python_cmake_module: 0.10.0 (/opt/ros/humble/share/python_cmake_module/cmake)
+[3.827s] -- Found PythonLibs: /usr/lib/x86_64-linux-gnu/libpython3.10.so (found suitable version "3.10.12", minimum required is "3.5") 
+[3.827s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[3.827s] -- Using PYTHON_INCLUDE_DIRS: /usr/include/python3.10
+[3.827s] -- Using PYTHON_LIBRARIES: /usr/lib/x86_64-linux-gnu/libpython3.10.so
+[3.847s] -- Found PythonExtra: .so  
+[3.961s] -- Found ament_lint_auto: 0.12.14 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[8.012s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[8.013s] -- Using PYTHON_INCLUDE_DIRS: /usr/include/python3.10
+[8.013s] -- Using PYTHON_LIBRARIES: /usr/lib/x86_64-linux-gnu/libpython3.10.so
+[10.046s] -- Added test 'copyright' to check source files copyright and LICENSE
+[10.048s] -- Added test 'lint_cmake' to check CMake code style
+[10.049s] -- Added test 'xmllint' to check XML markup files
+[10.051s] -- Configuring done
+[10.103s] -- Generating done
+[10.118s] -- Build files have been written to: /home/weichen/project/kachaka/kachaka_ws/build/kachaka_interfaces
+[10.129s] Invoked command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_interfaces' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow:/opt/ros/humble /usr/bin/cmake /home/weichen/project/kachaka/kachaka_ws/src/kachaka_interfaces -DCMAKE_INSTALL_PREFIX=/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces
+[10.131s] Invoking command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_interfaces': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow:/opt/ros/humble /usr/bin/cmake --build /home/weichen/project/kachaka/kachaka_ws/build/kachaka_interfaces -- -j16 -l16
+[10.174s] [  1%] [34m[1mGenerating C code for ROS interfaces[0m
+[10.185s] [  2%] [34m[1mGenerating C++ code for ROS interfaces[0m
+[10.191s] [  2%] Built target ament_cmake_python_copy_kachaka_interfaces
+[10.482s] running egg_info
+[10.484s] creating kachaka_interfaces.egg-info
+[10.484s] writing kachaka_interfaces.egg-info/PKG-INFO
+[10.485s] writing dependency_links to kachaka_interfaces.egg-info/dependency_links.txt
+[10.485s] writing top-level names to kachaka_interfaces.egg-info/top_level.txt
+[10.485s] writing manifest file 'kachaka_interfaces.egg-info/SOURCES.txt'
+[10.491s] reading manifest file 'kachaka_interfaces.egg-info/SOURCES.txt'
+[10.491s] writing manifest file 'kachaka_interfaces.egg-info/SOURCES.txt'
+[10.524s] [  2%] Built target ament_cmake_python_build_kachaka_interfaces_egg
+[11.078s] [  2%] Built target kachaka_interfaces__cpp
+[11.088s] [  3%] [34m[1mGenerating C++ type support for eProsima Fast-RTPS[0m
+[11.088s] [  4%] [34m[1mGenerating C++ introspection for ROS interfaces[0m
+[11.089s] [  5%] [34m[1mGenerating C++ type support dispatch for ROS interfaces[0m
+[11.175s] [  9%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_generator_c.dir/rosidl_generator_c/kachaka_interfaces/msg/detail/object_detection_list_stamped__functions.c.o[0m
+[11.175s] [  9%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_generator_c.dir/rosidl_generator_c/kachaka_interfaces/msg/detail/location_list__functions.c.o[0m
+[11.175s] [  6%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_generator_c.dir/rosidl_generator_c/kachaka_interfaces/msg/detail/location__functions.c.o[0m
+[11.175s] [ 10%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_generator_c.dir/rosidl_generator_c/kachaka_interfaces/action/detail/exec_kachaka_command__functions.c.o[0m
+[11.178s] [ 10%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_generator_c.dir/rosidl_generator_c/kachaka_interfaces/msg/detail/kachaka_command__functions.c.o[0m
+[11.180s] [ 11%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_generator_c.dir/rosidl_generator_c/kachaka_interfaces/msg/detail/object_detection__functions.c.o[0m
+[11.180s] [ 12%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_generator_c.dir/rosidl_generator_c/kachaka_interfaces/msg/detail/shelf_list__functions.c.o[0m
+[11.180s] [ 13%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_generator_c.dir/rosidl_generator_c/kachaka_interfaces/msg/detail/shelf__functions.c.o[0m
+[11.186s] [ 14%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_generator_c.dir/rosidl_generator_c/kachaka_interfaces/msg/detail/shelf_size__functions.c.o[0m
+[11.358s] [ 15%] [32m[1mLinking C shared library libkachaka_interfaces__rosidl_generator_c.so[0m
+[11.521s] [ 15%] Built target kachaka_interfaces__rosidl_generator_c
+[11.533s] [ 16%] [34m[1mGenerating C type support for eProsima Fast-RTPS[0m
+[11.533s] [ 17%] [34m[1mGenerating C introspection for ROS interfaces[0m
+[11.537s] [ 18%] [34m[1mGenerating C type support dispatch for ROS interfaces[0m
+[11.974s] [ 22%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/kachaka_interfaces/msg/shelf_list__type_support.cpp.o[0m
+[11.975s] [ 22%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/kachaka_interfaces/msg/shelf__type_support.cpp.o[0m
+[11.975s] [ 22%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/kachaka_interfaces/msg/kachaka_command__type_support.cpp.o[0m
+[11.975s] [ 23%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/kachaka_interfaces/action/exec_kachaka_command__type_support.cpp.o[0m
+[11.975s] [ 24%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/kachaka_interfaces/msg/object_detection_list_stamped__type_support.cpp.o[0m
+[11.975s] [ 26%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/kachaka_interfaces/msg/location_list__type_support.cpp.o[0m
+[11.975s] [ 26%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/kachaka_interfaces/msg/location__type_support.cpp.o[0m
+[11.978s] [ 27%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/kachaka_interfaces/msg/shelf_size__type_support.cpp.o[0m
+[11.980s] [ 28%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/kachaka_interfaces/msg/object_detection__type_support.cpp.o[0m
+[12.483s] [ 29%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/kachaka_interfaces/action/detail/exec_kachaka_command__type_support.cpp.o[0m
+[12.512s] [ 30%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/kachaka_interfaces/msg/detail/location__type_support.cpp.o[0m
+[12.512s] [ 31%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/kachaka_interfaces/msg/detail/kachaka_command__type_support.cpp.o[0m
+[12.632s] [ 33%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/kachaka_interfaces/msg/detail/location_list__type_support.cpp.o[0m
+[12.634s] [ 33%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/kachaka_interfaces/msg/detail/object_detection__type_support.cpp.o[0m
+[12.646s] [ 34%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/kachaka_interfaces/msg/detail/object_detection_list_stamped__type_support.cpp.o[0m
+[12.656s] [ 35%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/kachaka_interfaces/msg/detail/shelf__type_support.cpp.o[0m
+[12.665s] [ 36%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/kachaka_interfaces/msg/detail/shelf_list__type_support.cpp.o[0m
+[12.675s] [ 37%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/kachaka_interfaces/msg/detail/shelf_size__type_support.cpp.o[0m
+[12.809s] [ 38%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/kachaka_interfaces/action/detail/dds_fastrtps/exec_kachaka_command__type_support.cpp.o[0m
+[12.821s] [ 40%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/kachaka_interfaces/msg/detail/dds_fastrtps/kachaka_command__type_support.cpp.o[0m
+[12.855s] [ 41%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/kachaka_interfaces/msg/detail/dds_fastrtps/location__type_support.cpp.o[0m
+[13.189s] [ 42%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/kachaka_interfaces/action/exec_kachaka_command__type_support.cpp.o[0m
+[13.250s] [ 43%] [32m[1mLinking CXX shared library libkachaka_interfaces__rosidl_typesupport_cpp.so[0m
+[13.377s] [ 44%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/kachaka_interfaces/msg/kachaka_command__type_support.cpp.o[0m
+[13.467s] [ 45%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/kachaka_interfaces/msg/location__type_support.cpp.o[0m
+[13.549s] [ 46%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/kachaka_interfaces/msg/location_list__type_support.cpp.o[0m
+[13.592s] [ 46%] Built target kachaka_interfaces__rosidl_typesupport_cpp
+[13.615s] [ 47%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/kachaka_interfaces/msg/object_detection__type_support.cpp.o[0m
+[13.630s] [ 48%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/kachaka_interfaces/msg/shelf__type_support.cpp.o[0m
+[13.636s] [ 49%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/kachaka_interfaces/action/detail/exec_kachaka_command__type_support.c.o[0m
+[13.645s] [ 50%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/kachaka_interfaces/msg/object_detection_list_stamped__type_support.cpp.o[0m
+[13.657s] [ 51%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/kachaka_interfaces/msg/detail/kachaka_command__type_support.c.o[0m
+[13.667s] [ 52%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/kachaka_interfaces/msg/detail/dds_fastrtps/location_list__type_support.cpp.o[0m
+[13.676s] [ 53%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/kachaka_interfaces/msg/shelf_list__type_support.cpp.o[0m
+[13.701s] [ 54%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/kachaka_interfaces/msg/detail/location__type_support.c.o[0m
+[13.719s] [ 55%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/kachaka_interfaces/msg/shelf_size__type_support.cpp.o[0m
+[13.722s] [ 56%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/kachaka_interfaces/action/detail/exec_kachaka_command__type_support_c.cpp.o[0m
+[13.738s] [ 57%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/kachaka_interfaces/msg/detail/location_list__type_support.c.o[0m
+[13.745s] [ 58%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/kachaka_interfaces/msg/detail/kachaka_command__type_support_c.cpp.o[0m
+[13.757s] [ 60%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/kachaka_interfaces/msg/detail/object_detection__type_support.c.o[0m
+[13.758s] [ 61%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/kachaka_interfaces/msg/detail/location__type_support_c.cpp.o[0m
+[13.775s] [ 62%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/kachaka_interfaces/msg/detail/object_detection_list_stamped__type_support.c.o[0m
+[13.788s] [ 63%] [32m[1mLinking CXX shared library libkachaka_interfaces__rosidl_typesupport_c.so[0m
+[13.791s] [ 64%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/kachaka_interfaces/msg/detail/shelf__type_support.c.o[0m
+[13.817s] [ 65%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/kachaka_interfaces/msg/detail/dds_fastrtps/object_detection__type_support.cpp.o[0m
+[13.827s] [ 66%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/kachaka_interfaces/msg/detail/dds_fastrtps/object_detection_list_stamped__type_support.cpp.o[0m
+[13.832s] [ 67%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/kachaka_interfaces/msg/detail/shelf_list__type_support.c.o[0m
+[13.833s] [ 68%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/kachaka_interfaces/msg/detail/location_list__type_support_c.cpp.o[0m
+[13.847s] [ 69%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/kachaka_interfaces/msg/detail/shelf_size__type_support.c.o[0m
+[13.853s] [ 70%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/kachaka_interfaces/msg/detail/object_detection__type_support_c.cpp.o[0m
+[13.864s] [ 71%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/kachaka_interfaces/msg/detail/object_detection_list_stamped__type_support_c.cpp.o[0m
+[13.908s] [ 72%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/kachaka_interfaces/msg/detail/dds_fastrtps/shelf__type_support.cpp.o[0m
+[13.913s] [ 73%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/kachaka_interfaces/msg/detail/dds_fastrtps/shelf_list__type_support.cpp.o[0m
+[13.933s] [ 74%] [32m[1mLinking C shared library libkachaka_interfaces__rosidl_typesupport_introspection_c.so[0m
+[13.954s] [ 75%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/kachaka_interfaces/msg/detail/dds_fastrtps/shelf_size__type_support.cpp.o[0m
+[14.024s] [ 76%] [32m[1mLinking CXX shared library libkachaka_interfaces__rosidl_typesupport_introspection_cpp.so[0m
+[14.031s] [ 76%] Built target kachaka_interfaces__rosidl_typesupport_c
+[14.043s] [ 77%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/kachaka_interfaces/msg/detail/shelf__type_support_c.cpp.o[0m
+[14.145s] [ 77%] Built target kachaka_interfaces__rosidl_typesupport_introspection_c
+[14.163s] [ 78%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/kachaka_interfaces/msg/detail/shelf_list__type_support_c.cpp.o[0m
+[14.428s] [ 80%] [32mBuilding CXX object CMakeFiles/kachaka_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/kachaka_interfaces/msg/detail/shelf_size__type_support_c.cpp.o[0m
+[14.487s] [ 80%] Built target kachaka_interfaces__rosidl_typesupport_introspection_cpp
+[14.777s] [ 81%] [32m[1mLinking CXX shared library libkachaka_interfaces__rosidl_typesupport_fastrtps_cpp.so[0m
+[14.876s] [ 82%] [32m[1mLinking CXX shared library libkachaka_interfaces__rosidl_typesupport_fastrtps_c.so[0m
+[14.964s] [ 82%] Built target kachaka_interfaces__rosidl_typesupport_fastrtps_cpp
+[15.049s] [ 82%] Built target kachaka_interfaces__rosidl_typesupport_fastrtps_c
+[15.064s] [ 82%] Built target kachaka_interfaces
+[15.081s] [ 83%] [34m[1mGenerating Python code for ROS interfaces[0m
+[16.441s] [ 83%] Built target kachaka_interfaces__py
+[16.458s] [ 85%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_generator_py.dir/rosidl_generator_py/kachaka_interfaces/msg/_kachaka_command_s.c.o[0m
+[16.458s] [ 85%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_generator_py.dir/rosidl_generator_py/kachaka_interfaces/msg/_object_detection_list_stamped_s.c.o[0m
+[16.459s] [ 86%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_generator_py.dir/rosidl_generator_py/kachaka_interfaces/msg/_shelf_s.c.o[0m
+[16.459s] [ 87%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_generator_py.dir/rosidl_generator_py/kachaka_interfaces/action/_exec_kachaka_command_s.c.o[0m
+[16.459s] [ 88%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_generator_py.dir/rosidl_generator_py/kachaka_interfaces/msg/_location_s.c.o[0m
+[16.459s] [ 89%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_generator_py.dir/rosidl_generator_py/kachaka_interfaces/msg/_shelf_list_s.c.o[0m
+[16.459s] [ 90%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_generator_py.dir/rosidl_generator_py/kachaka_interfaces/msg/_location_list_s.c.o[0m
+[16.460s] [ 91%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_generator_py.dir/rosidl_generator_py/kachaka_interfaces/msg/_object_detection_s.c.o[0m
+[16.461s] [ 92%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_generator_py.dir/rosidl_generator_py/kachaka_interfaces/msg/_shelf_size_s.c.o[0m
+[16.654s] [ 93%] [32m[1mLinking C shared library rosidl_generator_py/kachaka_interfaces/libkachaka_interfaces__rosidl_generator_py.so[0m
+[16.822s] [ 93%] Built target kachaka_interfaces__rosidl_generator_py
+[16.838s] [ 96%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_typesupport_fastrtps_c__pyext.dir/rosidl_generator_py/kachaka_interfaces/_kachaka_interfaces_s.ep.rosidl_typesupport_fastrtps_c.c.o[0m
+[16.838s] [ 96%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_typesupport_c__pyext.dir/rosidl_generator_py/kachaka_interfaces/_kachaka_interfaces_s.ep.rosidl_typesupport_c.c.o[0m
+[16.838s] [ 96%] [32mBuilding C object CMakeFiles/kachaka_interfaces__rosidl_typesupport_introspection_c__pyext.dir/rosidl_generator_py/kachaka_interfaces/_kachaka_interfaces_s.ep.rosidl_typesupport_introspection_c.c.o[0m
+[16.954s] [ 97%] [32m[1mLinking C shared library rosidl_generator_py/kachaka_interfaces/kachaka_interfaces_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so[0m
+[16.961s] [ 98%] [32m[1mLinking C shared library rosidl_generator_py/kachaka_interfaces/kachaka_interfaces_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so[0m
+[16.965s] [100%] [32m[1mLinking C shared library rosidl_generator_py/kachaka_interfaces/kachaka_interfaces_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so[0m
+[17.080s] [100%] Built target kachaka_interfaces__rosidl_typesupport_fastrtps_c__pyext
+[17.081s] [100%] Built target kachaka_interfaces__rosidl_typesupport_c__pyext
+[17.126s] [100%] Built target kachaka_interfaces__rosidl_typesupport_introspection_c__pyext
+[17.137s] Invoked command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_interfaces' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow:/opt/ros/humble /usr/bin/cmake --build /home/weichen/project/kachaka/kachaka_ws/build/kachaka_interfaces -- -j16 -l16
+[17.139s] Invoking command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_interfaces': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow:/opt/ros/humble /usr/bin/cmake --install /home/weichen/project/kachaka/kachaka_ws/build/kachaka_interfaces
+[17.145s] -- Install configuration: ""
+[17.145s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/ament_index/resource_index/rosidl_interfaces/kachaka_interfaces
+[17.145s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces
+[17.146s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg
+[17.146s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/location.h
+[17.146s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/object_detection_list_stamped.h
+[17.146s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/shelf.h
+[17.146s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/shelf_size.h
+[17.146s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/location_list.h
+[17.147s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/shelf_list.h
+[17.147s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/object_detection.h
+[17.147s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/rosidl_generator_c__visibility_control.h
+[17.147s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/kachaka_command.h
+[17.147s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail
+[17.147s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location_list__functions.h
+[17.148s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf__functions.h
+[17.148s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_list__functions.c
+[17.148s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf__type_support.h
+[17.148s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection__functions.c
+[17.149s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/kachaka_command__functions.c
+[17.149s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location__functions.c
+[17.149s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection_list_stamped__struct.h
+[17.149s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection__functions.h
+[17.149s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/kachaka_command__functions.h
+[17.149s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location_list__type_support.h
+[17.149s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location__type_support.h
+[17.150s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf__struct.h
+[17.150s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection__type_support.h
+[17.150s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_size__functions.h
+[17.150s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location__functions.h
+[17.150s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection_list_stamped__type_support.h
+[17.150s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf__functions.c
+[17.150s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_size__type_support.h
+[17.151s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_list__struct.h
+[17.151s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_list__type_support.h
+[17.151s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/kachaka_command__type_support.h
+[17.151s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_size__struct.h
+[17.151s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection_list_stamped__functions.h
+[17.152s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_list__functions.h
+[17.152s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location__struct.h
+[17.152s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection_list_stamped__functions.c
+[17.153s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location_list__struct.h
+[17.153s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location_list__functions.c
+[17.153s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/kachaka_command__struct.h
+[17.153s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection__struct.h
+[17.153s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_size__functions.c
+[17.153s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action
+[17.153s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/exec_kachaka_command.h
+[17.154s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/detail
+[17.154s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/detail/exec_kachaka_command__type_support.h
+[17.154s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/detail/exec_kachaka_command__struct.h
+[17.154s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/detail/exec_kachaka_command__functions.h
+[17.154s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/detail/exec_kachaka_command__functions.c
+[17.154s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/environment/library_path.sh
+[17.154s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/environment/library_path.dsv
+[17.155s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/lib/libkachaka_interfaces__rosidl_generator_c.so
+[17.155s] -- Set runtime path of "/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/lib/libkachaka_interfaces__rosidl_generator_c.so" to ""
+[17.155s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces
+[17.155s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg
+[17.156s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/rosidl_typesupport_fastrtps_c__visibility_control.h
+[17.156s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail
+[17.156s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_size__rosidl_typesupport_fastrtps_c.h
+[17.156s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf__rosidl_typesupport_fastrtps_c.h
+[17.156s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection__rosidl_typesupport_fastrtps_c.h
+[17.156s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location_list__rosidl_typesupport_fastrtps_c.h
+[17.157s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/kachaka_command__rosidl_typesupport_fastrtps_c.h
+[17.157s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_list__rosidl_typesupport_fastrtps_c.h
+[17.157s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection_list_stamped__rosidl_typesupport_fastrtps_c.h
+[17.157s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location__rosidl_typesupport_fastrtps_c.h
+[17.157s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action
+[17.157s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/detail
+[17.157s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/detail/exec_kachaka_command__rosidl_typesupport_fastrtps_c.h
+[17.157s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/lib/libkachaka_interfaces__rosidl_typesupport_fastrtps_c.so
+[17.158s] -- Set runtime path of "/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/lib/libkachaka_interfaces__rosidl_typesupport_fastrtps_c.so" to ""
+[17.158s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces
+[17.158s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg
+[17.158s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/rosidl_generator_cpp__visibility_control.hpp
+[17.158s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/location_list.hpp
+[17.158s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/shelf_list.hpp
+[17.159s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/kachaka_command.hpp
+[17.159s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/location.hpp
+[17.159s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/object_detection.hpp
+[17.159s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/shelf_size.hpp
+[17.159s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/object_detection_list_stamped.hpp
+[17.159s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail
+[17.159s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/kachaka_command__builder.hpp
+[17.160s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/kachaka_command__struct.hpp
+[17.160s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location__traits.hpp
+[17.160s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection__traits.hpp
+[17.160s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location__struct.hpp
+[17.161s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/kachaka_command__type_support.hpp
+[17.161s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_size__builder.hpp
+[17.161s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_list__type_support.hpp
+[17.162s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location_list__traits.hpp
+[17.162s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_size__struct.hpp
+[17.162s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf__traits.hpp
+[17.162s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection_list_stamped__type_support.hpp
+[17.162s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection__builder.hpp
+[17.162s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location__type_support.hpp
+[17.163s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location_list__builder.hpp
+[17.163s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_list__traits.hpp
+[17.163s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection__type_support.hpp
+[17.163s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location__builder.hpp
+[17.164s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection_list_stamped__traits.hpp
+[17.164s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection_list_stamped__struct.hpp
+[17.165s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_list__builder.hpp
+[17.165s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/kachaka_command__traits.hpp
+[17.166s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location_list__type_support.hpp
+[17.166s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf__struct.hpp
+[17.166s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf__type_support.hpp
+[17.166s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_size__type_support.hpp
+[17.166s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_list__struct.hpp
+[17.166s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf__builder.hpp
+[17.167s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection_list_stamped__builder.hpp
+[17.167s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection__struct.hpp
+[17.167s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location_list__struct.hpp
+[17.167s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_size__traits.hpp
+[17.167s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/shelf.hpp
+[17.167s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action
+[17.167s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/exec_kachaka_command.hpp
+[17.167s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/detail
+[17.167s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/detail/exec_kachaka_command__traits.hpp
+[17.167s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/detail/exec_kachaka_command__type_support.hpp
+[17.167s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/detail/exec_kachaka_command__struct.hpp
+[17.167s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/detail/exec_kachaka_command__builder.hpp
+[17.167s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces
+[17.167s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg
+[17.167s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h
+[17.167s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail
+[17.167s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location__rosidl_typesupport_fastrtps_cpp.hpp
+[17.168s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_size__rosidl_typesupport_fastrtps_cpp.hpp
+[17.168s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf__rosidl_typesupport_fastrtps_cpp.hpp
+[17.168s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection__rosidl_typesupport_fastrtps_cpp.hpp
+[17.168s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection_list_stamped__rosidl_typesupport_fastrtps_cpp.hpp
+[17.168s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_list__rosidl_typesupport_fastrtps_cpp.hpp
+[17.168s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/dds_fastrtps
+[17.168s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/kachaka_command__rosidl_typesupport_fastrtps_cpp.hpp
+[17.168s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location_list__rosidl_typesupport_fastrtps_cpp.hpp
+[17.168s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action
+[17.168s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/detail
+[17.168s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/detail/exec_kachaka_command__rosidl_typesupport_fastrtps_cpp.hpp
+[17.168s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/detail/dds_fastrtps
+[17.168s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/lib/libkachaka_interfaces__rosidl_typesupport_fastrtps_cpp.so
+[17.168s] -- Set runtime path of "/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/lib/libkachaka_interfaces__rosidl_typesupport_fastrtps_cpp.so" to ""
+[17.168s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces
+[17.168s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg
+[17.168s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/rosidl_typesupport_introspection_c__visibility_control.h
+[17.168s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail
+[17.168s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection__type_support.c
+[17.169s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_list__type_support.c
+[17.169s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection_list_stamped__type_support.c
+[17.169s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location_list__type_support.c
+[17.169s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf__type_support.c
+[17.169s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_size__rosidl_typesupport_introspection_c.h
+[17.169s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location__rosidl_typesupport_introspection_c.h
+[17.169s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location__type_support.c
+[17.169s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_size__type_support.c
+[17.169s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection__rosidl_typesupport_introspection_c.h
+[17.169s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/kachaka_command__type_support.c
+[17.169s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf__rosidl_typesupport_introspection_c.h
+[17.169s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_list__rosidl_typesupport_introspection_c.h
+[17.169s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/kachaka_command__rosidl_typesupport_introspection_c.h
+[17.169s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection_list_stamped__rosidl_typesupport_introspection_c.h
+[17.169s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location_list__rosidl_typesupport_introspection_c.h
+[17.169s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action
+[17.169s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/detail
+[17.169s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/detail/exec_kachaka_command__type_support.c
+[17.169s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/detail/exec_kachaka_command__rosidl_typesupport_introspection_c.h
+[17.169s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/lib/libkachaka_interfaces__rosidl_typesupport_introspection_c.so
+[17.169s] -- Set runtime path of "/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/lib/libkachaka_interfaces__rosidl_typesupport_introspection_c.so" to ""
+[17.169s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/lib/libkachaka_interfaces__rosidl_typesupport_c.so
+[17.170s] -- Set runtime path of "/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/lib/libkachaka_interfaces__rosidl_typesupport_c.so" to ""
+[17.170s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces
+[17.170s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg
+[17.170s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail
+[17.170s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_list__rosidl_typesupport_introspection_cpp.hpp
+[17.170s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_list__type_support.cpp
+[17.170s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_size__type_support.cpp
+[17.170s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection__rosidl_typesupport_introspection_cpp.hpp
+[17.170s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf__type_support.cpp
+[17.170s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location_list__rosidl_typesupport_introspection_cpp.hpp
+[17.170s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf_size__rosidl_typesupport_introspection_cpp.hpp
+[17.170s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection__type_support.cpp
+[17.170s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection_list_stamped__type_support.cpp
+[17.170s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location__type_support.cpp
+[17.170s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/object_detection_list_stamped__rosidl_typesupport_introspection_cpp.hpp
+[17.170s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location__rosidl_typesupport_introspection_cpp.hpp
+[17.170s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/kachaka_command__rosidl_typesupport_introspection_cpp.hpp
+[17.170s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/location_list__type_support.cpp
+[17.170s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/kachaka_command__type_support.cpp
+[17.170s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/msg/detail/shelf__rosidl_typesupport_introspection_cpp.hpp
+[17.170s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action
+[17.170s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/detail
+[17.170s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/detail/exec_kachaka_command__type_support.cpp
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/include/kachaka_interfaces/kachaka_interfaces/action/detail/exec_kachaka_command__rosidl_typesupport_introspection_cpp.hpp
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/lib/libkachaka_interfaces__rosidl_typesupport_introspection_cpp.so
+[17.171s] -- Set runtime path of "/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/lib/libkachaka_interfaces__rosidl_typesupport_introspection_cpp.so" to ""
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/lib/libkachaka_interfaces__rosidl_typesupport_cpp.so
+[17.171s] -- Set runtime path of "/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/lib/libkachaka_interfaces__rosidl_typesupport_cpp.so" to ""
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/environment/pythonpath.sh
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/environment/pythonpath.dsv
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces-0.0.0-py3.10.egg-info
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces-0.0.0-py3.10.egg-info/top_level.txt
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces-0.0.0-py3.10.egg-info/dependency_links.txt
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces-0.0.0-py3.10.egg-info/SOURCES.txt
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces-0.0.0-py3.10.egg-info/PKG-INFO
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/_kachaka_interfaces_s.ep.rosidl_typesupport_introspection_c.c
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/kachaka_interfaces_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/_kachaka_interfaces_s.ep.rosidl_typesupport_fastrtps_c.c
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/kachaka_interfaces_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_shelf_size_s.c
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_object_detection_list_stamped.py
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_kachaka_command.py
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_object_detection.py
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_object_detection_list_stamped_s.c
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_location.py
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_object_detection_s.c
+[17.171s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_shelf_size.py
+[17.172s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_shelf_list.py
+[17.172s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_location_list.py
+[17.172s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_shelf_list_s.c
+[17.172s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_shelf_s.c
+[17.172s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_location_list_s.c
+[17.172s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_shelf.py
+[17.172s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/__init__.py
+[17.172s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_kachaka_command_s.c
+[17.172s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_location_s.c
+[17.172s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/kachaka_interfaces_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so
+[17.172s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/_kachaka_interfaces_s.ep.rosidl_typesupport_c.c
+[17.172s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/libkachaka_interfaces__rosidl_generator_py.so
+[17.172s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/__init__.py
+[17.172s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/action
+[17.172s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/action/_exec_kachaka_command_s.c
+[17.172s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/action/_exec_kachaka_command.py
+[17.172s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/action/__init__.py
+[17.222s] Listing '/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces'...
+[17.222s] Compiling '/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/__init__.py'...
+[17.222s] Listing '/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/action'...
+[17.222s] Compiling '/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/action/__init__.py'...
+[17.222s] Compiling '/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/action/_exec_kachaka_command.py'...
+[17.222s] Listing '/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg'...
+[17.222s] Compiling '/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/__init__.py'...
+[17.222s] Compiling '/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_kachaka_command.py'...
+[17.222s] Compiling '/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_location.py'...
+[17.222s] Compiling '/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_location_list.py'...
+[17.222s] Compiling '/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_object_detection.py'...
+[17.222s] Compiling '/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_object_detection_list_stamped.py'...
+[17.223s] Compiling '/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_shelf.py'...
+[17.223s] Compiling '/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_shelf_list.py'...
+[17.223s] Compiling '/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/msg/_shelf_size.py'...
+[17.227s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/kachaka_interfaces_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so
+[17.228s] -- Set runtime path of "/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/kachaka_interfaces_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so" to ""
+[17.228s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/kachaka_interfaces_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so
+[17.228s] -- Set runtime path of "/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/kachaka_interfaces_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so" to ""
+[17.228s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/kachaka_interfaces_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so
+[17.228s] -- Set runtime path of "/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages/kachaka_interfaces/kachaka_interfaces_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so" to ""
+[17.229s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/lib/libkachaka_interfaces__rosidl_generator_py.so
+[17.229s] -- Set runtime path of "/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/lib/libkachaka_interfaces__rosidl_generator_py.so" to ""
+[17.229s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/action/ExecKachakaCommand.idl
+[17.229s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/msg/KachakaCommand.idl
+[17.229s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/msg/Location.idl
+[17.230s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/msg/LocationList.idl
+[17.230s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/msg/ObjectDetection.idl
+[17.230s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/msg/ObjectDetectionListStamped.idl
+[17.230s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/msg/Shelf.idl
+[17.231s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/msg/ShelfList.idl
+[17.231s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/msg/ShelfSize.idl
+[17.231s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/action/ExecKachakaCommand.action
+[17.231s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/msg/KachakaCommand.msg
+[17.232s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/msg/Location.msg
+[17.232s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/msg/LocationList.msg
+[17.232s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/msg/ObjectDetection.msg
+[17.232s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/msg/ObjectDetectionListStamped.msg
+[17.232s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/msg/Shelf.msg
+[17.233s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/msg/ShelfList.msg
+[17.233s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/msg/ShelfSize.msg
+[17.233s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/ament_index/resource_index/package_run_dependencies/kachaka_interfaces
+[17.233s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/ament_index/resource_index/parent_prefix_path/kachaka_interfaces
+[17.233s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/environment/ament_prefix_path.sh
+[17.233s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/environment/ament_prefix_path.dsv
+[17.233s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/environment/path.sh
+[17.233s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/environment/path.dsv
+[17.234s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/local_setup.bash
+[17.234s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/local_setup.sh
+[17.234s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/local_setup.zsh
+[17.234s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/local_setup.dsv
+[17.234s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/package.dsv
+[17.234s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/ament_index/resource_index/packages/kachaka_interfaces
+[17.234s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/export_kachaka_interfaces__rosidl_generator_cExport.cmake
+[17.234s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/export_kachaka_interfaces__rosidl_generator_cExport-noconfig.cmake
+[17.235s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/export_kachaka_interfaces__rosidl_typesupport_fastrtps_cExport.cmake
+[17.235s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/export_kachaka_interfaces__rosidl_typesupport_fastrtps_cExport-noconfig.cmake
+[17.235s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/export_kachaka_interfaces__rosidl_generator_cppExport.cmake
+[17.235s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/export_kachaka_interfaces__rosidl_typesupport_fastrtps_cppExport.cmake
+[17.235s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/export_kachaka_interfaces__rosidl_typesupport_fastrtps_cppExport-noconfig.cmake
+[17.235s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/kachaka_interfaces__rosidl_typesupport_introspection_cExport.cmake
+[17.235s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/kachaka_interfaces__rosidl_typesupport_introspection_cExport-noconfig.cmake
+[17.236s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/kachaka_interfaces__rosidl_typesupport_cExport.cmake
+[17.236s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/kachaka_interfaces__rosidl_typesupport_cExport-noconfig.cmake
+[17.236s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/kachaka_interfaces__rosidl_typesupport_introspection_cppExport.cmake
+[17.236s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/kachaka_interfaces__rosidl_typesupport_introspection_cppExport-noconfig.cmake
+[17.237s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/kachaka_interfaces__rosidl_typesupport_cppExport.cmake
+[17.237s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/kachaka_interfaces__rosidl_typesupport_cppExport-noconfig.cmake
+[17.237s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/export_kachaka_interfaces__rosidl_generator_pyExport.cmake
+[17.237s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/export_kachaka_interfaces__rosidl_generator_pyExport-noconfig.cmake
+[17.237s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/rosidl_cmake-extras.cmake
+[17.237s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/ament_cmake_export_dependencies-extras.cmake
+[17.237s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/ament_cmake_export_include_directories-extras.cmake
+[17.237s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/ament_cmake_export_libraries-extras.cmake
+[17.237s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/ament_cmake_export_targets-extras.cmake
+[17.238s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake
+[17.238s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake
+[17.238s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/kachaka_interfacesConfig.cmake
+[17.238s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/cmake/kachaka_interfacesConfig-version.cmake
+[17.238s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/share/kachaka_interfaces/package.xml
+[17.240s] Invoked command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_interfaces' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow:/opt/ros/humble /usr/bin/cmake --install /home/weichen/project/kachaka/kachaka_ws/build/kachaka_interfaces

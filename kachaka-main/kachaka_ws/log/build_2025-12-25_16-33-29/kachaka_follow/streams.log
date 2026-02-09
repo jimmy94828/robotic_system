@@ -1,0 +1,37 @@
+[1.082s] Invoking command in '/home/weichen/project/kachaka/kachaka_ws/src/demos/kachaka_follow': CMAKE_PREFIX_PATH=/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_nav2_bringup:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_description PYTHONPATH=/home/weichen/project/kachaka/kachaka_ws/build/kachaka_follow/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow/lib/python3.10/site-packages:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/kachaka_follow build --build-base /home/weichen/project/kachaka/kachaka_ws/build/kachaka_follow/build install --record /home/weichen/project/kachaka/kachaka_ws/build/kachaka_follow/install.log --single-version-externally-managed install_data
+[1.299s] running egg_info
+[1.299s] creating ../../../build/kachaka_follow/kachaka_follow.egg-info
+[1.299s] writing ../../../build/kachaka_follow/kachaka_follow.egg-info/PKG-INFO
+[1.300s] writing dependency_links to ../../../build/kachaka_follow/kachaka_follow.egg-info/dependency_links.txt
+[1.300s] writing entry points to ../../../build/kachaka_follow/kachaka_follow.egg-info/entry_points.txt
+[1.300s] writing requirements to ../../../build/kachaka_follow/kachaka_follow.egg-info/requires.txt
+[1.300s] writing top-level names to ../../../build/kachaka_follow/kachaka_follow.egg-info/top_level.txt
+[1.300s] writing manifest file '../../../build/kachaka_follow/kachaka_follow.egg-info/SOURCES.txt'
+[1.301s] reading manifest file '../../../build/kachaka_follow/kachaka_follow.egg-info/SOURCES.txt'
+[1.302s] writing manifest file '../../../build/kachaka_follow/kachaka_follow.egg-info/SOURCES.txt'
+[1.302s] running build
+[1.302s] running build_py
+[1.302s] creating /home/weichen/project/kachaka/kachaka_ws/build/kachaka_follow/build
+[1.303s] creating /home/weichen/project/kachaka/kachaka_ws/build/kachaka_follow/build/lib
+[1.303s] creating /home/weichen/project/kachaka/kachaka_ws/build/kachaka_follow/build/lib/kachaka_follow
+[1.303s] copying kachaka_follow/follow.py -> /home/weichen/project/kachaka/kachaka_ws/build/kachaka_follow/build/lib/kachaka_follow
+[1.303s] copying kachaka_follow/__init__.py -> /home/weichen/project/kachaka/kachaka_ws/build/kachaka_follow/build/lib/kachaka_follow
+[1.303s] running install
+[1.304s] running install_lib
+[1.306s] creating /home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow/lib/python3.10/site-packages/kachaka_follow
+[1.306s] copying /home/weichen/project/kachaka/kachaka_ws/build/kachaka_follow/build/lib/kachaka_follow/follow.py -> /home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow/lib/python3.10/site-packages/kachaka_follow
+[1.306s] copying /home/weichen/project/kachaka/kachaka_ws/build/kachaka_follow/build/lib/kachaka_follow/__init__.py -> /home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow/lib/python3.10/site-packages/kachaka_follow
+[1.306s] byte-compiling /home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow/lib/python3.10/site-packages/kachaka_follow/follow.py to follow.cpython-310.pyc
+[1.307s] byte-compiling /home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow/lib/python3.10/site-packages/kachaka_follow/__init__.py to __init__.cpython-310.pyc
+[1.307s] running install_data
+[1.307s] creating /home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow/share/ament_index
+[1.308s] creating /home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow/share/ament_index/resource_index
+[1.308s] creating /home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow/share/ament_index/resource_index/packages
+[1.308s] copying resource/kachaka_follow -> /home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow/share/ament_index/resource_index/packages
+[1.308s] copying package.xml -> /home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow/share/kachaka_follow
+[1.308s] running install_egg_info
+[1.309s] Copying ../../../build/kachaka_follow/kachaka_follow.egg-info to /home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow/lib/python3.10/site-packages/kachaka_follow-0.0.0-py3.10.egg-info
+[1.310s] running install_scripts
+[1.333s] Installing follow script to /home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow/lib/kachaka_follow
+[1.333s] writing list of installed files to '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_follow/install.log'
+[1.358s] Invoked command in '/home/weichen/project/kachaka/kachaka_ws/src/demos/kachaka_follow' returned '0': CMAKE_PREFIX_PATH=/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_nav2_bringup:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_description PYTHONPATH=/home/weichen/project/kachaka/kachaka_ws/build/kachaka_follow/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_follow/lib/python3.10/site-packages:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/kachaka_follow build --build-base /home/weichen/project/kachaka/kachaka_ws/build/kachaka_follow/build install --record /home/weichen/project/kachaka/kachaka_ws/build/kachaka_follow/install.log --single-version-externally-managed install_data

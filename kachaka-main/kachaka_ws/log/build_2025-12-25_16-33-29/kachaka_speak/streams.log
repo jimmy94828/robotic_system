@@ -1,0 +1,37 @@
+[0.675s] Invoking command in '/home/weichen/project/kachaka/kachaka_ws/src/demos/kachaka_speak': PYTHONPATH=/home/weichen/project/kachaka/kachaka_ws/build/kachaka_speak/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/kachaka_speak build --build-base /home/weichen/project/kachaka/kachaka_ws/build/kachaka_speak/build install --record /home/weichen/project/kachaka/kachaka_ws/build/kachaka_speak/install.log --single-version-externally-managed install_data
+[0.890s] running egg_info
+[0.890s] creating ../../../build/kachaka_speak/kachaka_speak.egg-info
+[0.891s] writing ../../../build/kachaka_speak/kachaka_speak.egg-info/PKG-INFO
+[0.891s] writing dependency_links to ../../../build/kachaka_speak/kachaka_speak.egg-info/dependency_links.txt
+[0.891s] writing entry points to ../../../build/kachaka_speak/kachaka_speak.egg-info/entry_points.txt
+[0.891s] writing requirements to ../../../build/kachaka_speak/kachaka_speak.egg-info/requires.txt
+[0.891s] writing top-level names to ../../../build/kachaka_speak/kachaka_speak.egg-info/top_level.txt
+[0.891s] writing manifest file '../../../build/kachaka_speak/kachaka_speak.egg-info/SOURCES.txt'
+[0.893s] reading manifest file '../../../build/kachaka_speak/kachaka_speak.egg-info/SOURCES.txt'
+[0.893s] writing manifest file '../../../build/kachaka_speak/kachaka_speak.egg-info/SOURCES.txt'
+[0.893s] running build
+[0.894s] running build_py
+[0.894s] creating /home/weichen/project/kachaka/kachaka_ws/build/kachaka_speak/build
+[0.894s] creating /home/weichen/project/kachaka/kachaka_ws/build/kachaka_speak/build/lib
+[0.895s] creating /home/weichen/project/kachaka/kachaka_ws/build/kachaka_speak/build/lib/kachaka_speak
+[0.895s] copying kachaka_speak/speak.py -> /home/weichen/project/kachaka/kachaka_ws/build/kachaka_speak/build/lib/kachaka_speak
+[0.895s] copying kachaka_speak/__init__.py -> /home/weichen/project/kachaka/kachaka_ws/build/kachaka_speak/build/lib/kachaka_speak
+[0.895s] running install
+[0.896s] running install_lib
+[0.897s] creating /home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak/lib/python3.10/site-packages/kachaka_speak
+[0.897s] copying /home/weichen/project/kachaka/kachaka_ws/build/kachaka_speak/build/lib/kachaka_speak/speak.py -> /home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak/lib/python3.10/site-packages/kachaka_speak
+[0.898s] copying /home/weichen/project/kachaka/kachaka_ws/build/kachaka_speak/build/lib/kachaka_speak/__init__.py -> /home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak/lib/python3.10/site-packages/kachaka_speak
+[0.898s] byte-compiling /home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak/lib/python3.10/site-packages/kachaka_speak/speak.py to speak.cpython-310.pyc
+[0.899s] byte-compiling /home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak/lib/python3.10/site-packages/kachaka_speak/__init__.py to __init__.cpython-310.pyc
+[0.899s] running install_data
+[0.899s] creating /home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak/share/ament_index
+[0.899s] creating /home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak/share/ament_index/resource_index
+[0.899s] creating /home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak/share/ament_index/resource_index/packages
+[0.899s] copying resource/kachaka_speak -> /home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak/share/ament_index/resource_index/packages
+[0.899s] copying package.xml -> /home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak/share/kachaka_speak
+[0.899s] running install_egg_info
+[0.901s] Copying ../../../build/kachaka_speak/kachaka_speak.egg-info to /home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak/lib/python3.10/site-packages/kachaka_speak-0.0.0-py3.10.egg-info
+[0.901s] running install_scripts
+[0.926s] Installing speak script to /home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak/lib/kachaka_speak
+[0.926s] writing list of installed files to '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_speak/install.log'
+[0.957s] Invoked command in '/home/weichen/project/kachaka/kachaka_ws/src/demos/kachaka_speak' returned '0': PYTHONPATH=/home/weichen/project/kachaka/kachaka_ws/build/kachaka_speak/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_speak/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/kachaka_speak build --build-base /home/weichen/project/kachaka/kachaka_ws/build/kachaka_speak/build install --record /home/weichen/project/kachaka/kachaka_ws/build/kachaka_speak/install.log --single-version-externally-managed install_data

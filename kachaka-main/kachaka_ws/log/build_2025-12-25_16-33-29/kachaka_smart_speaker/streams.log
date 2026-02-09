@@ -1,0 +1,37 @@
+[0.984s] Invoking command in '/home/weichen/project/kachaka/kachaka_ws/src/demos/kachaka_smart_speaker': CMAKE_PREFIX_PATH=/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_nav2_bringup:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_description PYTHONPATH=/home/weichen/project/kachaka/kachaka_ws/build/kachaka_smart_speaker/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker/lib/python3.10/site-packages:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/kachaka_smart_speaker build --build-base /home/weichen/project/kachaka/kachaka_ws/build/kachaka_smart_speaker/build install --record /home/weichen/project/kachaka/kachaka_ws/build/kachaka_smart_speaker/install.log --single-version-externally-managed install_data
+[1.208s] running egg_info
+[1.209s] creating ../../../build/kachaka_smart_speaker/kachaka_smart_speaker.egg-info
+[1.209s] writing ../../../build/kachaka_smart_speaker/kachaka_smart_speaker.egg-info/PKG-INFO
+[1.209s] writing dependency_links to ../../../build/kachaka_smart_speaker/kachaka_smart_speaker.egg-info/dependency_links.txt
+[1.210s] writing entry points to ../../../build/kachaka_smart_speaker/kachaka_smart_speaker.egg-info/entry_points.txt
+[1.210s] writing requirements to ../../../build/kachaka_smart_speaker/kachaka_smart_speaker.egg-info/requires.txt
+[1.210s] writing top-level names to ../../../build/kachaka_smart_speaker/kachaka_smart_speaker.egg-info/top_level.txt
+[1.210s] writing manifest file '../../../build/kachaka_smart_speaker/kachaka_smart_speaker.egg-info/SOURCES.txt'
+[1.211s] reading manifest file '../../../build/kachaka_smart_speaker/kachaka_smart_speaker.egg-info/SOURCES.txt'
+[1.211s] writing manifest file '../../../build/kachaka_smart_speaker/kachaka_smart_speaker.egg-info/SOURCES.txt'
+[1.212s] running build
+[1.212s] running build_py
+[1.212s] creating /home/weichen/project/kachaka/kachaka_ws/build/kachaka_smart_speaker/build
+[1.212s] creating /home/weichen/project/kachaka/kachaka_ws/build/kachaka_smart_speaker/build/lib
+[1.212s] creating /home/weichen/project/kachaka/kachaka_ws/build/kachaka_smart_speaker/build/lib/kachaka_smart_speaker
+[1.212s] copying kachaka_smart_speaker/smart_speaker.py -> /home/weichen/project/kachaka/kachaka_ws/build/kachaka_smart_speaker/build/lib/kachaka_smart_speaker
+[1.212s] copying kachaka_smart_speaker/__init__.py -> /home/weichen/project/kachaka/kachaka_ws/build/kachaka_smart_speaker/build/lib/kachaka_smart_speaker
+[1.213s] running install
+[1.213s] running install_lib
+[1.214s] creating /home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker/lib/python3.10/site-packages/kachaka_smart_speaker
+[1.214s] copying /home/weichen/project/kachaka/kachaka_ws/build/kachaka_smart_speaker/build/lib/kachaka_smart_speaker/smart_speaker.py -> /home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker/lib/python3.10/site-packages/kachaka_smart_speaker
+[1.214s] copying /home/weichen/project/kachaka/kachaka_ws/build/kachaka_smart_speaker/build/lib/kachaka_smart_speaker/__init__.py -> /home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker/lib/python3.10/site-packages/kachaka_smart_speaker
+[1.215s] byte-compiling /home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker/lib/python3.10/site-packages/kachaka_smart_speaker/smart_speaker.py to smart_speaker.cpython-310.pyc
+[1.216s] byte-compiling /home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker/lib/python3.10/site-packages/kachaka_smart_speaker/__init__.py to __init__.cpython-310.pyc
+[1.216s] running install_data
+[1.216s] creating /home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker/share/ament_index
+[1.216s] creating /home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker/share/ament_index/resource_index
+[1.216s] creating /home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker/share/ament_index/resource_index/packages
+[1.217s] copying resource/kachaka_smart_speaker -> /home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker/share/ament_index/resource_index/packages
+[1.217s] copying package.xml -> /home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker/share/kachaka_smart_speaker
+[1.217s] running install_egg_info
+[1.218s] Copying ../../../build/kachaka_smart_speaker/kachaka_smart_speaker.egg-info to /home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker/lib/python3.10/site-packages/kachaka_smart_speaker-0.0.0-py3.10.egg-info
+[1.219s] running install_scripts
+[1.238s] Installing smart_speaker script to /home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker/lib/kachaka_smart_speaker
+[1.238s] writing list of installed files to '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_smart_speaker/install.log'
+[1.261s] Invoked command in '/home/weichen/project/kachaka/kachaka_ws/src/demos/kachaka_smart_speaker' returned '0': CMAKE_PREFIX_PATH=/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_nav2_bringup:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_description PYTHONPATH=/home/weichen/project/kachaka/kachaka_ws/build/kachaka_smart_speaker/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_smart_speaker/lib/python3.10/site-packages:/home/weichen/project/kachaka/kachaka_ws/install/kachaka_interfaces/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/kachaka_smart_speaker build --build-base /home/weichen/project/kachaka/kachaka_ws/build/kachaka_smart_speaker/build install --record /home/weichen/project/kachaka/kachaka_ws/build/kachaka_smart_speaker/install.log --single-version-externally-managed install_data

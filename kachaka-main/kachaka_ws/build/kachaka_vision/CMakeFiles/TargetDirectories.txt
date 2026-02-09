@@ -1,0 +1,10 @@
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_vision/CMakeFiles/uninstall.dir
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_vision/CMakeFiles/kachaka_vision_uninstall.dir
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_vision/CMakeFiles/hand_recognition_node.dir
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_vision/CMakeFiles/test.dir
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_vision/CMakeFiles/edit_cache.dir
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_vision/CMakeFiles/rebuild_cache.dir
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_vision/CMakeFiles/list_install_components.dir
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_vision/CMakeFiles/install.dir
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_vision/CMakeFiles/install/local.dir
+/home/weichen/project/kachaka/kachaka_ws/build/kachaka_vision/CMakeFiles/install/strip.dir

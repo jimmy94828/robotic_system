@@ -1,0 +1,27 @@
+[0.547s] Invoking command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_vision': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/weichen/project/kachaka/kachaka_ws/build/kachaka_vision -- -j16 -l16
+[0.606s] [35m[1mConsolidate compiler generated dependencies of target hand_recognition_node[0m
+[0.685s] [100%] Built target hand_recognition_node
+[0.703s] Invoked command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_vision' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/weichen/project/kachaka/kachaka_ws/build/kachaka_vision -- -j16 -l16
+[0.714s] Invoking command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_vision': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/weichen/project/kachaka/kachaka_ws/build/kachaka_vision
+[0.720s] -- Install configuration: ""
+[0.725s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision/lib/kachaka_vision/hand_recognition_node
+[0.726s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision/share/ament_index/resource_index/package_run_dependencies/kachaka_vision
+[0.727s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision/share/ament_index/resource_index/parent_prefix_path/kachaka_vision
+[0.728s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision/share/kachaka_vision/environment/ament_prefix_path.sh
+[0.729s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision/share/kachaka_vision/environment/ament_prefix_path.dsv
+[0.730s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision/share/kachaka_vision/environment/path.sh
+[0.730s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision/share/kachaka_vision/environment/path.dsv
+[0.730s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision/share/kachaka_vision/local_setup.bash
+[0.730s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision/share/kachaka_vision/local_setup.sh
+[0.731s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision/share/kachaka_vision/local_setup.zsh
+[0.731s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision/share/kachaka_vision/local_setup.dsv
+[0.732s] -- Installing: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision/share/kachaka_vision/package.dsv
+[0.733s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision/share/ament_index/resource_index/packages/kachaka_vision
+[0.733s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision/share/kachaka_vision/cmake/kachaka_visionConfig.cmake
+[0.733s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision/share/kachaka_vision/cmake/kachaka_visionConfig-version.cmake
+[0.733s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision/share/kachaka_vision/package.xml
+[0.733s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision/share/kachaka_vision//launch
+[0.733s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision/share/kachaka_vision//launch/hand_recognition_launch.py
+[0.733s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision/share/kachaka_vision//config
+[0.733s] -- Up-to-date: /home/weichen/project/kachaka/kachaka_ws/install/kachaka_vision/share/kachaka_vision//config/.gitignore
+[0.741s] Invoked command in '/home/weichen/project/kachaka/kachaka_ws/build/kachaka_vision' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/weichen/project/kachaka/kachaka_ws/build/kachaka_vision

@@ -1,0 +1,14 @@
+{
+  "package_name": "kachaka_interfaces",
+  "non_idl_tuples": [
+    "/home/weichen/project/kachaka/kachaka_ws/src/kachaka_interfaces:action/ExecKachakaCommand.action",
+    "/home/weichen/project/kachaka/kachaka_ws/src/kachaka_interfaces:msg/KachakaCommand.msg",
+    "/home/weichen/project/kachaka/kachaka_ws/src/kachaka_interfaces:msg/Location.msg",
+    "/home/weichen/project/kachaka/kachaka_ws/src/kachaka_interfaces:msg/LocationList.msg",
+    "/home/weichen/project/kachaka/kachaka_ws/src/kachaka_interfaces:msg/ObjectDetection.msg",
+    "/home/weichen/project/kachaka/kachaka_ws/src/kachaka_interfaces:msg/ObjectDetectionListStamped.msg",
+    "/home/weichen/project/kachaka/kachaka_ws/src/kachaka_interfaces:msg/Shelf.msg",
+    "/home/weichen/project/kachaka/kachaka_ws/src/kachaka_interfaces:msg/ShelfList.msg",
+    "/home/weichen/project/kachaka/kachaka_ws/src/kachaka_interfaces:msg/ShelfSize.msg"
+  ]
+}

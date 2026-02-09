@@ -1,0 +1,3 @@
+[console_scripts]
+smart_speaker = kachaka_smart_speaker.smart_speaker:main
+
