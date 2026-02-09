@@ -1,0 +1,76 @@
+# === Python build and cache ===
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# === ROS 2 build artifacts ===
+install/
+log/
+build/
+
+# === Editor/IDE files ===
+.vscode/
+.idea/
+*.swp
+
+# === System files ===
+.DS_Store
+Thumbs.db
+
+# === Environment and virtualenvs ===
+.env
+.venv/
+venv/
+*.env
+
+# === Data and large assets ===
+data/
+!data/README.md   # allow a placeholder readme if you want to keep folder visible
+build/decision_maker/colcon_command_prefix_setup_py.sh.env
+build/decision_maker/install.log
+build/decision_maker/decision_maker.egg-info/entry_points.txt
+build/decision_maker/decision_maker.egg-info/PKG-INFO
+build/decision_maker/decision_maker.egg-info/SOURCES.txt
+build/decision_maker/decision_maker.egg-info/top_level.txt
+build/decision_maker/prefix_override/__pycache__/sitecustomize.cpython-310.pyc
+build/decision_maker_interfaces/colcon_command_prefix_build.sh.env
+build/decision_maker_interfaces/ament_cmake_python/decision_maker_interfaces/decision_maker_interfaces.egg-info/PKG-INFO
+build/object_query/colcon_command_prefix_setup_py.sh.env
+build/object_query/object_query.egg-info/entry_points.txt
+build/object_query/object_query.egg-info/PKG-INFO
+build/object_query/prefix_override/__pycache__/sitecustomize.cpython-310.pyc
+build/object_query_interfaces/colcon_command_prefix_build.sh.env
+build/object_query_interfaces/ament_cmake_python/object_query_interfaces/object_query_interfaces.egg-info/PKG-INFO
+build/semantic_slam/colcon_command_prefix_setup_py.sh.env
+build/semantic_slam/prefix_override/__pycache__/sitecustomize.cpython-310.pyc
+build/semantic_slam/semantic_slam.egg-info/entry_points.txt
+build/semantic_slam/semantic_slam.egg-info/PKG-INFO
+build/semantic_slam_interfaces/colcon_command_prefix_build.sh.env
+build/semantic_slam_interfaces/ament_cmake_python/semantic_slam_interfaces/semantic_slam_interfaces.egg-info/PKG-INFO
+install/setup.bash
+install/setup.ps1
+install/setup.sh
+install/setup.zsh
+install/decision_maker/lib/decision_maker/cancel_command_node
+install/decision_maker/lib/decision_maker/decision_maker_node
+install/decision_maker/lib/decision_maker/mock_grasp_server
+install/decision_maker/lib/decision_maker/mock_nav_server
+install/decision_maker/lib/decision_maker/nl_command_node
+install/decision_maker/lib/decision_maker/text_command_node
+install/decision_maker/lib/python3.10/site-packages/decision_maker-0.0.0-py3.10.egg-info/entry_points.txt
+install/decision_maker/lib/python3.10/site-packages/decision_maker-0.0.0-py3.10.egg-info/PKG-INFO
+install/decision_maker/lib/python3.10/site-packages/decision_maker-0.0.0-py3.10.egg-info/SOURCES.txt
+install/decision_maker/lib/python3.10/site-packages/decision_maker-0.0.0-py3.10.egg-info/top_level.txt
+install/object_query/lib/object_query/object_query_client
+install/object_query/lib/object_query/object_query_server
+install/object_query/lib/python3.10/site-packages/object_query-0.0.0-py3.10.egg-info/entry_points.txt
+install/object_query/lib/python3.10/site-packages/object_query-0.0.0-py3.10.egg-info/PKG-INFO
+install/object_query_interfaces/local/lib/python3.10/dist-packages/object_query_interfaces-0.0.0-py3.10.egg-info/PKG-INFO
+install/semantic_slam/lib/python3.10/site-packages/semantic_slam-0.0.0-py3.10.egg-info/entry_points.txt
+install/semantic_slam/lib/python3.10/site-packages/semantic_slam-0.0.0-py3.10.egg-info/PKG-INFO
+install/semantic_slam/lib/semantic_slam/run_slam_client
+install/semantic_slam/lib/semantic_slam/run_slam_server
+install/semantic_slam_interfaces/local/lib/python3.10/dist-packages/semantic_slam_interfaces-0.0.0-py3.10.egg-info/PKG-INFO
+log/latest_build

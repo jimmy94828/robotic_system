@@ -1,0 +1,5 @@
+name: robot_ros
+channels:
+  - https://repo.anaconda.com/pkgs/main
+  - https://repo.anaconda.com/pkgs/r
+prefix: /home/phudh/.conda/envs/robot_ros

@@ -1,0 +1,13 @@
+# Goal
+string output_uri       # e.g "file:///tmp/gs_map" (saving loc)
+bool   save_on_stop     # true
+
+---
+# Result
+bool   success
+string map_uri          # saving URI（e.g., file:///tmp/gs_map_2025-10-04-15-30-00.npz）
+uint32 num_splats
+
+---
+# Feedback
+uint32 num_splats
