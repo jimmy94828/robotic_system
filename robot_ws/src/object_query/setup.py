@@ -27,6 +27,7 @@ setup(
             'object_query_server = object_query.object_query_server:main',
             'object_query_client = object_query.object_query_client:main',
             'coord_bridge = object_query.coord_bridge:main',
+            'object_query_test = object_query.object_query_test:main',
         ],
     },
 )

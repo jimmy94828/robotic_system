@@ -36,7 +36,8 @@ setup(
             'nl_command_node = decision_maker.nl_command_node:main',
             'audio_command_node = decision_maker.audio_command_node:main',
             'decision_maker_node_isaacsim = decision_maker.decision_maker_node_isaacsim:main',
-            "decision_maker_node_calib = decision_maker.decision_maker_node_calib:main"
+            "decision_maker_node_calib = decision_maker.decision_maker_node_calib:main",
+            "decision_maker_test = decision_maker.decision_maker_test:main",
         ],
     },
 )
