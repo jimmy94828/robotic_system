@@ -1,0 +1,27 @@
+{
+  "color_mapping": [
+    {"rgb": [0.000, 0.000, 0.500], "category": "wall"},
+    {"rgb": [0.000, 0.000, 0.707], "category": "floor"},
+    {"rgb": [0.000, 0.000, 0.913], "category": "ceiling"},
+    {"rgb": [0.000, 0.045, 1.000], "category": "door"},
+    {"rgb": [0.000, 0.227, 1.000], "category": "window"},
+    {"rgb": [0.000, 0.409, 1.000], "category": "cabinet"},
+    {"rgb": [0.000, 0.591, 1.000], "category": "shelf"},
+    {"rgb": [0.000, 0.773, 1.000], "category": "table"},
+    {"rgb": [0.044, 0.955, 0.924], "category": "chair"},
+    {"rgb": [0.191, 1.000, 0.777], "category": "sofa"},
+    {"rgb": [0.337, 1.000, 0.630], "category": "desk"},
+    {"rgb": [0.484, 1.000, 0.484], "category": "counter"},
+    {"rgb": [0.630, 1.000, 0.337], "category": "curtain"},
+    {"rgb": [0.777, 1.000, 0.191], "category": "picture"},
+    {"rgb": [0.924, 1.000, 0.044], "category": "lamp"},
+    {"rgb": [1.000, 0.845, 0.000], "category": "tv"},
+    {"rgb": [1.000, 0.677, 0.000], "category": "refrigerator"},
+    {"rgb": [1.000, 0.508, 0.000], "category": "box"},
+    {"rgb": [1.000, 0.340, 0.000], "category": "monitor"},
+    {"rgb": [1.000, 0.172, 0.000], "category": "microwave"},
+    {"rgb": [0.913, 0.003, 0.000], "category": "pillow"},
+    {"rgb": [0.707, 0.000, 0.000], "category": "Fan"},
+    {"rgb": [0.500, 0.000, 0.000], "category": "other"}
+  ]
+}

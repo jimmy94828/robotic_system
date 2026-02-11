@@ -1,0 +1,106 @@
+{
+  "segments_info": [
+    {
+      "id": 0,
+      "category_name": "wall",
+      "class": "wall",
+      "point_count": 663809
+    },
+    {
+      "id": 1,
+      "category_name": "floor",
+      "class": "floor",
+      "point_count": 197422
+    },
+    {
+      "id": 2,
+      "category_name": "ceiling",
+      "class": "ceiling",
+      "point_count": 330892
+    },
+    {
+      "id": 3,
+      "category_name": "door",
+      "class": "door",
+      "point_count": 11036
+    },
+    {
+      "id": 4,
+      "category_name": "window",
+      "class": "window",
+      "point_count": 486755
+    },
+    {
+      "id": 5,
+      "category_name": "cabinet",
+      "class": "cabinet",
+      "point_count": 45991
+    },
+    {
+      "id": 6,
+      "category_name": "shelf",
+      "class": "shelf",
+      "point_count": 6788
+    },
+    {
+      "id": 7,
+      "category_name": "table",
+      "class": "table",
+      "point_count": 50572
+    },
+    {
+      "id": 8,
+      "category_name": "chair",
+      "class": "chair",
+      "point_count": 119118
+    },
+    {
+      "id": 9,
+      "category_name": "sofa",
+      "class": "sofa",
+      "point_count": 23208
+    },
+    {
+      "id": 11,
+      "category_name": "counter",
+      "class": "counter",
+      "point_count": 4540
+    },
+    {
+      "id": 12,
+      "category_name": "curtain",
+      "class": "curtain",
+      "point_count": 5907
+    },
+    {
+      "id": 13,
+      "category_name": "picture",
+      "class": "picture",
+      "point_count": 385774
+    },
+    {
+      "id": 15,
+      "category_name": "tv",
+      "class": "tv",
+      "point_count": 31249
+    },
+    {
+      "id": 16,
+      "category_name": "refrigerator",
+      "class": "refrigerator",
+      "point_count": 975
+    },
+    {
+      "id": 17,
+      "category_name": "box",
+      "class": "box",
+      "point_count": 247
+    },
+    {
+      "id": 22,
+      "category_name": "other",
+      "class": "other",
+      "point_count": 51674
+    }
+  ]
+}

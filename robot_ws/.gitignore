@@ -26,7 +26,6 @@ venv/
 *.env
 
 # === Data and large assets ===
-data/
 !data/README.md   # allow a placeholder readme if you want to keep folder visible
 build/decision_maker/colcon_command_prefix_setup_py.sh.env
 build/decision_maker/install.log
