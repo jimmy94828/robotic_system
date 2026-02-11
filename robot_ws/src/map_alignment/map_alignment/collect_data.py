@@ -1,329 +1,583 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import csv
+"""
+Collector v3 (ROS2 tf2 + RealSense SDK API) with IR1/IR2 + Left/Right Depth
+---------------------------------------------------------------------------
+1) ROS2 tf2: world_frame -> base_footprint
+2) RealSense via pyrealsense2 (NO realsense-ros):
+   - Color (RGB)
+   - Depth (Z16)
+   - IR-left  (infrared index=1, Y8)
+   - IR-right (infrared index=2, Y8)
+3) Capture key:
+   - First: query base_footprint pose
+   - Then: grab one frameset (RGB/Depth/IR L/R)
+4) Output folders by modality, filenames by index 000/001/...
+
+WSL2 note:
+- Using IR streams increases USB bandwidth requirement, so we try multiple profiles automatically.
+"""
+
+import json
 import math
+import time
 import threading
+import argparse
 from pathlib import Path
-from collections import deque
+from typing import Optional, Tuple, Dict, Any
 
 import numpy as np
 import cv2
 
+# ---------- ROS2 ----------
 import rclpy
 from rclpy.node import Node
-from rclpy.duration import Duration
-
-from sensor_msgs.msg import Image
-from cv_bridge import CvBridge
-
+from rclpy.time import Time as RosTime
 from tf2_ros import Buffer, TransformListener
 from tf2_ros import TransformException
 
-# ---- UI: Matplotlib 鍵盤事件 ----
-import matplotlib
-matplotlib.use("TkAgg")
-import matplotlib.pyplot as plt
+# ---------- RealSense ----------
+try:
+    import pyrealsense2 as rs
+except Exception:
+    rs = None
 
 
-def quat_to_yaw(x: float, y: float, z: float, w: float) -> float:
-    """Quaternion -> yaw (Z axis)."""
-    siny_cosp = 2.0 * (w * z + x * y)
-    cosy_cosp = 1.0 - 2.0 * (y * y + z * z)
+# =========================
+# Utils
+# =========================
+def quat_to_yaw(qx: float, qy: float, qz: float, qw: float) -> float:
+    siny_cosp = 2.0 * (qw * qz + qx * qy)
+    cosy_cosp = 1.0 - 2.0 * (qy * qy + qz * qz)
     return math.atan2(siny_cosp, cosy_cosp)
 
 
-class CaptureRGBDAndLidarPose(Node):
-    def __init__(self):
-        super().__init__("capture_rgbd_and_lidar_pose")
+def depth_to_gray_u8(depth_m: np.ndarray, max_depth_m: float) -> np.ndarray:
+    """
+    Convert depth(meters) -> grayscale uint8.
+    Near -> white, Far -> black, invalid(0) -> 0
+    """
+    d = depth_m.copy()
+    valid = d > 0
+    d = np.clip(d, 0.0, max_depth_m)
+    gray = np.zeros_like(d, dtype=np.uint8)
+    if np.any(valid):
+        norm = np.zeros_like(d, dtype=np.float32)
+        norm[valid] = d[valid] / max_depth_m
+        gray[valid] = ((1.0 - norm[valid]) * 255.0).astype(np.uint8)
+    return gray
 
-        # ---------------- Params ----------------
-        self.declare_parameter("color_topic", "/camera/camera/color/image_raw")
-        self.declare_parameter("depth_topic", "/camera/camera/depth/image_rect_raw")
 
-        self.declare_parameter("fixed_frame", "map")             # map / odom
-        self.declare_parameter("lidar_frame", "base_footprint")  # base_scan / laser_link / lidar_frame...
-        self.declare_parameter("output_dir", str(Path.home() / "capture_logs"))
-        self.declare_parameter("sync_tolerance_ms", 50.0)        # 深度與彩色允許的時間差（ms）
-        self.declare_parameter("depth_cache_size", 200)          # 暫存最近幾張深度
+def zbuffer_project_depth_to_ir2(
+    depth_m: np.ndarray,
+    depth_intr: "rs.intrinsics",
+    ir2_intr: "rs.intrinsics",
+    extr_depth_to_ir2: "rs.extrinsics",
+) -> np.ndarray:
+    """
+    Project depth map (depth camera frame) into IR-right camera image plane
+    to build a right-view depth map (meters). invalid=0.
+    """
+    h, w = depth_m.shape
 
-        self.color_topic = self.get_parameter("color_topic").get_parameter_value().string_value
-        self.depth_topic = self.get_parameter("depth_topic").get_parameter_value().string_value
-        self.fixed_frame = self.get_parameter("fixed_frame").get_parameter_value().string_value
-        self.lidar_frame = self.get_parameter("lidar_frame").get_parameter_value().string_value
-        self.output_dir = Path(self.get_parameter("output_dir").get_parameter_value().string_value)
+    u = np.arange(w, dtype=np.float32)
+    v = np.arange(h, dtype=np.float32)
+    uu, vv = np.meshgrid(u, v)
 
-        self.sync_tol_ns = int(self.get_parameter("sync_tolerance_ms").value * 1e6)
-        self.depth_cache_size = int(self.get_parameter("depth_cache_size").value)
+    z = depth_m.reshape(-1).astype(np.float32)
+    valid = z > 0
+    if not np.any(valid):
+        return np.zeros((ir2_intr.height, ir2_intr.width), dtype=np.float32)
 
-        # ---------------- Output dirs ----------------
-        (self.output_dir / "rgb").mkdir(parents=True, exist_ok=True)
-        (self.output_dir / "depth").mkdir(parents=True, exist_ok=True)
-        self.csv_path = self.output_dir / "captures.csv"
-        self._init_csv_if_needed()
+    uu = uu.reshape(-1)[valid]
+    vv = vv.reshape(-1)[valid]
+    z = z[valid]
 
-        # ---------------- ROS IO ----------------
-        self.bridge = CvBridge()
-        self.sub_color = self.create_subscription(Image, self.color_topic, self.on_color, 10)
-        self.sub_depth = self.create_subscription(Image, self.depth_topic, self.on_depth, 10)
+    # back-project to 3D in depth camera coordinates
+    X = (uu - depth_intr.ppx) / depth_intr.fx * z
+    Y = (vv - depth_intr.ppy) / depth_intr.fy * z
 
+    # transform to IR2 coordinates: p2 = R*p + t
+    Rm = np.array(extr_depth_to_ir2.rotation, dtype=np.float32).reshape(3, 3)
+    t = np.array(extr_depth_to_ir2.translation, dtype=np.float32).reshape(3,)
+
+    pts = np.stack([X, Y, z], axis=0)      # (3, N)
+    pts2 = (Rm @ pts).T + t                # (N, 3)
+
+    X2, Y2, Z2 = pts2[:, 0], pts2[:, 1], pts2[:, 2]
+    ok = Z2 > 0
+    if not np.any(ok):
+        return np.zeros((ir2_intr.height, ir2_intr.width), dtype=np.float32)
+
+    X2, Y2, Z2 = X2[ok], Y2[ok], Z2[ok]
+
+    # project to IR2 pixels
+    u2 = (X2 / Z2) * ir2_intr.fx + ir2_intr.ppx
+    v2 = (Y2 / Z2) * ir2_intr.fy + ir2_intr.ppy
+
+    u2i = np.round(u2).astype(np.int32)
+    v2i = np.round(v2).astype(np.int32)
+
+    W2, H2 = ir2_intr.width, ir2_intr.height
+    inside = (u2i >= 0) & (u2i < W2) & (v2i >= 0) & (v2i < H2)
+    u2i, v2i, Z2 = u2i[inside], v2i[inside], Z2[inside]
+
+    out = np.full((H2, W2), np.inf, dtype=np.float32)
+    idx = v2i * W2 + u2i
+    out_flat = out.reshape(-1)
+    np.minimum.at(out_flat, idx, Z2.astype(np.float32))
+    out = out_flat.reshape(H2, W2)
+    out[np.isinf(out)] = 0.0
+    return out
+
+
+# =========================
+# ROS2 TF client
+# =========================
+class PoseTfClient(Node):
+    def __init__(self, world_frame: str, base_frame: str):
+        super().__init__("pose_tf_client")
+        self.world_frame = world_frame
+        self.base_frame = base_frame
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
-        # ---------------- State ----------------
-        self._lock = threading.Lock()
-
-        self.latest_color_bgr = None
-        self.latest_color_stamp = None  # builtin_interfaces/Time
-        self.latest_color_frame = None
-
-        # cache: deque of (stamp_ns, depth_array, depth_encoding)
-        self.depth_cache = deque(maxlen=self.depth_cache_size)
-
-        # ---------------- Matplotlib UI ----------------
-        self.fig, self.ax = plt.subplots()
-        self.ax.set_title("Press 'C' to capture RGB+D+pose | Press 'Q' to quit")
-        self.im_artist = None
-        self.fig.canvas.mpl_connect("key_press_event", self.on_key)
-
-        self.timer = self.create_timer(0.05, self.refresh_ui)
-
-        self.get_logger().info("Node started.")
-        self.get_logger().info(f"Color topic : {self.color_topic}")
-        self.get_logger().info(f"Depth topic : {self.depth_topic}")
-        self.get_logger().info(f"Fixed frame : {self.fixed_frame}")
-        self.get_logger().info(f"LiDAR frame : {self.lidar_frame}")
-        self.get_logger().info(f"Output dir  : {self.output_dir}")
-        self.get_logger().info(f"Sync tol    : {self.sync_tol_ns/1e6:.1f} ms")
-
-    def _init_csv_if_needed(self):
-        if not self.csv_path.exists():
-            with open(self.csv_path, "w", newline="", encoding="utf-8") as f:
-                w = csv.writer(f)
-                w.writerow([
-                    "rgb_file",
-                    "depth_file",
-                    "stamp_sec", "stamp_nanosec",
-                    "depth_encoding",
-                    "fixed_frame", "lidar_frame",
-                    "x", "y", "yaw_rad",
-                    "qx", "qy", "qz", "qw"
-                ])
-
-    @staticmethod
-    def _stamp_to_ns(stamp) -> int:
-        return int(stamp.sec) * 1_000_000_000 + int(stamp.nanosec)
-
-    def on_color(self, msg: Image):
+    def get_base_pose(self) -> Dict[str, Any]:
         try:
-            bgr = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
-        except Exception as e:
-            self.get_logger().error(f"cv_bridge color convert failed: {e}")
-            return
-
-        with self._lock:
-            self.latest_color_bgr = bgr
-            self.latest_color_stamp = msg.header.stamp
-            self.latest_color_frame = msg.header.frame_id
-
-    def on_depth(self, msg: Image):
-        try:
-            depth = self.bridge.imgmsg_to_cv2(msg, desired_encoding="passthrough")
-        except Exception as e:
-            self.get_logger().error(f"cv_bridge depth convert failed: {e}")
-            return
-
-        stamp_ns = self._stamp_to_ns(msg.header.stamp)
-
-        if depth is None:
-            return
-        if depth.ndim == 3:
-            depth = depth[:, :, 0]
-
-        with self._lock:
-            self.depth_cache.append((stamp_ns, depth, msg.encoding))
-
-    def refresh_ui(self):
-        with self._lock:
-            if self.latest_color_bgr is None:
-                plt.pause(0.001)
-                return
-            rgb = self.latest_color_bgr[:, :, ::-1].copy()
-
-        if self.im_artist is None:
-            self.im_artist = self.ax.imshow(rgb)
-            self.ax.axis("off")
-        else:
-            self.im_artist.set_data(rgb)
-
-        self.fig.canvas.draw_idle()
-        plt.pause(0.001)
-
-    def on_key(self, event):
-        if event.key is None:
-            return
-        k = event.key.lower()
-        if k == "c":
-            self.capture()
-        elif k == "q":
-            self.get_logger().info("Quit requested. Shutting down...")
-            rclpy.shutdown()
-
-    def _find_depth_nearest(self, target_ns: int):
-        """Return (depth, encoding) nearest to target_ns within tolerance; else None."""
-        with self._lock:
-            if not self.depth_cache:
-                return None
-
-            best = None
-            best_dt = None
-            for ts, depth, enc in self.depth_cache:
-                dt = abs(ts - target_ns)
-                if best_dt is None or dt < best_dt:
-                    best_dt = dt
-                    best = (depth, enc)
-
-        if best is None or best_dt is None or best_dt > self.sync_tol_ns:
-            return None
-        return best
-
-    def _save_depth(self, depth: np.ndarray, base: str):
-        """
-        Save depth:
-        - uint16 -> PNG (保留原值)
-        - float32/float64 -> NPY (保留原值)
-        return relative path string.
-        """
-        if depth.dtype == np.uint16:
-            rel = Path("depth") / f"{base}.png"
-            path = self.output_dir / rel
-            ok = cv2.imwrite(str(path), depth)
-            if not ok:
-                raise RuntimeError("cv2.imwrite failed for depth PNG")
-            return str(rel)
-
-        rel = Path("depth") / f"{base}.npy"
-        path = self.output_dir / rel
-        np.save(str(path), depth.astype(np.float32, copy=False))
-        return str(rel)
-
-    def capture(self):
-        # 取最新 RGB 與時間戳
-        with self._lock:
-            if self.latest_color_bgr is None or self.latest_color_stamp is None:
-                self.get_logger().warn("No color image yet; cannot capture.")
-                return
-            color_bgr = self.latest_color_bgr.copy()
-            stamp = self.latest_color_stamp
-
-        sec = int(stamp.sec)
-        nsec = int(stamp.nanosec)
-        base = f"{sec}_{nsec:09d}"
-        stamp_ns = sec * 1_000_000_000 + nsec
-
-        # ✅ 1) 先查 TF（pose），失敗就直接不存任何檔案
-        t = rclpy.time.Time(seconds=sec, nanoseconds=nsec)
-        try:
-            tfm = self.tf_buffer.lookup_transform(
-                self.fixed_frame,
-                self.lidar_frame,
-                t,
-                timeout=Duration(seconds=0.2),
-            )
+            tf = self.tf_buffer.lookup_transform(self.world_frame, self.base_frame, RosTime())
         except TransformException as e:
-            self.get_logger().warn(
-                f"TF lookup failed at {sec}.{nsec:09d}: {e}. "
-                f"Skip saving this capture."
-            )
-            return
+            raise RuntimeError(f"TF lookup failed: {self.world_frame} -> {self.base_frame} | {e}")
 
-        tx = tfm.transform.translation.x
-        ty = tfm.transform.translation.y
-        qx = tfm.transform.rotation.x
-        qy = tfm.transform.rotation.y
-        qz = tfm.transform.rotation.z
-        qw = tfm.transform.rotation.w
-        yaw = quat_to_yaw(qx, qy, qz, qw)
+        t = tf.transform.translation
+        q = tf.transform.rotation
+        yaw = quat_to_yaw(q.x, q.y, q.z, q.w)
 
-        # ✅ 2) TF 成功後才存 RGB / Depth
-        rgb_rel = Path("rgb") / f"{base}.png"
-        rgb_path = self.output_dir / rgb_rel
+        return {
+            "world_frame": self.world_frame,
+            "base_frame": self.base_frame,
+            "stamp_ros": {"sec": int(tf.header.stamp.sec), "nanosec": int(tf.header.stamp.nanosec)},
+            "translation": {"x": float(t.x), "y": float(t.y), "z": float(t.z)},
+            "rotation_xyzw": {"x": float(q.x), "y": float(q.y), "z": float(q.z), "w": float(q.w)},
+            "yaw_rad": float(yaw),
+        }
 
-        depth_rel_str = ""
-        depth_encoding = ""
 
-        # 讓後續如果存檔/寫 CSV 出錯時可清理
-        saved_rgb = False
-        saved_depth_path_abs = None
+# =========================
+# RealSense grabber (Color+Depth+IR1+IR2) with fallback profiles
+# =========================
+class RealSenseGrabber:
+    def __init__(self, serial: Optional[str] = None):
+        if rs is None:
+            raise RuntimeError("pyrealsense2 not available. Install librealsense + pyrealsense2.")
 
+        self.serial = serial
+        self._lock = threading.Lock()
+        self._running = False
+        self._thread: Optional[threading.Thread] = None
+
+        self._pipeline = rs.pipeline()
+        self.profile = None
+
+        # Selected settings
+        self.cw = self.ch = self.cfps = None
+        self.dw = self.dh = self.dfps = None
+
+        # Intr/extr
+        self.depth_scale = None
+        self.color_stream = None
+        self.depth_stream = None
+        self.ir1_stream = None
+        self.ir2_stream = None
+        self.depth_intr = None
+        self.ir2_intr = None
+        self.extr_depth_to_ir2 = None
+
+        self.latest: Optional[Dict[str, np.ndarray]] = None
+        self.latest_meta: Optional[Dict[str, Any]] = None
+
+    def start(self, prefer_color=(640, 480, 15), prefer_depth=(424, 240, 15)):
+        """
+        Try multiple combinations until start succeeds.
+        WSL2 建議：color fps 15，depth/IR 424x240 15 或更低。
+        """
+        candidates = [
+            # (cw,ch,cfps, dw,dh,dfps)
+            (640, 480, 30, 640, 480, 30),
+            (640, 480, 15, 424, 240, 15),
+            (640, 480, 30, 424, 240, 30),
+            (640, 480, 15, 424, 240, 15),
+            (424, 240, 30, 424, 240, 30),
+            (424, 240, 15, 424, 240, 15),
+            (320, 240, 30, 320, 240, 30),
+            (320, 240, 15, 320, 240, 15),
+        ]
+
+        # put preferred first
+        pref = (prefer_color[0], prefer_color[1], prefer_color[2], prefer_depth[0], prefer_depth[1], prefer_depth[2])
+        if pref in candidates:
+            candidates.remove(pref)
+        candidates.insert(0, pref)
+
+        last_err = None
+        for (cw, ch, cfps, dw, dh, dfps) in candidates:
+            try:
+                # recreate pipeline each attempt
+                self._pipeline = rs.pipeline()
+                cfg = rs.config()
+                if self.serial:
+                    cfg.enable_device(self.serial)
+
+                # Color
+                cfg.enable_stream(rs.stream.color, cw, ch, rs.format.rgb8, cfps)
+                # Depth
+                cfg.enable_stream(rs.stream.depth, dw, dh, rs.format.z16, dfps)
+                # IR L/R
+                cfg.enable_stream(rs.stream.infrared, 1, dw, dh, rs.format.y8, dfps)
+                cfg.enable_stream(rs.stream.infrared, 2, dw, dh, rs.format.y8, dfps)
+
+                profile = self._pipeline.start(cfg)
+                self.profile = profile
+
+                # save selected
+                self.cw, self.ch, self.cfps = cw, ch, cfps
+                self.dw, self.dh, self.dfps = dw, dh, dfps
+
+                # intr/extr
+                depth_sensor = profile.get_device().first_depth_sensor()
+                self.depth_scale = float(depth_sensor.get_depth_scale())
+
+                self.color_stream = profile.get_stream(rs.stream.color).as_video_stream_profile()
+                self.depth_stream = profile.get_stream(rs.stream.depth).as_video_stream_profile()
+                self.ir1_stream = profile.get_stream(rs.stream.infrared, 1).as_video_stream_profile()
+                self.ir2_stream = profile.get_stream(rs.stream.infrared, 2).as_video_stream_profile()
+
+                self.depth_intr = self.depth_stream.get_intrinsics()
+                self.ir2_intr = self.ir2_stream.get_intrinsics()
+                self.extr_depth_to_ir2 = self.depth_stream.get_extrinsics_to(self.ir2_stream)
+
+                print(f"[RealSense] started OK: "
+                      f"color={cw}x{ch}@{cfps}, depth/ir={dw}x{dh}@{dfps}")
+                break
+
+            except Exception as e:
+                last_err = e
+                print(f"[RealSense] start failed: color={cw}x{ch}@{cfps}, depth/ir={dw}x{dh}@{dfps} -> {e}")
+
+        if self.profile is None:
+            raise RuntimeError(f"RealSense start failed for all candidates. Last error: {last_err}")
+
+        # start background thread
+        self._running = True
+        self._thread = threading.Thread(target=self._loop, daemon=True)
+        self._thread.start()
+
+    def stop(self):
+        self._running = False
+        if self._thread is not None:
+            self._thread.join(timeout=2.0)
         try:
-            # 存 RGB（OpenCV 慣用：直接寫 BGR）
-            ok = cv2.imwrite(str(rgb_path), color_bgr)
-            if not ok:
-                raise RuntimeError("cv2.imwrite failed for RGB PNG")
-            saved_rgb = True
+            self._pipeline.stop()
+        except Exception:
+            pass
 
-            # depth 可選（找不到就只存 RGB + pose）
-            depth_pack = self._find_depth_nearest(stamp_ns)
-            if depth_pack is None:
-                self.get_logger().warn(
-                    f"Depth not found within {self.sync_tol_ns/1e6:.1f} ms of RGB stamp; "
-                    f"save RGB+pose only."
-                )
-            else:
-                depth, depth_encoding = depth_pack
-                depth_rel_str = self._save_depth(depth, base)
-                saved_depth_path_abs = self.output_dir / depth_rel_str
+    def _loop(self):
+        while self._running:
+            frames = self._pipeline.wait_for_frames()
 
-            # 寫 CSV
-            with open(self.csv_path, "a", newline="", encoding="utf-8") as f:
-                w = csv.writer(f)
-                w.writerow([
-                    str(rgb_rel),
-                    depth_rel_str,
-                    sec, nsec,
-                    depth_encoding,
-                    self.fixed_frame, self.lidar_frame,
-                    f"{tx:.6f}", f"{ty:.6f}", f"{yaw:.6f}",
-                    f"{qx:.6f}", f"{qy:.6f}", f"{qz:.6f}", f"{qw:.6f}",
-                ])
+            color = frames.get_color_frame()
+            depth = frames.get_depth_frame()
+            ir1 = frames.get_infrared_frame(1)
+            ir2 = frames.get_infrared_frame(2)
 
-        except Exception as e:
-            # ❗發生任何錯誤，盡量把這次 capture 已存的檔案清掉，避免殘留半套資料
-            self.get_logger().error(f"Capture failed, cleanup files. Reason: {e}")
+            if not color or not depth or not ir1 or not ir2:
+                continue
 
-            try:
-                if saved_rgb and rgb_path.exists():
-                    rgb_path.unlink()
-            except Exception:
-                pass
+            rgb = np.asanyarray(color.get_data())  # RGB8
+            rgb_bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
 
-            try:
-                if saved_depth_path_abs is not None and saved_depth_path_abs.exists():
-                    saved_depth_path_abs.unlink()
-            except Exception:
-                pass
+            depth_raw = np.asanyarray(depth.get_data()).astype(np.uint16)  # Z16
+            depth_m = depth_raw.astype(np.float32) * self.depth_scale
 
-            return
+            ir_left = np.asanyarray(ir1.get_data())   # Y8
+            ir_right = np.asanyarray(ir2.get_data())  # Y8
 
-        self.get_logger().info(
-            f"Captured RGB={rgb_rel}, D={depth_rel_str or 'NONE'} | "
-            f"pose {self.fixed_frame}->{self.lidar_frame}: x={tx:.3f}, y={ty:.3f}, yaw={yaw:.3f}"
+            out = {
+                "rgb_bgr": rgb_bgr,
+                "depth_raw": depth_raw,
+                "depth_m": depth_m,
+                "ir_left": ir_left,
+                "ir_right": ir_right,
+            }
+
+            meta = {
+                "ts_system": time.time(),
+                "depth_scale": self.depth_scale,
+                "color_profile": {"w": self.cw, "h": self.ch, "fps": self.cfps},
+                "depth_ir_profile": {"w": self.dw, "h": self.dh, "fps": self.dfps},
+            }
+
+            with self._lock:
+                self.latest = out
+                self.latest_meta = meta
+
+    def get_latest_copy(self) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
+        with self._lock:
+            if self.latest is None:
+                raise RuntimeError("No frames received yet.")
+            snap = {k: v.copy() for k, v in self.latest.items()}
+            meta = dict(self.latest_meta) if self.latest_meta else {}
+        return snap, meta
+
+    def get_intrinsics_extrinsics(self) -> Dict[str, Any]:
+        def intr_to_dict(intr: "rs.intrinsics") -> Dict[str, Any]:
+            return {
+                "width": intr.width,
+                "height": intr.height,
+                "fx": intr.fx,
+                "fy": intr.fy,
+                "ppx": intr.ppx,
+                "ppy": intr.ppy,
+                "model": int(intr.model),
+                "coeffs": list(intr.coeffs),
+            }
+
+        info = {
+            "depth_intr": intr_to_dict(self.depth_intr),
+            "ir_right_intr": intr_to_dict(self.ir2_intr),
+            "color_intr": intr_to_dict(self.color_stream.get_intrinsics()),
+            "extr_depth_to_ir_right": {
+                "rotation": list(self.extr_depth_to_ir2.rotation),
+                "translation": list(self.extr_depth_to_ir2.translation),
+            },
+        }
+        return info
+
+
+# =========================
+# IO: folders
+# =========================
+def make_output_folders(out_dir: Path) -> Dict[str, Path]:
+    folders = {
+        "rgb": out_dir / "rgb",
+        "ir_left": out_dir / "ir_left",
+        "ir_right": out_dir / "ir_right",
+        "depth_left_gray": out_dir / "depth_left_gray",
+        "depth_right_gray": out_dir / "depth_right_gray",
+        "depth_left_raw_mm": out_dir / "depth_left_raw_mm",
+        "depth_right_raw_mm": out_dir / "depth_right_raw_mm",
+        "meta": out_dir / "meta",
+    }
+    for p in folders.values():
+        p.mkdir(parents=True, exist_ok=True)
+    return folders
+
+
+def save_sample(
+    folders: Dict[str, Path],
+    idx: int,
+    pose: Dict[str, Any],
+    rs_frames: Dict[str, np.ndarray],
+    rs_meta: Dict[str, Any],
+    rs_intr_extr: Dict[str, Any],
+    max_depth_m: float,
+):
+    img_name = f"{idx:03d}.png"
+    json_name = f"{idx:03d}.json"
+
+    meta = {
+        "idx": idx,
+        "ts_system_pose_then_image": time.time(),
+        "pose": pose,
+        "realsense_meta": rs_meta,
+        "realsense_intr_extr": rs_intr_extr,
+        "notes": {"order": "pose first, then frameset snapshot", "right_depth": "projected into IR-right view"},
+    }
+    (folders["meta"] / json_name).write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    # rgb / ir
+    cv2.imwrite(str(folders["rgb"] / img_name), rs_frames["rgb_bgr"])
+    cv2.imwrite(str(folders["ir_left"] / img_name), rs_frames["ir_left"])
+    cv2.imwrite(str(folders["ir_right"] / img_name), rs_frames["ir_right"])
+
+    # depth-left
+    depth_raw = rs_frames["depth_raw"]
+    depth_m = rs_frames["depth_m"]
+    cv2.imwrite(str(folders["depth_left_raw_mm"] / img_name), depth_raw)
+    cv2.imwrite(str(folders["depth_left_gray"] / img_name), depth_to_gray_u8(depth_m, max_depth_m))
+
+    # depth-right
+    depth_right_m = rs_frames["depth_right_m"]
+    cv2.imwrite(str(folders["depth_right_gray"] / img_name), depth_to_gray_u8(depth_right_m, max_depth_m))
+    depth_right_mm = np.clip(depth_right_m * 1000.0, 0, 65535).astype(np.uint16)
+    cv2.imwrite(str(folders["depth_right_raw_mm"] / img_name), depth_right_mm)
+
+
+# =========================
+# Main
+# =========================
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--out", type=str, default="dataset_out", help="Output directory")
+    parser.add_argument("--world-frame", type=str, default="map", help="TF world frame (map or odom)")
+    parser.add_argument("--base-frame", type=str, default="base_footprint", help="Base frame")
+
+    # preferred profiles (WSL2 建議先這樣)
+    parser.add_argument("--pref-color", type=str, default="640,480,15", help="preferred color w,h,fps")
+    parser.add_argument("--pref-depth", type=str, default="640,480,15", help="preferred depth/ir w,h,fps")
+
+    parser.add_argument("--max-depth", type=float, default=3.0, help="Max depth (m) for gray rendering")
+    parser.add_argument("--no-gui", action="store_true", help="CLI capture (Enter) instead of GUI key press")
+    parser.add_argument("--serial", type=str, default=None, help="RealSense serial (optional)")
+    args = parser.parse_args()
+
+    def parse_triplet(s: str):
+        a = [int(x.strip()) for x in s.split(",")]
+        if len(a) != 3:
+            raise ValueError("triplet must be w,h,fps")
+        return (a[0], a[1], a[2])
+
+    pref_color = parse_triplet(args.pref_color)
+    pref_depth = parse_triplet(args.pref_depth)
+
+    out_dir = Path(args.out)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    folders = make_output_folders(out_dir)
+
+    poses_csv = out_dir / "poses.csv"
+    if not poses_csv.exists():
+        poses_csv.write_text(
+            "idx,ts_system,world_frame,base_frame,x,y,z,qx,qy,qz,qw,yaw_rad\n",
+            encoding="utf-8",
         )
 
-
-def main():
+    # ROS2 init
     rclpy.init()
-    node = CaptureRGBDAndLidarPose()
-    plt.show(block=False)
+    node = PoseTfClient(world_frame=args.world_frame, base_frame=args.base_frame)
 
-    try:
-        rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        node.destroy_node()
-        rclpy.shutdown()
+    # RealSense
+    grabber = RealSenseGrabber(serial=args.serial)
+    grabber.start(prefer_color=pref_color, prefer_depth=pref_depth)
+
+    # ROS spin
+    executor = rclpy.executors.MultiThreadedExecutor()
+    executor.add_node(node)
+    spin_thread = threading.Thread(target=executor.spin, daemon=True)
+    spin_thread.start()
+
+    idx = 0
+    running = True
+
+    def do_capture():
+        nonlocal idx
+
+        # 1) pose first
+        pose = node.get_base_pose()
+
+        # 2) then frameset snapshot
+        rs_frames, rs_meta = grabber.get_latest_copy()
+        rs_intr_extr = grabber.get_intrinsics_extrinsics()
+
+        # 3) right depth from projection into IR-right geometry
+        rs_frames["depth_right_m"] = zbuffer_project_depth_to_ir2(
+            depth_m=rs_frames["depth_m"],
+            depth_intr=grabber.depth_intr,
+            ir2_intr=grabber.ir2_intr,
+            extr_depth_to_ir2=grabber.extr_depth_to_ir2,
+        )
+
+        # 4) save
+        save_sample(
+            folders=folders,
+            idx=idx,
+            pose=pose,
+            rs_frames=rs_frames,
+            rs_meta=rs_meta,
+            rs_intr_extr=rs_intr_extr,
+            max_depth_m=args.max_depth,
+        )
+
+        # poses.csv
+        t = pose["translation"]
+        q = pose["rotation_xyzw"]
+        line = (
+            f'{idx},{time.time()},{pose["world_frame"]},{pose["base_frame"]},'
+            f'{t["x"]},{t["y"]},{t["z"]},{q["x"]},{q["y"]},{q["z"]},{q["w"]},{pose["yaw_rad"]}\n'
+        )
+        with poses_csv.open("a", encoding="utf-8") as f:
+            f.write(line)
+
+        print(f"[CAPTURE] saved idx={idx:03d}")
+        idx += 1
+
+    if args.no_gui:
+        print("CLI 模式：按 Enter capture；輸入 q 後 Enter 離開。")
+        while running:
+            s = input()
+            if s.strip().lower() == "q":
+                running = False
+                break
+            try:
+                do_capture()
+            except Exception as e:
+                print(f"[ERROR] capture failed: {e}")
+    else:
+        import matplotlib
+        matplotlib.use("TkAgg")
+        import matplotlib.pyplot as plt
+
+        plt.ion()
+        fig, axs = plt.subplots(1, 3, figsize=(13, 4))
+        fig.canvas.manager.set_window_title("Preview (press 'c' capture, 'q' quit)")
+
+        ax1, ax2, ax3 = axs
+        im1 = ax1.imshow(np.zeros((pref_color[1], pref_color[0], 3), dtype=np.uint8))
+        ax1.set_title("RGB")
+        ax1.axis("off")
+
+        im2 = ax2.imshow(np.zeros((pref_depth[1], pref_depth[0]), dtype=np.uint8), cmap="gray", vmin=0, vmax=255)
+        ax2.set_title("IR-left")
+        ax2.axis("off")
+
+        im3 = ax3.imshow(np.zeros((pref_depth[1], pref_depth[0]), dtype=np.uint8), cmap="gray", vmin=0, vmax=255)
+        ax3.set_title("Depth-left(gray)")
+        ax3.axis("off")
+
+        def on_key(event):
+            nonlocal running
+            if event.key == "c":
+                try:
+                    do_capture()
+                except Exception as e:
+                    print(f"[ERROR] capture failed: {e}")
+            elif event.key == "q":
+                running = False
+
+        fig.canvas.mpl_connect("key_press_event", on_key)
+
+        while running and plt.fignum_exists(fig.number):
+            try:
+                rs_frames, _ = grabber.get_latest_copy()
+                rgb = rs_frames["rgb_bgr"]
+                irl = rs_frames["ir_left"]
+                dgl = depth_to_gray_u8(rs_frames["depth_m"], args.max_depth)
+
+                im1.set_data(cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB))
+                im2.set_data(irl)
+                im3.set_data(dgl)
+
+                fig.canvas.draw()
+                fig.canvas.flush_events()
+                time.sleep(0.03)
+            except Exception:
+                time.sleep(0.05)
+
+        plt.close(fig)
+
+    grabber.stop()
+    executor.shutdown()
+    node.destroy_node()
+    rclpy.shutdown()
 
 
 if __name__ == "__main__":
