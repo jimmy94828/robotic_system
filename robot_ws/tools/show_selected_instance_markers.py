@@ -83,16 +83,44 @@ def load_instances(instance_path: Path) -> DefaultDict[str, List[Instance]]:
         data = json.load(file_obj)
 
     instances = data.get("instances", {})
-    if not isinstance(instances, dict) or not instances:
+    if isinstance(instances, dict):
+        records = instances.items()
+    elif isinstance(instances, list):
+        records = enumerate(instances)
+    else:
         raise ValueError(f'No valid "instances" section found in {instance_path}')
 
     objects: DefaultDict[str, List[Instance]] = defaultdict(list)
-    for inst_id, inst in instances.items():
-        name = str(inst.get("semantic_name", "")).strip().lower()
-        centroid = inst.get("centroid")
+    for fallback_inst_id, inst in records:
+        if not isinstance(inst, dict):
+            continue
+        if bool(inst.get("filtered", False)):
+            continue
+
+        inst_id = inst.get("instance_id", inst.get("inst_id", fallback_inst_id))
+        name = str(
+            inst.get("semantic_name")
+            or inst.get("class_name")
+            or inst.get("category_name")
+            or inst.get("label")
+            or ""
+        ).strip().lower()
+        centroid = inst.get("centroid") or inst.get("center")
+        if centroid is None and "bbox_min" in inst and "bbox_max" in inst:
+            bbox_min = np.asarray(inst["bbox_min"], dtype=float)
+            bbox_max = np.asarray(inst["bbox_max"], dtype=float)
+            if bbox_min.shape[0] >= 3 and bbox_max.shape[0] >= 3:
+                centroid = ((bbox_min[:3] + bbox_max[:3]) * 0.5).tolist()
         if not name or not isinstance(centroid, list) or len(centroid) < 3:
             continue
-        objects[name].append((inst_id, (float(centroid[0]), float(centroid[1]), float(centroid[2]))))
+        objects[name].append(
+            (
+                str(inst_id),
+                (float(centroid[0]), float(centroid[1]), float(centroid[2])),
+            )
+        )
+    if not objects:
+        raise ValueError(f"No usable instances found in {instance_path}")
     return objects
 
 
@@ -864,9 +892,9 @@ class SelectedInstanceMarkerPublisher(Node):
 
 def build_arg_parser() -> argparse.ArgumentParser:
     workspace_root = Path(__file__).resolve().parents[1]
-    default_instance_path = workspace_root / "data/lab/accumulated_gaussians_instance_semantic_info.json"
+    default_instance_path = workspace_root / "data/lab/test/robot_deploy_slam_example0_instance_semantic_table.json"
     default_alignment_path = workspace_root / "data/Util/alignment.yaml"
-    default_pointcloud_path = workspace_root / "data/lab/accumulated_gaussians.npz"
+    default_pointcloud_path = workspace_root / "data/lab/test/robot_deploy_slam_example0_rgb_color.npz"
 
     parser = argparse.ArgumentParser(
         description=(
@@ -883,7 +911,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--instance-path",
         default=str(default_instance_path),
-        help="Path to accumulated_gaussians_instance_semantic_info.json",
+        help="Path to the instance semantic JSON used for selected object markers",
     )
     parser.add_argument(
         "--alignment-path",

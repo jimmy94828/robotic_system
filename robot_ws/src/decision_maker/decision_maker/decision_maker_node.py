@@ -181,7 +181,7 @@ class DecisionMakingNode(Node):
             self.visualizer = None
         
         # ====== Grasp approach threshold ======
-        self.declare_parameter('grasp_approach_dist', 0.5)   # set the arm to reach the object within 0.5 meters
+        self.declare_parameter('grasp_approach_dist', 0.3)   # set the arm to reach the object within 0.3 meters
         self._grasp_threshold = self.get_parameter('grasp_approach_dist').get_parameter_value().double_value
         self._nav_distance_remaining = float('inf')          # update by nav feedback to know how far we are from the target, used for grasp approach logic
 
@@ -657,11 +657,6 @@ class DecisionMakingNode(Node):
         return self._send_task_command(f'grasp the {obj}', 'GRASP', timeout_sec=300.0)
 
     def _execute_place(self, cmd: str) -> bool:
-<<<<<<< HEAD
-        dest = cmd.split(':', 1)[1].strip()
-        return self._send_task_command(f'place {dest}', 'PLACE', timeout_sec=300.0)
-        # return self._send_task_command(f'handover {dest}', 'HANDOVER', timeout_sec=300.0)
-=======
         payload = cmd.split(':', 1)[1].strip()
         parts = [part.strip() for part in payload.split(':', 1)]
         if len(parts) == 2 and parts[0] and parts[1]:
@@ -674,7 +669,6 @@ class DecisionMakingNode(Node):
     def _execute_handover(self, cmd: str) -> bool:
         obj = cmd.split(':', 1)[1].strip()
         return self._send_task_command(f'handover {obj}', 'HANDOVER', timeout_sec=300.0)
->>>>>>> f3d94b527b089f0735202ad3d974137243cbb97e
 
     # =============================================================
     # FEEDBACK / CANCEL / UTILITIES
