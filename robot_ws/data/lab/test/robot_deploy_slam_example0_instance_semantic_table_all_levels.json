@@ -1,0 +1,4660 @@
+{
+  "levels": [
+    "coarse",
+    "medium",
+    "fine"
+  ],
+  "labels_per_level": {
+    "coarse": [
+      "wall",
+      "floor",
+      "ceiling",
+      "door",
+      "window",
+      "cabinet",
+      "table",
+      "chair",
+      "sofa",
+      "bed",
+      "otherfurniture"
+    ],
+    "medium": [
+      "wall",
+      "floor",
+      "ceiling",
+      "cabinet",
+      "bed",
+      "chair",
+      "sofa",
+      "table",
+      "door",
+      "window",
+      "bookshelf",
+      "picture",
+      "counter",
+      "desk",
+      "curtain",
+      "refrigerator",
+      "shower curtain",
+      "toilet",
+      "sink",
+      "bathtub",
+      "shelf",
+      "tv",
+      "monitor",
+      "microwave",
+      "box",
+      "pillow",
+      "lamp",
+      "trash can",
+      "otherfurniture"
+    ],
+    "fine": [
+      "wall",
+      "floor",
+      "ceiling",
+      "cabinet",
+      "bed",
+      "chair",
+      "sofa",
+      "table",
+      "door",
+      "window",
+      "bookshelf",
+      "picture",
+      "counter",
+      "desk",
+      "curtain",
+      "refrigerator",
+      "shower curtain",
+      "toilet",
+      "sink",
+      "bathtub",
+      "shelf",
+      "tv",
+      "monitor",
+      "microwave",
+      "box",
+      "pillow",
+      "lamp",
+      "trash can",
+      "otherfurniture",
+      "oven",
+      "stove",
+      "kettle",
+      "toaster",
+      "dishwasher",
+      "coffee machine",
+      "bottle",
+      "cup",
+      "mug",
+      "plate",
+      "bowl",
+      "remote control",
+      "speaker",
+      "vase",
+      "plant",
+      "clock",
+      "mirror",
+      "cushion",
+      "blanket",
+      "wardrobe",
+      "nightstand",
+      "hanger",
+      "towel",
+      "laptop",
+      "keyboard",
+      "mouse",
+      "phone",
+      "headphones",
+      "printer",
+      "backpack",
+      "bag",
+      "fan",
+      "book",
+      "shoes"
+    ]
+  },
+  "voxel_size": 0.05,
+  "backbone": "tips-v2-l14",
+  "num_instances_total": 109,
+  "num_instances_after_filter": 108,
+  "instances": [
+    {
+      "inst_id": 0,
+      "center": [
+        -1.7220187187194824,
+        -1.3046995401382446,
+        9.386842727661133
+      ],
+      "bbox_min": [
+        -4.3241448402404785,
+        -1.9608280658721924,
+        7.635395050048828
+      ],
+      "bbox_max": [
+        1.0772380828857422,
+        -0.025490226224064827,
+        11.447942733764648
+      ],
+      "bbox_volume_m3": 39.854469299316406,
+      "num_voxels": 1262,
+      "mean_objectness": 0.9139190926438286,
+      "first_seen": 0,
+      "last_seen": 367,
+      "count": 126,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.0874372273683548
+        },
+        "medium": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.09074658155441284
+        },
+        "fine": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.09074658155441284
+        }
+      }
+    },
+    {
+      "inst_id": 1,
+      "center": [
+        -0.28568917512893677,
+        1.1983685493469238,
+        5.77485990524292
+      ],
+      "bbox_min": [
+        -5.395654201507568,
+        1.1022852659225464,
+        -0.9004523754119873
+      ],
+      "bbox_max": [
+        3.418001651763916,
+        1.3545827865600586,
+        11.702554702758789
+      ],
+      "bbox_volume_m3": 28.02484893798828,
+      "num_voxels": 52241,
+      "mean_objectness": 0.9838267804256507,
+      "first_seen": 0,
+      "last_seen": 435,
+      "count": 336,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 1,
+          "class_name": "floor",
+          "cosine_similarity": 0.15829072892665863
+        },
+        "medium": {
+          "class_id": 1,
+          "class_name": "floor",
+          "cosine_similarity": 0.15829072892665863
+        },
+        "fine": {
+          "class_id": 1,
+          "class_name": "floor",
+          "cosine_similarity": 0.15829072892665863
+        }
+      }
+    },
+    {
+      "inst_id": 2,
+      "center": [
+        -3.6665565967559814,
+        0.12664110958576202,
+        10.279492378234863
+      ],
+      "bbox_min": [
+        -4.059757232666016,
+        -0.01697544939815998,
+        9.490394592285156
+      ],
+      "bbox_max": [
+        -0.4066382050514221,
+        0.26708632707595825,
+        10.845108985900879
+      ],
+      "bbox_volume_m3": 1.4058027267456055,
+      "num_voxels": 424,
+      "mean_objectness": 0.9265708232682849,
+      "first_seen": 0,
+      "last_seen": 364,
+      "count": 63,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.06845052540302277
+        },
+        "medium": {
+          "class_id": 12,
+          "class_name": "counter",
+          "cosine_similarity": 0.07686292380094528
+        },
+        "fine": {
+          "class_id": 35,
+          "class_name": "bottle",
+          "cosine_similarity": 0.07846010476350784
+        }
+      }
+    },
+    {
+      "inst_id": 3,
+      "center": [
+        1.858368158340454,
+        0.8071728944778442,
+        4.095637798309326
+      ],
+      "bbox_min": [
+        1.6407111883163452,
+        0.7081562876701355,
+        3.519458293914795
+      ],
+      "bbox_max": [
+        2.069157123565674,
+        0.9297013878822327,
+        5.06614351272583
+      ],
+      "bbox_volume_m3": 0.14681151509284973,
+      "num_voxels": 109,
+      "mean_objectness": 0.9367074806515764,
+      "first_seen": 0,
+      "last_seen": 148,
+      "count": 41,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.08372022956609726
+        },
+        "medium": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.0861176997423172
+        },
+        "fine": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.0861176997423172
+        }
+      }
+    },
+    {
+      "inst_id": 4,
+      "center": [
+        0.19172044098377228,
+        0.49461814761161804,
+        8.157154083251953
+      ],
+      "bbox_min": [
+        -0.3923869729042053,
+        0.23114196956157684,
+        7.72659969329834
+      ],
+      "bbox_max": [
+        1.3896921873092651,
+        1.1938389539718628,
+        8.876501083374023
+      ],
+      "bbox_volume_m3": 1.9727734327316284,
+      "num_voxels": 2524,
+      "mean_objectness": 0.973584787090226,
+      "first_seen": 0,
+      "last_seen": 275,
+      "count": 101,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 7,
+          "class_name": "chair",
+          "cosine_similarity": 0.12139906734228134
+        },
+        "medium": {
+          "class_id": 5,
+          "class_name": "chair",
+          "cosine_similarity": 0.12139908969402313
+        },
+        "fine": {
+          "class_id": 5,
+          "class_name": "chair",
+          "cosine_similarity": 0.12139907479286194
+        }
+      }
+    },
+    {
+      "inst_id": 5,
+      "center": [
+        0.1597377359867096,
+        -0.14425863325595856,
+        9.035133361816406
+      ],
+      "bbox_min": [
+        -0.2841323912143707,
+        -0.5328143835067749,
+        8.490753173828125
+      ],
+      "bbox_max": [
+        0.3448466658592224,
+        0.16728951036930084,
+        9.889063835144043
+      ],
+      "bbox_volume_m3": 0.6157470941543579,
+      "num_voxels": 1771,
+      "mean_objectness": 0.9680076986551285,
+      "first_seen": 0,
+      "last_seen": 269,
+      "count": 100,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 4,
+          "class_name": "window",
+          "cosine_similarity": 0.0792403295636177
+        },
+        "medium": {
+          "class_id": 22,
+          "class_name": "monitor",
+          "cosine_similarity": 0.12497193366289139
+        },
+        "fine": {
+          "class_id": 22,
+          "class_name": "monitor",
+          "cosine_similarity": 0.12497193366289139
+        }
+      }
+    },
+    {
+      "inst_id": 6,
+      "center": [
+        -0.6127315759658813,
+        0.023954665288329124,
+        9.359224319458008
+      ],
+      "bbox_min": [
+        -1.7556427717208862,
+        -0.45072174072265625,
+        7.74862003326416
+      ],
+      "bbox_max": [
+        3.2167251110076904,
+        0.220903217792511,
+        11.961382865905762
+      ],
+      "bbox_volume_m3": 14.068800926208496,
+      "num_voxels": 2226,
+      "mean_objectness": 0.9014412450118804,
+      "first_seen": 0,
+      "last_seen": 363,
+      "count": 71,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.07572221755981445
+        },
+        "medium": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.08790183067321777
+        },
+        "fine": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.08790183067321777
+        }
+      }
+    },
+    {
+      "inst_id": 7,
+      "center": [
+        -2.49237322807312,
+        0.4577104151248932,
+        6.050008773803711
+      ],
+      "bbox_min": [
+        -3.493499994277954,
+        0.3011234402656555,
+        5.589447975158691
+      ],
+      "bbox_max": [
+        -1.732327938079834,
+        1.1254241466522217,
+        6.824100494384766
+      ],
+      "bbox_volume_m3": 1.7923887968063354,
+      "num_voxels": 1510,
+      "mean_objectness": 0.9078511968255043,
+      "first_seen": 0,
+      "last_seen": 374,
+      "count": 40,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 7,
+          "class_name": "chair",
+          "cosine_similarity": 0.11626836657524109
+        },
+        "medium": {
+          "class_id": 5,
+          "class_name": "chair",
+          "cosine_similarity": 0.11626838892698288
+        },
+        "fine": {
+          "class_id": 5,
+          "class_name": "chair",
+          "cosine_similarity": 0.11626840382814407
+        }
+      }
+    },
+    {
+      "inst_id": 8,
+      "center": [
+        -2.317432165145874,
+        0.4904136061668396,
+        7.173584461212158
+      ],
+      "bbox_min": [
+        -4.3122053146362305,
+        -0.9103115200996399,
+        4.458599090576172
+      ],
+      "bbox_max": [
+        0.5865569710731506,
+        1.2577351331710815,
+        10.858436584472656
+      ],
+      "bbox_volume_m3": 67.9710464477539,
+      "num_voxels": 11351,
+      "mean_objectness": 0.945248019375257,
+      "first_seen": 0,
+      "last_seen": 375,
+      "count": 149,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.1445554941892624
+        },
+        "medium": {
+          "class_id": 7,
+          "class_name": "table",
+          "cosine_similarity": 0.1445554941892624
+        },
+        "fine": {
+          "class_id": 7,
+          "class_name": "table",
+          "cosine_similarity": 0.1445554792881012
+        }
+      }
+    },
+    {
+      "inst_id": 9,
+      "center": [
+        -1.5272772312164307,
+        0.5223207473754883,
+        6.129077911376953
+      ],
+      "bbox_min": [
+        -2.932154655456543,
+        0.29215937852859497,
+        5.522758960723877
+      ],
+      "bbox_max": [
+        -0.7408570647239685,
+        1.2328033447265625,
+        7.319613456726074
+      ],
+      "bbox_volume_m3": 3.7037320137023926,
+      "num_voxels": 3937,
+      "mean_objectness": 0.9577389083046844,
+      "first_seen": 0,
+      "last_seen": 375,
+      "count": 69,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 7,
+          "class_name": "chair",
+          "cosine_similarity": 0.1243208795785904
+        },
+        "medium": {
+          "class_id": 5,
+          "class_name": "chair",
+          "cosine_similarity": 0.1243208795785904
+        },
+        "fine": {
+          "class_id": 5,
+          "class_name": "chair",
+          "cosine_similarity": 0.12432088702917099
+        }
+      }
+    },
+    {
+      "inst_id": 10,
+      "center": [
+        2.8637635707855225,
+        1.0261284112930298,
+        10.289965629577637
+      ],
+      "bbox_min": [
+        -2.992354154586792,
+        0.2243783324956894,
+        8.596922874450684
+      ],
+      "bbox_max": [
+        3.5300209522247314,
+        1.131529688835144,
+        10.81761646270752
+      ],
+      "bbox_volume_m3": 13.139358520507812,
+      "num_voxels": 687,
+      "mean_objectness": 0.9093279969202329,
+      "first_seen": 0,
+      "last_seen": 121,
+      "count": 73,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 1,
+          "class_name": "floor",
+          "cosine_similarity": 0.074940986931324
+        },
+        "medium": {
+          "class_id": 1,
+          "class_name": "floor",
+          "cosine_similarity": 0.074940986931324
+        },
+        "fine": {
+          "class_id": 1,
+          "class_name": "floor",
+          "cosine_similarity": 0.0749410018324852
+        }
+      }
+    },
+    {
+      "inst_id": 11,
+      "center": [
+        -2.644474744796753,
+        0.6935284733772278,
+        3.649092435836792
+      ],
+      "bbox_min": [
+        -4.236471176147461,
+        0.14157389104366302,
+        0.9884806871414185
+      ],
+      "bbox_max": [
+        0.5022224187850952,
+        1.339491367340088,
+        6.677130222320557
+      ],
+      "bbox_volume_m3": 32.2919807434082,
+      "num_voxels": 12254,
+      "mean_objectness": 0.9272098138218834,
+      "first_seen": 0,
+      "last_seen": 413,
+      "count": 105,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 8,
+          "class_name": "sofa",
+          "cosine_similarity": 0.13653665781021118
+        },
+        "medium": {
+          "class_id": 6,
+          "class_name": "sofa",
+          "cosine_similarity": 0.13653668761253357
+        },
+        "fine": {
+          "class_id": 6,
+          "class_name": "sofa",
+          "cosine_similarity": 0.13653664290905
+        }
+      }
+    },
+    {
+      "inst_id": 12,
+      "center": [
+        -2.192312479019165,
+        0.3402954339981079,
+        6.485414505004883
+      ],
+      "bbox_min": [
+        -4.55230188369751,
+        0.20490679144859314,
+        5.87315559387207
+      ],
+      "bbox_max": [
+        -1.5594578981399536,
+        0.4843047261238098,
+        7.097326278686523
+      ],
+      "bbox_volume_m3": 1.0236446857452393,
+      "num_voxels": 642,
+      "mean_objectness": 0.9150531857178129,
+      "first_seen": 0,
+      "last_seen": 372,
+      "count": 58,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.08435191214084625
+        },
+        "medium": {
+          "class_id": 13,
+          "class_name": "desk",
+          "cosine_similarity": 0.09842429310083389
+        },
+        "fine": {
+          "class_id": 13,
+          "class_name": "desk",
+          "cosine_similarity": 0.09842430055141449
+        }
+      }
+    },
+    {
+      "inst_id": 13,
+      "center": [
+        1.8316524028778076,
+        0.8686948418617249,
+        5.096373081207275
+      ],
+      "bbox_min": [
+        1.4192768335342407,
+        0.5247341990470886,
+        4.7124457359313965
+      ],
+      "bbox_max": [
+        2.205592632293701,
+        1.3334611654281616,
+        5.493680477142334
+      ],
+      "bbox_volume_m3": 0.49679872393608093,
+      "num_voxels": 1388,
+      "mean_objectness": 0.9148709626324409,
+      "first_seen": 0,
+      "last_seen": 393,
+      "count": 113,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 1,
+          "class_name": "floor",
+          "cosine_similarity": 0.06459613144397736
+        },
+        "medium": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.07487976551055908
+        },
+        "fine": {
+          "class_id": 56,
+          "class_name": "headphones",
+          "cosine_similarity": 0.0803605392575264
+        }
+      }
+    },
+    {
+      "inst_id": 14,
+      "center": [
+        -1.341884732246399,
+        0.8937941193580627,
+        3.026301860809326
+      ],
+      "bbox_min": [
+        -2.1926069259643555,
+        0.6711374521255493,
+        1.5873724222183228
+      ],
+      "bbox_max": [
+        -0.8651081323623657,
+        1.339607834815979,
+        3.7444136142730713
+      ],
+      "bbox_volume_m3": 1.914144515991211,
+      "num_voxels": 4815,
+      "mean_objectness": 0.9577946042361325,
+      "first_seen": 0,
+      "last_seen": 392,
+      "count": 73,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.1316698044538498
+        },
+        "medium": {
+          "class_id": 7,
+          "class_name": "table",
+          "cosine_similarity": 0.1316697895526886
+        },
+        "fine": {
+          "class_id": 7,
+          "class_name": "table",
+          "cosine_similarity": 0.1316698044538498
+        }
+      }
+    },
+    {
+      "inst_id": 15,
+      "center": [
+        -0.1367613822221756,
+        0.11136112362146378,
+        8.75756549835205
+      ],
+      "bbox_min": [
+        -2.997807264328003,
+        -0.031937818974256516,
+        7.899989604949951
+      ],
+      "bbox_max": [
+        1.2289221286773682,
+        0.5017276406288147,
+        11.325517654418945
+      ],
+      "bbox_volume_m3": 7.72682523727417,
+      "num_voxels": 1769,
+      "mean_objectness": 0.8639258418554141,
+      "first_seen": 0,
+      "last_seen": 363,
+      "count": 81,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.09003591537475586
+        },
+        "medium": {
+          "class_id": 13,
+          "class_name": "desk",
+          "cosine_similarity": 0.09257570654153824
+        },
+        "fine": {
+          "class_id": 13,
+          "class_name": "desk",
+          "cosine_similarity": 0.09257569909095764
+        }
+      }
+    },
+    {
+      "inst_id": 16,
+      "center": [
+        -3.4970972537994385,
+        0.03364035487174988,
+        6.9373674392700195
+      ],
+      "bbox_min": [
+        -5.341176986694336,
+        -0.6103479266166687,
+        5.086526870727539
+      ],
+      "bbox_max": [
+        -2.483268976211548,
+        0.429615318775177,
+        9.680755615234375
+      ],
+      "bbox_volume_m3": 13.654596328735352,
+      "num_voxels": 3803,
+      "mean_objectness": 0.9424104250750496,
+      "first_seen": 0,
+      "last_seen": 371,
+      "count": 103,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 4,
+          "class_name": "window",
+          "cosine_similarity": 0.08534546196460724
+        },
+        "medium": {
+          "class_id": 22,
+          "class_name": "monitor",
+          "cosine_similarity": 0.15068519115447998
+        },
+        "fine": {
+          "class_id": 22,
+          "class_name": "monitor",
+          "cosine_similarity": 0.15068519115447998
+        }
+      }
+    },
+    {
+      "inst_id": 17,
+      "center": [
+        -2.77321195602417,
+        -0.19690537452697754,
+        11.285822868347168
+      ],
+      "bbox_min": [
+        -3.2458789348602295,
+        -0.9096189737319946,
+        10.581398010253906
+      ],
+      "bbox_max": [
+        1.554693341255188,
+        1.206104040145874,
+        12.066291809082031
+      ],
+      "bbox_volume_m3": 15.081594467163086,
+      "num_voxels": 4924,
+      "mean_objectness": 0.8999128019809723,
+      "first_seen": 0,
+      "last_seen": 365,
+      "count": 50,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 5,
+          "class_name": "cabinet",
+          "cosine_similarity": 0.0919763371348381
+        },
+        "medium": {
+          "class_id": 15,
+          "class_name": "refrigerator",
+          "cosine_similarity": 0.11620371788740158
+        },
+        "fine": {
+          "class_id": 15,
+          "class_name": "refrigerator",
+          "cosine_similarity": 0.11620371043682098
+        }
+      }
+    },
+    {
+      "inst_id": 18,
+      "center": [
+        0.2651243507862091,
+        -1.9048677682876587,
+        5.793857097625732
+      ],
+      "bbox_min": [
+        -6.6575775146484375,
+        -2.008009433746338,
+        -0.9648215770721436
+      ],
+      "bbox_max": [
+        3.608350992202759,
+        -1.6538801193237305,
+        11.981090545654297
+      ],
+      "bbox_volume_m3": 47.06442642211914,
+      "num_voxels": 38917,
+      "mean_objectness": 0.9611223827126205,
+      "first_seen": 0,
+      "last_seen": 402,
+      "count": 186,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.13344408571720123
+        },
+        "medium": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.13344407081604004
+        },
+        "fine": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.13344407081604004
+        }
+      }
+    },
+    {
+      "inst_id": 19,
+      "center": [
+        -1.307466983795166,
+        0.3801776170730591,
+        6.245570659637451
+      ],
+      "bbox_min": [
+        -2.516263008117676,
+        0.24022644758224487,
+        5.2945027351379395
+      ],
+      "bbox_max": [
+        -0.8003361225128174,
+        1.220070719718933,
+        8.016419410705566
+      ],
+      "bbox_volume_m3": 4.576470375061035,
+      "num_voxels": 1679,
+      "mean_objectness": 0.9109278614558871,
+      "first_seen": 0,
+      "last_seen": 374,
+      "count": 63,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.10541822016239166
+        },
+        "medium": {
+          "class_id": 7,
+          "class_name": "table",
+          "cosine_similarity": 0.10541821271181107
+        },
+        "fine": {
+          "class_id": 7,
+          "class_name": "table",
+          "cosine_similarity": 0.10541822016239166
+        }
+      }
+    },
+    {
+      "inst_id": 20,
+      "center": [
+        1.8650411367416382,
+        -1.8281620740890503,
+        7.850643157958984
+      ],
+      "bbox_min": [
+        0.6959143280982971,
+        -1.9766489267349243,
+        3.1785411834716797
+      ],
+      "bbox_max": [
+        2.7038376331329346,
+        -1.6044248342514038,
+        10.357048988342285
+      ],
+      "bbox_volume_m3": 5.365198135375977,
+      "num_voxels": 2031,
+      "mean_objectness": 0.9520417141914368,
+      "first_seen": 0,
+      "last_seen": 373,
+      "count": 75,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.10480252653360367
+        },
+        "medium": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.10480254143476486
+        },
+        "fine": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.10480254143476486
+        }
+      }
+    },
+    {
+      "inst_id": 21,
+      "center": [
+        2.5061614513397217,
+        -0.19623106718063354,
+        10.922422409057617
+      ],
+      "bbox_min": [
+        1.385516881942749,
+        -1.8696507215499878,
+        10.25252628326416
+      ],
+      "bbox_max": [
+        3.5921919345855713,
+        1.157393455505371,
+        11.307600975036621
+      ],
+      "bbox_volume_m3": 7.047585964202881,
+      "num_voxels": 18934,
+      "mean_objectness": 0.940255721861666,
+      "first_seen": 0,
+      "last_seen": 270,
+      "count": 132,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 3,
+          "class_name": "door",
+          "cosine_similarity": 0.13827182352542877
+        },
+        "medium": {
+          "class_id": 8,
+          "class_name": "door",
+          "cosine_similarity": 0.13827180862426758
+        },
+        "fine": {
+          "class_id": 8,
+          "class_name": "door",
+          "cosine_similarity": 0.13827183842658997
+        }
+      }
+    },
+    {
+      "inst_id": 22,
+      "center": [
+        -2.818032741546631,
+        -0.19115050137043,
+        4.130527019500732
+      ],
+      "bbox_min": [
+        -6.673930644989014,
+        -2.0667195320129395,
+        -1.1600587368011475
+      ],
+      "bbox_max": [
+        1.0119266510009766,
+        1.3639329671859741,
+        11.473743438720703
+      ],
+      "bbox_volume_m3": 333.1218566894531,
+      "num_voxels": 62199,
+      "mean_objectness": 0.9004095723402912,
+      "first_seen": 0,
+      "last_seen": 435,
+      "count": 232,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.11882692575454712
+        },
+        "medium": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.11882694065570831
+        },
+        "fine": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.11882693320512772
+        }
+      }
+    },
+    {
+      "inst_id": 23,
+      "center": [
+        -2.9739482402801514,
+        0.8851523399353027,
+        6.7598137855529785
+      ],
+      "bbox_min": [
+        -4.110073566436768,
+        -1.8726303577423096,
+        5.946077823638916
+      ],
+      "bbox_max": [
+        -1.0821937322616577,
+        1.2630630731582642,
+        11.244722366333008
+      ],
+      "bbox_volume_m3": 50.3079948425293,
+      "num_voxels": 1374,
+      "mean_objectness": 0.9047790415146771,
+      "first_seen": 0,
+      "last_seen": 366,
+      "count": 17,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.10790792107582092
+        },
+        "medium": {
+          "class_id": 7,
+          "class_name": "table",
+          "cosine_similarity": 0.10790792107582092
+        },
+        "fine": {
+          "class_id": 7,
+          "class_name": "table",
+          "cosine_similarity": 0.10790792107582092
+        }
+      }
+    },
+    {
+      "inst_id": 24,
+      "center": [
+        0.889045774936676,
+        -0.010888602584600449,
+        9.160406112670898
+      ],
+      "bbox_min": [
+        -0.1115616038441658,
+        -0.5136541724205017,
+        8.615723609924316
+      ],
+      "bbox_max": [
+        1.209734320640564,
+        0.32672929763793945,
+        10.5514554977417
+      ],
+      "bbox_volume_m3": 2.149427652359009,
+      "num_voxels": 948,
+      "mean_objectness": 0.8979773002286111,
+      "first_seen": 0,
+      "last_seen": 270,
+      "count": 93,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.07779589295387268
+        },
+        "medium": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.098497673869133
+        },
+        "fine": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.09849768877029419
+        }
+      }
+    },
+    {
+      "inst_id": 25,
+      "center": [
+        -0.8441420197486877,
+        0.28754401206970215,
+        8.902069091796875
+      ],
+      "bbox_min": [
+        -4.03369665145874,
+        -0.06788092106580734,
+        7.599175930023193
+      ],
+      "bbox_max": [
+        1.2525097131729126,
+        1.2359721660614014,
+        11.48244571685791
+      ],
+      "bbox_volume_m3": 26.765188217163086,
+      "num_voxels": 10677,
+      "mean_objectness": 0.8779078864532969,
+      "first_seen": 0,
+      "last_seen": 367,
+      "count": 138,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.12056984007358551
+        },
+        "medium": {
+          "class_id": 7,
+          "class_name": "table",
+          "cosine_similarity": 0.12056982517242432
+        },
+        "fine": {
+          "class_id": 7,
+          "class_name": "table",
+          "cosine_similarity": 0.12056982517242432
+        }
+      }
+    },
+    {
+      "inst_id": 26,
+      "center": [
+        -0.7344611287117004,
+        -1.8661878108978271,
+        4.3712158203125
+      ],
+      "bbox_min": [
+        -5.187606334686279,
+        -2.09812593460083,
+        0.1637093722820282
+      ],
+      "bbox_max": [
+        2.109675168991089,
+        -1.5008896589279175,
+        9.9053955078125
+      ],
+      "bbox_volume_m3": 42.45622634887695,
+      "num_voxels": 35749,
+      "mean_objectness": 0.9256660342216492,
+      "first_seen": 0,
+      "last_seen": 387,
+      "count": 124,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.13518135249614716
+        },
+        "medium": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.13518133759498596
+        },
+        "fine": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.13518132269382477
+        }
+      }
+    },
+    {
+      "inst_id": 27,
+      "center": [
+        3.2797622680664062,
+        0.7598440051078796,
+        10.278759002685547
+      ],
+      "bbox_min": [
+        2.9493095874786377,
+        0.4032801389694214,
+        9.774123191833496
+      ],
+      "bbox_max": [
+        3.606748342514038,
+        1.1544756889343262,
+        10.826475143432617
+      ],
+      "bbox_volume_m3": 0.5197198987007141,
+      "num_voxels": 2188,
+      "mean_objectness": 0.9032751229202863,
+      "first_seen": 0,
+      "last_seen": 110,
+      "count": 103,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 10,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.09650635719299316
+        },
+        "medium": {
+          "class_id": 28,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.09650632739067078
+        },
+        "fine": {
+          "class_id": 28,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.09650637209415436
+        }
+      }
+    },
+    {
+      "inst_id": 28,
+      "center": [
+        -3.343258857727051,
+        -1.6232784986495972,
+        7.534346580505371
+      ],
+      "bbox_min": [
+        -5.1919684410095215,
+        -1.9047590494155884,
+        4.728952884674072
+      ],
+      "bbox_max": [
+        -0.7851812839508057,
+        -1.4393024444580078,
+        11.758970260620117
+      ],
+      "bbox_volume_m3": 14.419746398925781,
+      "num_voxels": 1240,
+      "mean_objectness": 0.9619687795639038,
+      "first_seen": 0,
+      "last_seen": 166,
+      "count": 32,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.09874823689460754
+        },
+        "medium": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.09874825179576874
+        },
+        "fine": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.09874822944402695
+        }
+      }
+    },
+    {
+      "inst_id": 29,
+      "center": [
+        2.5993266105651855,
+        -1.5331377983093262,
+        10.844454765319824
+      ],
+      "bbox_min": [
+        0.2555100619792938,
+        -1.9982682466506958,
+        5.420488357543945
+      ],
+      "bbox_max": [
+        3.6628191471099854,
+        1.1184706687927246,
+        11.312776565551758
+      ],
+      "bbox_volume_m3": 62.574283599853516,
+      "num_voxels": 10570,
+      "mean_objectness": 0.9024914381680665,
+      "first_seen": 0,
+      "last_seen": 372,
+      "count": 108,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.11837759613990784
+        },
+        "medium": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.11837760359048843
+        },
+        "fine": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.11837759613990784
+        }
+      }
+    },
+    {
+      "inst_id": 30,
+      "center": [
+        -0.01919124275445938,
+        -0.7102418541908264,
+        10.869803428649902
+      ],
+      "bbox_min": [
+        -3.8421149253845215,
+        -1.9808963537216187,
+        9.690254211425781
+      ],
+      "bbox_max": [
+        2.612928628921509,
+        1.1768803596496582,
+        12.325220108032227
+      ],
+      "bbox_volume_m3": 53.71005630493164,
+      "num_voxels": 38065,
+      "mean_objectness": 0.9084698420634373,
+      "first_seen": 0,
+      "last_seen": 368,
+      "count": 139,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.11739275604486465
+        },
+        "medium": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.11739276349544525
+        },
+        "fine": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.11739274859428406
+        }
+      }
+    },
+    {
+      "inst_id": 31,
+      "center": [
+        -3.6695001125335693,
+        -0.441496342420578,
+        8.644928932189941
+      ],
+      "bbox_min": [
+        -5.270112991333008,
+        -1.9131107330322266,
+        1.7806131839752197
+      ],
+      "bbox_max": [
+        -1.7092703580856323,
+        0.48486289381980896,
+        11.688739776611328
+      ],
+      "bbox_volume_m3": 84.60356903076172,
+      "num_voxels": 8081,
+      "mean_objectness": 0.8863205446137322,
+      "first_seen": 0,
+      "last_seen": 365,
+      "count": 99,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 4,
+          "class_name": "window",
+          "cosine_similarity": 0.08652816712856293
+        },
+        "medium": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.10269790887832642
+        },
+        "fine": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.10269791632890701
+        }
+      }
+    },
+    {
+      "inst_id": 32,
+      "center": [
+        1.8956509828567505,
+        -0.4467916786670685,
+        4.6236724853515625
+      ],
+      "bbox_min": [
+        0.3363015651702881,
+        -1.9570032358169556,
+        -0.8662912845611572
+      ],
+      "bbox_max": [
+        3.6416666507720947,
+        1.2037616968154907,
+        10.67442798614502
+      ],
+      "bbox_volume_m3": 120.57145690917969,
+      "num_voxels": 56601,
+      "mean_objectness": 0.884331066191681,
+      "first_seen": 0,
+      "last_seen": 435,
+      "count": 246,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.10659265518188477
+        },
+        "medium": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.10659265518188477
+        },
+        "fine": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.10659265518188477
+        }
+      }
+    },
+    {
+      "inst_id": 33,
+      "center": [
+        -2.1547136306762695,
+        -0.1001206785440445,
+        8.564098358154297
+      ],
+      "bbox_min": [
+        -5.503730297088623,
+        -1.9679505825042725,
+        2.1514675617218018
+      ],
+      "bbox_max": [
+        3.5499911308288574,
+        1.2597429752349854,
+        11.706185340881348
+      ],
+      "bbox_volume_m3": 279.2140808105469,
+      "num_voxels": 3354,
+      "mean_objectness": 0.9236181689345319,
+      "first_seen": 0,
+      "last_seen": 396,
+      "count": 184,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 10,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.08501221984624863
+        },
+        "medium": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.09796862304210663
+        },
+        "fine": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.09796863794326782
+        }
+      }
+    },
+    {
+      "inst_id": 34,
+      "center": [
+        -1.3099370002746582,
+        -1.8701170682907104,
+        5.695522785186768
+      ],
+      "bbox_min": [
+        -6.36376428604126,
+        -2.1237523555755615,
+        -0.8582385778427124
+      ],
+      "bbox_max": [
+        3.440136194229126,
+        -1.4781471490859985,
+        11.94678783416748
+      ],
+      "bbox_volume_m3": 81.04875946044922,
+      "num_voxels": 50235,
+      "mean_objectness": 0.918790803937351,
+      "first_seen": 0,
+      "last_seen": 376,
+      "count": 170,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.13135045766830444
+        },
+        "medium": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.13135044276714325
+        },
+        "fine": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.13135044276714325
+        }
+      }
+    },
+    {
+      "inst_id": 35,
+      "center": [
+        0.8654571175575256,
+        0.1509833037853241,
+        1.6046044826507568
+      ],
+      "bbox_min": [
+        0.5094873309135437,
+        -0.3296802043914795,
+        -0.5519322752952576
+      ],
+      "bbox_max": [
+        1.2778061628341675,
+        0.777877926826477,
+        2.375670909881592
+      ],
+      "bbox_volume_m3": 2.4912667274475098,
+      "num_voxels": 880,
+      "mean_objectness": 0.8914434007696204,
+      "first_seen": 0,
+      "last_seen": 429,
+      "count": 111,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 10,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.08218686282634735
+        },
+        "medium": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.09349851310253143
+        },
+        "fine": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.09349851310253143
+        }
+      }
+    },
+    {
+      "inst_id": 36,
+      "center": [
+        -1.8529084920883179,
+        0.3323732018470764,
+        8.877730369567871
+      ],
+      "bbox_min": [
+        -3.785316228866577,
+        -1.9323400259017944,
+        6.3114705085754395
+      ],
+      "bbox_max": [
+        2.231217861175537,
+        1.187851905822754,
+        11.868467330932617
+      ],
+      "bbox_volume_m3": 104.32006072998047,
+      "num_voxels": 8643,
+      "mean_objectness": 0.8904061239456462,
+      "first_seen": 0,
+      "last_seen": 374,
+      "count": 107,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.11779804527759552
+        },
+        "medium": {
+          "class_id": 7,
+          "class_name": "table",
+          "cosine_similarity": 0.11779803782701492
+        },
+        "fine": {
+          "class_id": 7,
+          "class_name": "table",
+          "cosine_similarity": 0.11779805272817612
+        }
+      }
+    },
+    {
+      "inst_id": 37,
+      "center": [
+        -3.8595120906829834,
+        0.25368058681488037,
+        8.576470375061035
+      ],
+      "bbox_min": [
+        -5.163639545440674,
+        -0.007294363807886839,
+        5.6166558265686035
+      ],
+      "bbox_max": [
+        -1.5399024486541748,
+        0.7634668350219727,
+        10.39602279663086
+      ],
+      "bbox_volume_m3": 13.348943710327148,
+      "num_voxels": 1365,
+      "mean_objectness": 0.900125277846047,
+      "first_seen": 0,
+      "last_seen": 343,
+      "count": 89,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.08438112586736679
+        },
+        "medium": {
+          "class_id": 7,
+          "class_name": "table",
+          "cosine_similarity": 0.084381103515625
+        },
+        "fine": {
+          "class_id": 7,
+          "class_name": "table",
+          "cosine_similarity": 0.08438113331794739
+        }
+      }
+    },
+    {
+      "inst_id": 38,
+      "center": [
+        1.317652940750122,
+        0.42351776361465454,
+        2.8925836086273193
+      ],
+      "bbox_min": [
+        0.19159993529319763,
+        -2.0787572860717773,
+        -0.8564472198486328
+      ],
+      "bbox_max": [
+        2.4019017219543457,
+        1.263950228691101,
+        6.4311909675598145
+      ],
+      "bbox_volume_m3": 53.84393310546875,
+      "num_voxels": 7839,
+      "mean_objectness": 0.8914518971392449,
+      "first_seen": 0,
+      "last_seen": 425,
+      "count": 94,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 10,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.08744467794895172
+        },
+        "medium": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.09580157697200775
+        },
+        "fine": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.09580157697200775
+        }
+      }
+    },
+    {
+      "inst_id": 39,
+      "center": [
+        -3.8345251083374023,
+        0.13585132360458374,
+        9.68447208404541
+      ],
+      "bbox_min": [
+        -4.186039924621582,
+        -0.05739087611436844,
+        8.85155200958252
+      ],
+      "bbox_max": [
+        -3.492185354232788,
+        0.2536551058292389,
+        10.892156600952148
+      ],
+      "bbox_volume_m3": 0.44040465354919434,
+      "num_voxels": 607,
+      "mean_objectness": 0.9008089076905024,
+      "first_seen": 0,
+      "last_seen": 364,
+      "count": 63,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.06456314027309418
+        },
+        "medium": {
+          "class_id": 18,
+          "class_name": "sink",
+          "cosine_similarity": 0.0739976167678833
+        },
+        "fine": {
+          "class_id": 18,
+          "class_name": "sink",
+          "cosine_similarity": 0.0739976242184639
+        }
+      }
+    },
+    {
+      "inst_id": 40,
+      "center": [
+        -1.4921603202819824,
+        0.5150651335716248,
+        8.594730377197266
+      ],
+      "bbox_min": [
+        -4.835473537445068,
+        -0.18687155842781067,
+        6.534049987792969
+      ],
+      "bbox_max": [
+        1.540712833404541,
+        1.2700988054275513,
+        11.083817481994629
+      ],
+      "bbox_volume_m3": 42.26694869995117,
+      "num_voxels": 3237,
+      "mean_objectness": 0.8778089640433329,
+      "first_seen": 0,
+      "last_seen": 373,
+      "count": 114,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 10,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.10081633925437927
+        },
+        "medium": {
+          "class_id": 28,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.10081633180379868
+        },
+        "fine": {
+          "class_id": 28,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.10081634670495987
+        }
+      }
+    },
+    {
+      "inst_id": 41,
+      "center": [
+        -3.438223361968994,
+        0.40435537695884705,
+        6.57973575592041
+      ],
+      "bbox_min": [
+        -5.998116970062256,
+        0.03217635676264763,
+        2.163869857788086
+      ],
+      "bbox_max": [
+        0.4616543650627136,
+        1.2253401279449463,
+        10.300488471984863
+      ],
+      "bbox_volume_m3": 62.71351623535156,
+      "num_voxels": 6400,
+      "mean_objectness": 0.9070735424757004,
+      "first_seen": 0,
+      "last_seen": 409,
+      "count": 140,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 10,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.10565032809972763
+        },
+        "medium": {
+          "class_id": 28,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.10565032064914703
+        },
+        "fine": {
+          "class_id": 28,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.10565034300088882
+        }
+      }
+    },
+    {
+      "inst_id": 42,
+      "center": [
+        -0.03003731369972229,
+        0.56685471534729,
+        8.53139877319336
+      ],
+      "bbox_min": [
+        -2.2230143547058105,
+        0.08217928558588028,
+        7.427175998687744
+      ],
+      "bbox_max": [
+        0.9639555811882019,
+        1.2080484628677368,
+        9.273656845092773
+      ],
+      "bbox_volume_m3": 6.625378608703613,
+      "num_voxels": 8789,
+      "mean_objectness": 0.9212645663405364,
+      "first_seen": 0,
+      "last_seen": 367,
+      "count": 106,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.12390631437301636
+        },
+        "medium": {
+          "class_id": 13,
+          "class_name": "desk",
+          "cosine_similarity": 0.12723040580749512
+        },
+        "fine": {
+          "class_id": 13,
+          "class_name": "desk",
+          "cosine_similarity": 0.1272304207086563
+        }
+      }
+    },
+    {
+      "inst_id": 43,
+      "center": [
+        -2.974612236022949,
+        0.41272103786468506,
+        5.327276706695557
+      ],
+      "bbox_min": [
+        -4.029228210449219,
+        0.257723331451416,
+        2.393033981323242
+      ],
+      "bbox_max": [
+        -2.509816884994507,
+        1.2194589376449585,
+        7.046980857849121
+      ],
+      "bbox_volume_m3": 6.800682067871094,
+      "num_voxels": 2050,
+      "mean_objectness": 0.8842008957048741,
+      "first_seen": 0,
+      "last_seen": 372,
+      "count": 41,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 7,
+          "class_name": "chair",
+          "cosine_similarity": 0.1191415935754776
+        },
+        "medium": {
+          "class_id": 5,
+          "class_name": "chair",
+          "cosine_similarity": 0.1191416084766388
+        },
+        "fine": {
+          "class_id": 5,
+          "class_name": "chair",
+          "cosine_similarity": 0.11914161592721939
+        }
+      }
+    },
+    {
+      "inst_id": 44,
+      "center": [
+        0.1372242569923401,
+        0.7816816568374634,
+        8.815979957580566
+      ],
+      "bbox_min": [
+        -3.075502872467041,
+        0.1485903263092041,
+        5.584188461303711
+      ],
+      "bbox_max": [
+        3.145270586013794,
+        1.2383085489273071,
+        11.14212417602539
+      ],
+      "bbox_volume_m3": 37.676639556884766,
+      "num_voxels": 4900,
+      "mean_objectness": 0.9131033178418875,
+      "first_seen": 0,
+      "last_seen": 372,
+      "count": 128,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 10,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.100319504737854
+        },
+        "medium": {
+          "class_id": 28,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.100319504737854
+        },
+        "fine": {
+          "class_id": 28,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.1003195196390152
+        }
+      }
+    },
+    {
+      "inst_id": 45,
+      "center": [
+        -3.5457656383514404,
+        0.18500612676143646,
+        9.158799171447754
+      ],
+      "bbox_min": [
+        -4.112423419952393,
+        -0.04234709218144417,
+        6.673409938812256
+      ],
+      "bbox_max": [
+        -0.7051520347595215,
+        0.5860841274261475,
+        10.4456205368042
+      ],
+      "bbox_volume_m3": 8.077191352844238,
+      "num_voxels": 1161,
+      "mean_objectness": 0.9225995968764936,
+      "first_seen": 0,
+      "last_seen": 366,
+      "count": 71,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.06867776811122894
+        },
+        "medium": {
+          "class_id": 23,
+          "class_name": "microwave",
+          "cosine_similarity": 0.08139355480670929
+        },
+        "fine": {
+          "class_id": 23,
+          "class_name": "microwave",
+          "cosine_similarity": 0.0813935399055481
+        }
+      }
+    },
+    {
+      "inst_id": 46,
+      "center": [
+        2.2545313835144043,
+        0.026577509939670563,
+        6.0961995124816895
+      ],
+      "bbox_min": [
+        -1.6733829975128174,
+        -2.0232036113739014,
+        0.5158615112304688
+      ],
+      "bbox_max": [
+        3.640441417694092,
+        1.2122061252593994,
+        10.811676025390625
+      ],
+      "bbox_volume_m3": 177.009765625,
+      "num_voxels": 29255,
+      "mean_objectness": 0.9145739119090335,
+      "first_seen": 0,
+      "last_seen": 396,
+      "count": 191,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.11793357878923416
+        },
+        "medium": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.11793358623981476
+        },
+        "fine": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.11793359369039536
+        }
+      }
+    },
+    {
+      "inst_id": 47,
+      "center": [
+        -2.4311156272888184,
+        0.4355824291706085,
+        4.435708522796631
+      ],
+      "bbox_min": [
+        -6.590785503387451,
+        -0.1514652818441391,
+        0.7353272438049316
+      ],
+      "bbox_max": [
+        1.1325716972351074,
+        1.1983739137649536,
+        11.124324798583984
+      ],
+      "bbox_volume_m3": 108.30831909179688,
+      "num_voxels": 12520,
+      "mean_objectness": 0.8979504099994335,
+      "first_seen": 0,
+      "last_seen": 433,
+      "count": 212,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 10,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.11595186591148376
+        },
+        "medium": {
+          "class_id": 28,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.11595183610916138
+        },
+        "fine": {
+          "class_id": 28,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.11595186591148376
+        }
+      }
+    },
+    {
+      "inst_id": 48,
+      "center": [
+        -1.7843588590621948,
+        -0.054979357868433,
+        11.352800369262695
+      ],
+      "bbox_min": [
+        -2.8208696842193604,
+        -0.5660400390625,
+        8.639932632446289
+      ],
+      "bbox_max": [
+        0.28706273436546326,
+        0.2252558320760727,
+        12.299857139587402
+      ],
+      "bbox_volume_m3": 9.00083065032959,
+      "num_voxels": 3815,
+      "mean_objectness": 0.9324500714578936,
+      "first_seen": 1,
+      "last_seen": 366,
+      "count": 62,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 4,
+          "class_name": "window",
+          "cosine_similarity": 0.07341663539409637
+        },
+        "medium": {
+          "class_id": 23,
+          "class_name": "microwave",
+          "cosine_similarity": 0.09957270324230194
+        },
+        "fine": {
+          "class_id": 23,
+          "class_name": "microwave",
+          "cosine_similarity": 0.09957267343997955
+        }
+      }
+    },
+    {
+      "inst_id": 49,
+      "center": [
+        -3.7344918251037598,
+        -0.6269374489784241,
+        9.567211151123047
+      ],
+      "bbox_min": [
+        -4.689634323120117,
+        -1.9104702472686768,
+        7.232921123504639
+      ],
+      "bbox_max": [
+        -2.3567025661468506,
+        1.2615389823913574,
+        12.230104446411133
+      ],
+      "bbox_volume_m3": 36.97956085205078,
+      "num_voxels": 18365,
+      "mean_objectness": 0.8983498588956967,
+      "first_seen": 1,
+      "last_seen": 365,
+      "count": 99,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 5,
+          "class_name": "cabinet",
+          "cosine_similarity": 0.11728477478027344
+        },
+        "medium": {
+          "class_id": 12,
+          "class_name": "counter",
+          "cosine_similarity": 0.12101772427558899
+        },
+        "fine": {
+          "class_id": 12,
+          "class_name": "counter",
+          "cosine_similarity": 0.1210177019238472
+        }
+      }
+    },
+    {
+      "inst_id": 50,
+      "center": [
+        -0.3558267652988434,
+        0.007079660892486572,
+        9.39183521270752
+      ],
+      "bbox_min": [
+        -1.101485013961792,
+        -0.15260107815265656,
+        8.65620231628418
+      ],
+      "bbox_max": [
+        1.1642082929611206,
+        0.2335519790649414,
+        10.669737815856934
+      ],
+      "bbox_volume_m3": 1.7616509199142456,
+      "num_voxels": 1998,
+      "mean_objectness": 0.9360382167829407,
+      "first_seen": 1,
+      "last_seen": 228,
+      "count": 72,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.06766039878129959
+        },
+        "medium": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.0859907865524292
+        },
+        "fine": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.0859907940030098
+        }
+      }
+    },
+    {
+      "inst_id": 51,
+      "center": [
+        -3.612316608428955,
+        0.49362319707870483,
+        6.6075029373168945
+      ],
+      "bbox_min": [
+        -5.009867191314697,
+        0.2339557558298111,
+        5.55856466293335
+      ],
+      "bbox_max": [
+        -1.7595155239105225,
+        1.2381134033203125,
+        7.575749397277832
+      ],
+      "bbox_volume_m3": 6.583819389343262,
+      "num_voxels": 2484,
+      "mean_objectness": 0.8898967422937092,
+      "first_seen": 1,
+      "last_seen": 372,
+      "count": 95,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.0999271348118782
+        },
+        "medium": {
+          "class_id": 13,
+          "class_name": "desk",
+          "cosine_similarity": 0.1165393814444542
+        },
+        "fine": {
+          "class_id": 13,
+          "class_name": "desk",
+          "cosine_similarity": 0.1165393814444542
+        }
+      }
+    },
+    {
+      "inst_id": 52,
+      "center": [
+        1.6557072401046753,
+        -0.11605755984783173,
+        10.87495231628418
+      ],
+      "bbox_min": [
+        0.6962921023368835,
+        -1.9495128393173218,
+        10.279143333435059
+      ],
+      "bbox_max": [
+        3.597166061401367,
+        1.1512298583984375,
+        11.26432991027832
+      ],
+      "bbox_volume_m3": 8.861618995666504,
+      "num_voxels": 3424,
+      "mean_objectness": 0.8217387357178856,
+      "first_seen": 1,
+      "last_seen": 222,
+      "count": 34,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 3,
+          "class_name": "door",
+          "cosine_similarity": 0.11868707835674286
+        },
+        "medium": {
+          "class_id": 8,
+          "class_name": "door",
+          "cosine_similarity": 0.11868707835674286
+        },
+        "fine": {
+          "class_id": 8,
+          "class_name": "door",
+          "cosine_similarity": 0.11868710815906525
+        }
+      }
+    },
+    {
+      "inst_id": 53,
+      "center": [
+        -3.0682499408721924,
+        0.1227235421538353,
+        7.848394870758057
+      ],
+      "bbox_min": [
+        -5.7738447189331055,
+        -1.8490642309188843,
+        3.692108154296875
+      ],
+      "bbox_max": [
+        3.068239688873291,
+        1.2614895105361938,
+        12.147911071777344
+      ],
+      "bbox_volume_m3": 232.56654357910156,
+      "num_voxels": 8986,
+      "mean_objectness": 0.8761922053042674,
+      "first_seen": 1,
+      "last_seen": 368,
+      "count": 149,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 10,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.10715595632791519
+        },
+        "medium": {
+          "class_id": 28,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.107155941426754
+        },
+        "fine": {
+          "class_id": 28,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.1071559488773346
+        }
+      }
+    },
+    {
+      "inst_id": 54,
+      "center": [
+        2.2612671852111816,
+        -1.8465120792388916,
+        9.054948806762695
+      ],
+      "bbox_min": [
+        1.554376244544983,
+        -1.9939875602722168,
+        6.745720863342285
+      ],
+      "bbox_max": [
+        3.068194627761841,
+        -1.6214985847473145,
+        10.430058479309082
+      ],
+      "bbox_volume_m3": 2.077526807785034,
+      "num_voxels": 1042,
+      "mean_objectness": 0.9180856744448344,
+      "first_seen": 2,
+      "last_seen": 373,
+      "count": 30,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.10581795871257782
+        },
+        "medium": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.10581798851490021
+        },
+        "fine": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.10581797361373901
+        }
+      }
+    },
+    {
+      "inst_id": 55,
+      "center": [
+        -3.479926347732544,
+        -0.30205172300338745,
+        10.495041847229004
+      ],
+      "bbox_min": [
+        -3.8546323776245117,
+        -1.8818583488464355,
+        9.628002166748047
+      ],
+      "bbox_max": [
+        -1.7667536735534668,
+        0.26281753182411194,
+        11.552658081054688
+      ],
+      "bbox_volume_m3": 8.618268966674805,
+      "num_voxels": 808,
+      "mean_objectness": 0.8944943274481821,
+      "first_seen": 2,
+      "last_seen": 366,
+      "count": 59,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.06968771666288376
+        },
+        "medium": {
+          "class_id": 18,
+          "class_name": "sink",
+          "cosine_similarity": 0.08876074850559235
+        },
+        "fine": {
+          "class_id": 18,
+          "class_name": "sink",
+          "cosine_similarity": 0.08876074850559235
+        }
+      }
+    },
+    {
+      "inst_id": 56,
+      "center": [
+        -0.8328571915626526,
+        0.005817194934934378,
+        9.234045028686523
+      ],
+      "bbox_min": [
+        -1.4410853385925293,
+        -0.1281636655330658,
+        8.700531005859375
+      ],
+      "bbox_max": [
+        -0.2084222435951233,
+        0.17858253419399261,
+        10.493375778198242
+      ],
+      "bbox_volume_m3": 0.677901029586792,
+      "num_voxels": 1294,
+      "mean_objectness": 0.9375844235513725,
+      "first_seen": 2,
+      "last_seen": 227,
+      "count": 51,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.06343838572502136
+        },
+        "medium": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.08108730614185333
+        },
+        "fine": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.08108729124069214
+        }
+      }
+    },
+    {
+      "inst_id": 57,
+      "center": [
+        -1.3809014558792114,
+        0.7059223055839539,
+        3.3449959754943848
+      ],
+      "bbox_min": [
+        -2.0635619163513184,
+        0.367031455039978,
+        2.053532361984253
+      ],
+      "bbox_max": [
+        -1.142317771911621,
+        0.9229987859725952,
+        5.634035110473633
+      ],
+      "bbox_volume_m3": 1.8338677883148193,
+      "num_voxels": 767,
+      "mean_objectness": 0.9453309117883876,
+      "first_seen": 2,
+      "last_seen": 389,
+      "count": 69,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.08889228105545044
+        },
+        "medium": {
+          "class_id": 7,
+          "class_name": "table",
+          "cosine_similarity": 0.08889228105545044
+        },
+        "fine": {
+          "class_id": 7,
+          "class_name": "table",
+          "cosine_similarity": 0.08889229595661163
+        }
+      }
+    },
+    {
+      "inst_id": 58,
+      "center": [
+        2.079899549484253,
+        -1.5996191501617432,
+        5.219475746154785
+      ],
+      "bbox_min": [
+        1.8152897357940674,
+        -1.9316827058792114,
+        4.822986125946045
+      ],
+      "bbox_max": [
+        2.224672555923462,
+        -1.4196758270263672,
+        5.90262508392334
+      ],
+      "bbox_volume_m3": 0.2262996882200241,
+      "num_voxels": 152,
+      "mean_objectness": 0.8443421572446823,
+      "first_seen": 2,
+      "last_seen": 19,
+      "count": 4,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.10958576202392578
+        },
+        "medium": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.10958577692508698
+        },
+        "fine": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.10958576202392578
+        }
+      }
+    },
+    {
+      "inst_id": 59,
+      "center": [
+        -0.30223023891448975,
+        -1.9457805156707764,
+        8.380289077758789
+      ],
+      "bbox_min": [
+        -3.1885316371917725,
+        -1.9958189725875854,
+        5.652899742126465
+      ],
+      "bbox_max": [
+        1.3955856561660767,
+        -1.8800933361053467,
+        10.073874473571777
+      ],
+      "bbox_volume_m3": 2.3453266620635986,
+      "num_voxels": 11203,
+      "mean_objectness": 0.9150001799806635,
+      "first_seen": 2,
+      "last_seen": 49,
+      "count": 47,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.1319880187511444
+        },
+        "medium": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.1319880187511444
+        },
+        "fine": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.13198800384998322
+        }
+      }
+    },
+    {
+      "inst_id": 60,
+      "center": [
+        -2.605787992477417,
+        -0.12357324361801147,
+        11.749384880065918
+      ],
+      "bbox_min": [
+        -2.8085265159606934,
+        -0.6633774638175964,
+        11.116558074951172
+      ],
+      "bbox_max": [
+        -2.205963373184204,
+        0.21350432932376862,
+        12.127790451049805
+      ],
+      "bbox_volume_m3": 0.5343115925788879,
+      "num_voxels": 841,
+      "mean_objectness": 0.8675880581140518,
+      "first_seen": 2,
+      "last_seen": 365,
+      "count": 16,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 10,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.07315830141305923
+        },
+        "medium": {
+          "class_id": 12,
+          "class_name": "counter",
+          "cosine_similarity": 0.09454825520515442
+        },
+        "fine": {
+          "class_id": 12,
+          "class_name": "counter",
+          "cosine_similarity": 0.09454824030399323
+        }
+      }
+    },
+    {
+      "inst_id": 61,
+      "center": [
+        0.6215395927429199,
+        0.0714053213596344,
+        8.394124984741211
+      ],
+      "bbox_min": [
+        0.3338776230812073,
+        -0.06462830305099487,
+        8.064107894897461
+      ],
+      "bbox_max": [
+        3.4400250911712646,
+        0.5437594652175903,
+        10.643919944763184
+      ],
+      "bbox_volume_m3": 4.875179767608643,
+      "num_voxels": 562,
+      "mean_objectness": 0.8956117792563005,
+      "first_seen": 3,
+      "last_seen": 365,
+      "count": 88,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.07273568212985992
+        },
+        "medium": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.07881417870521545
+        },
+        "fine": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.07881416380405426
+        }
+      }
+    },
+    {
+      "inst_id": 62,
+      "center": [
+        1.3874986171722412,
+        0.670780599117279,
+        9.264245986938477
+      ],
+      "bbox_min": [
+        0.4504496455192566,
+        0.05345767363905907,
+        8.326345443725586
+      ],
+      "bbox_max": [
+        3.190570592880249,
+        1.1477981805801392,
+        10.597464561462402
+      ],
+      "bbox_volume_m3": 6.810235500335693,
+      "num_voxels": 563,
+      "mean_objectness": 0.8379017975595262,
+      "first_seen": 3,
+      "last_seen": 366,
+      "count": 9,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.09992286562919617
+        },
+        "medium": {
+          "class_id": 7,
+          "class_name": "table",
+          "cosine_similarity": 0.09992284327745438
+        },
+        "fine": {
+          "class_id": 7,
+          "class_name": "table",
+          "cosine_similarity": 0.09992285817861557
+        }
+      }
+    },
+    {
+      "inst_id": 63,
+      "center": [
+        1.719139575958252,
+        0.8141146302223206,
+        4.53505802154541
+      ],
+      "bbox_min": [
+        -1.2524526119232178,
+        -1.5456410646438599,
+        0.8951079845428467
+      ],
+      "bbox_max": [
+        3.5688154697418213,
+        1.3208948373794556,
+        11.214014053344727
+      ],
+      "bbox_volume_m3": 142.6107635498047,
+      "num_voxels": 11055,
+      "mean_objectness": 0.9392176053740762,
+      "first_seen": 4,
+      "last_seen": 433,
+      "count": 198,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 10,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.09354279935359955
+        },
+        "medium": {
+          "class_id": 27,
+          "class_name": "trash can",
+          "cosine_similarity": 0.1064096987247467
+        },
+        "fine": {
+          "class_id": 27,
+          "class_name": "trash can",
+          "cosine_similarity": 0.1064096987247467
+        }
+      }
+    },
+    {
+      "inst_id": 64,
+      "center": [
+        1.4859224557876587,
+        0.32297107577323914,
+        3.1787846088409424
+      ],
+      "bbox_min": [
+        -0.22929829359054565,
+        -1.9526270627975464,
+        -1.0704472064971924
+      ],
+      "bbox_max": [
+        3.1925606727600098,
+        1.3047322034835815,
+        9.54515552520752
+      ],
+      "bbox_volume_m3": 118.32388305664062,
+      "num_voxels": 36019,
+      "mean_objectness": 0.9155769545142933,
+      "first_seen": 4,
+      "last_seen": 425,
+      "count": 118,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.11746100336313248
+        },
+        "medium": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.11746100336313248
+        },
+        "fine": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.11746100336313248
+        }
+      }
+    },
+    {
+      "inst_id": 65,
+      "center": [
+        -3.157618522644043,
+        0.17870521545410156,
+        9.545748710632324
+      ],
+      "bbox_min": [
+        -4.0340046882629395,
+        -0.13230417668819427,
+        8.284425735473633
+      ],
+      "bbox_max": [
+        -0.6934532523155212,
+        0.4809551537036896,
+        11.939645767211914
+      ],
+      "bbox_volume_m3": 7.48817253112793,
+      "num_voxels": 1654,
+      "mean_objectness": 0.8706085419654847,
+      "first_seen": 5,
+      "last_seen": 365,
+      "count": 75,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.08665339648723602
+        },
+        "medium": {
+          "class_id": 12,
+          "class_name": "counter",
+          "cosine_similarity": 0.09279180318117142
+        },
+        "fine": {
+          "class_id": 12,
+          "class_name": "counter",
+          "cosine_similarity": 0.09279178082942963
+        }
+      }
+    },
+    {
+      "inst_id": 66,
+      "center": [
+        -0.2987363934516907,
+        -1.7641751766204834,
+        10.284114837646484
+      ],
+      "bbox_min": [
+        -2.319263219833374,
+        -1.9601402282714844,
+        8.729829788208008
+      ],
+      "bbox_max": [
+        3.3860535621643066,
+        -0.4682653248310089,
+        11.784185409545898
+      ],
+      "bbox_volume_m3": 25.99751091003418,
+      "num_voxels": 1089,
+      "mean_objectness": 0.9486083609717233,
+      "first_seen": 6,
+      "last_seen": 370,
+      "count": 35,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.09337269514799118
+        },
+        "medium": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.09337268769741058
+        },
+        "fine": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.09337268769741058
+        }
+      }
+    },
+    {
+      "inst_id": 67,
+      "center": [
+        0.05970434471964836,
+        0.004774656146764755,
+        9.056791305541992
+      ],
+      "bbox_min": [
+        -0.6483128070831299,
+        -0.6009680032730103,
+        8.443694114685059
+      ],
+      "bbox_max": [
+        0.5428032875061035,
+        0.17727914452552795,
+        10.806493759155273
+      ],
+      "bbox_volume_m3": 2.190274238586426,
+      "num_voxels": 949,
+      "mean_objectness": 0.8434400918583075,
+      "first_seen": 7,
+      "last_seen": 270,
+      "count": 48,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 4,
+          "class_name": "window",
+          "cosine_similarity": 0.06943497061729431
+        },
+        "medium": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.08654412627220154
+        },
+        "fine": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.08654411137104034
+        }
+      }
+    },
+    {
+      "inst_id": 68,
+      "center": [
+        0.7634979486465454,
+        0.6218883991241455,
+        1.5986183881759644
+      ],
+      "bbox_min": [
+        -1.524888277053833,
+        0.0657450407743454,
+        0.6754453182220459
+      ],
+      "bbox_max": [
+        1.9035453796386719,
+        1.3293700218200684,
+        5.562697410583496
+      ],
+      "bbox_volume_m3": 21.172819137573242,
+      "num_voxels": 5039,
+      "mean_objectness": 0.9543665559031069,
+      "first_seen": 8,
+      "last_seen": 435,
+      "count": 128,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 5,
+          "class_name": "cabinet",
+          "cosine_similarity": 0.11886708438396454
+        },
+        "medium": {
+          "class_id": 10,
+          "class_name": "bookshelf",
+          "cosine_similarity": 0.1193934828042984
+        },
+        "fine": {
+          "class_id": 10,
+          "class_name": "bookshelf",
+          "cosine_similarity": 0.119393490254879
+        }
+      }
+    },
+    {
+      "inst_id": 69,
+      "center": [
+        -2.00433611869812,
+        0.4282425045967102,
+        6.544328212738037
+      ],
+      "bbox_min": [
+        -4.774669170379639,
+        -1.1957141160964966,
+        1.0545445680618286
+      ],
+      "bbox_max": [
+        2.6209468841552734,
+        1.270896553993225,
+        11.631586074829102
+      ],
+      "bbox_volume_m3": 192.947509765625,
+      "num_voxels": 9291,
+      "mean_objectness": 0.8904044582293584,
+      "first_seen": 12,
+      "last_seen": 433,
+      "count": 182,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 10,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.10242414474487305
+        },
+        "medium": {
+          "class_id": 21,
+          "class_name": "tv",
+          "cosine_similarity": 0.10933854430913925
+        },
+        "fine": {
+          "class_id": 21,
+          "class_name": "tv",
+          "cosine_similarity": 0.10933852195739746
+        }
+      }
+    },
+    {
+      "inst_id": 70,
+      "center": [
+        -2.0104711055755615,
+        -0.3695679008960724,
+        11.942704200744629
+      ],
+      "bbox_min": [
+        -2.920396327972412,
+        -1.422473669052124,
+        10.670345306396484
+      ],
+      "bbox_max": [
+        -1.0474791526794434,
+        0.23171564936637878,
+        12.382345199584961
+      ],
+      "bbox_volume_m3": 5.304049015045166,
+      "num_voxels": 2900,
+      "mean_objectness": 0.8319650830761078,
+      "first_seen": 19,
+      "last_seen": 366,
+      "count": 31,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.10020297765731812
+        },
+        "medium": {
+          "class_id": 12,
+          "class_name": "counter",
+          "cosine_similarity": 0.12004560977220535
+        },
+        "fine": {
+          "class_id": 12,
+          "class_name": "counter",
+          "cosine_similarity": 0.12004557996988297
+        }
+      }
+    },
+    {
+      "inst_id": 71,
+      "center": [
+        2.765108346939087,
+        0.5571873784065247,
+        10.89285945892334
+      ],
+      "bbox_min": [
+        2.5141894817352295,
+        -1.2122018337249756,
+        10.666571617126465
+      ],
+      "bbox_max": [
+        3.5138185024261475,
+        1.1240257024765015,
+        11.002824783325195
+      ],
+      "bbox_volume_m3": 0.785272479057312,
+      "num_voxels": 1643,
+      "mean_objectness": 0.8861928105354309,
+      "first_seen": 21,
+      "last_seen": 93,
+      "count": 5,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 3,
+          "class_name": "door",
+          "cosine_similarity": 0.1364729255437851
+        },
+        "medium": {
+          "class_id": 8,
+          "class_name": "door",
+          "cosine_similarity": 0.1364729404449463
+        },
+        "fine": {
+          "class_id": 8,
+          "class_name": "door",
+          "cosine_similarity": 0.13647295534610748
+        }
+      }
+    },
+    {
+      "inst_id": 72,
+      "center": [
+        3.22745943069458,
+        0.5181677341461182,
+        10.228256225585938
+      ],
+      "bbox_min": [
+        3.0213589668273926,
+        0.41392144560813904,
+        9.913102149963379
+      ],
+      "bbox_max": [
+        3.523648500442505,
+        1.1208889484405518,
+        10.694320678710938
+      ],
+      "bbox_volume_m3": 0.2774125337600708,
+      "num_voxels": 535,
+      "mean_objectness": 0.8775489003427567,
+      "first_seen": 27,
+      "last_seen": 100,
+      "count": 31,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 10,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.07782687991857529
+        },
+        "medium": {
+          "class_id": 28,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.07782687246799469
+        },
+        "fine": {
+          "class_id": 28,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.07782687991857529
+        }
+      }
+    },
+    {
+      "inst_id": 73,
+      "center": [
+        -4.260279178619385,
+        0.31590399146080017,
+        5.7971014976501465
+      ],
+      "bbox_min": [
+        -5.939230918884277,
+        -1.8469798564910889,
+        0.5797181129455566
+      ],
+      "bbox_max": [
+        -2.1853342056274414,
+        1.1047542095184326,
+        7.345306396484375
+      ],
+      "bbox_volume_m3": 74.96613311767578,
+      "num_voxels": 2482,
+      "mean_objectness": 0.9092708385907686,
+      "first_seen": 122,
+      "last_seen": 367,
+      "count": 65,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.11329591274261475
+        },
+        "medium": {
+          "class_id": 13,
+          "class_name": "desk",
+          "cosine_similarity": 0.12495626509189606
+        },
+        "fine": {
+          "class_id": 13,
+          "class_name": "desk",
+          "cosine_similarity": 0.12495625764131546
+        }
+      }
+    },
+    {
+      "inst_id": 74,
+      "center": [
+        -2.4891796112060547,
+        -1.8152087926864624,
+        2.3281655311584473
+      ],
+      "bbox_min": [
+        -6.380201816558838,
+        -2.0704472064971924,
+        -0.5314574241638184
+      ],
+      "bbox_max": [
+        0.5718293786048889,
+        -1.5516631603240967,
+        7.639376640319824
+      ],
+      "bbox_volume_m3": 29.468952178955078,
+      "num_voxels": 7787,
+      "mean_objectness": 0.9107375807232327,
+      "first_seen": 123,
+      "last_seen": 385,
+      "count": 63,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.12113871425390244
+        },
+        "medium": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.12113871425390244
+        },
+        "fine": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.12113871425390244
+        }
+      }
+    },
+    {
+      "inst_id": 75,
+      "center": [
+        -5.082311630249023,
+        -1.7587907314300537,
+        2.941094398498535
+      ],
+      "bbox_min": [
+        -6.140559673309326,
+        -1.9232211112976074,
+        1.244537591934204
+      ],
+      "bbox_max": [
+        -3.5170061588287354,
+        -1.5322402715682983,
+        7.444235801696777
+      ],
+      "bbox_volume_m3": 6.359396934509277,
+      "num_voxels": 2392,
+      "mean_objectness": 0.9184498816001706,
+      "first_seen": 124,
+      "last_seen": 324,
+      "count": 41,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.1074538454413414
+        },
+        "medium": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.107453852891922
+        },
+        "fine": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.1074538454413414
+        }
+      }
+    },
+    {
+      "inst_id": 77,
+      "center": [
+        -2.523214340209961,
+        0.012125484645366669,
+        0.5538908839225769
+      ],
+      "bbox_min": [
+        -6.680952072143555,
+        -1.9408596754074097,
+        -0.8424819111824036
+      ],
+      "bbox_max": [
+        0.8057698607444763,
+        1.2814937829971313,
+        1.4236482381820679
+      ],
+      "bbox_volume_m3": 54.67008590698242,
+      "num_voxels": 27716,
+      "mean_objectness": 0.8912442446959139,
+      "first_seen": 125,
+      "last_seen": 431,
+      "count": 99,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.10296761989593506
+        },
+        "medium": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.10296761989593506
+        },
+        "fine": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.10296762734651566
+        }
+      }
+    },
+    {
+      "inst_id": 78,
+      "center": [
+        -0.19524544477462769,
+        0.642435610294342,
+        1.3356717824935913
+      ],
+      "bbox_min": [
+        -3.7013602256774902,
+        0.10877632349729538,
+        0.206629678606987
+      ],
+      "bbox_max": [
+        1.12431001663208,
+        1.038075566291809,
+        2.0052080154418945
+      ],
+      "bbox_volume_m3": 8.065710067749023,
+      "num_voxels": 1047,
+      "mean_objectness": 0.9069514165704067,
+      "first_seen": 126,
+      "last_seen": 421,
+      "count": 104,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 10,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.10006684064865112
+        },
+        "medium": {
+          "class_id": 10,
+          "class_name": "bookshelf",
+          "cosine_similarity": 0.10276177525520325
+        },
+        "fine": {
+          "class_id": 10,
+          "class_name": "bookshelf",
+          "cosine_similarity": 0.10276177525520325
+        }
+      }
+    },
+    {
+      "inst_id": 79,
+      "center": [
+        -2.1160755157470703,
+        0.7191547751426697,
+        1.508685827255249
+      ],
+      "bbox_min": [
+        -3.791311502456665,
+        0.13566561043262482,
+        -0.007292032241821289
+      ],
+      "bbox_max": [
+        -0.5719095468521118,
+        1.2238085269927979,
+        3.051563262939453
+      ],
+      "bbox_volume_m3": 10.715686798095703,
+      "num_voxels": 11501,
+      "mean_objectness": 0.9354210256076441,
+      "first_seen": 126,
+      "last_seen": 416,
+      "count": 82,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 8,
+          "class_name": "sofa",
+          "cosine_similarity": 0.11672749370336533
+        },
+        "medium": {
+          "class_id": 6,
+          "class_name": "sofa",
+          "cosine_similarity": 0.11672750115394592
+        },
+        "fine": {
+          "class_id": 6,
+          "class_name": "sofa",
+          "cosine_similarity": 0.11672747880220413
+        }
+      }
+    },
+    {
+      "inst_id": 80,
+      "center": [
+        -1.267604112625122,
+        -0.45306891202926636,
+        -0.47767093777656555
+      ],
+      "bbox_min": [
+        -2.9402968883514404,
+        -1.653833031654358,
+        -1.0183055400848389
+      ],
+      "bbox_max": [
+        -0.15596017241477966,
+        0.48939821124076843,
+        0.23418569564819336
+      ],
+      "bbox_volume_m3": 7.474213123321533,
+      "num_voxels": 17296,
+      "mean_objectness": 0.8395714011457232,
+      "first_seen": 126,
+      "last_seen": 435,
+      "count": 90,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 4,
+          "class_name": "window",
+          "cosine_similarity": 0.1414019763469696
+        },
+        "medium": {
+          "class_id": 9,
+          "class_name": "window",
+          "cosine_similarity": 0.14140194654464722
+        },
+        "fine": {
+          "class_id": 9,
+          "class_name": "window",
+          "cosine_similarity": 0.1414019614458084
+        }
+      }
+    },
+    {
+      "inst_id": 81,
+      "center": [
+        -1.306736946105957,
+        -1.6648929119110107,
+        -0.11453092843294144
+      ],
+      "bbox_min": [
+        -4.794962406158447,
+        -2.119743585586548,
+        -1.0644142627716064
+      ],
+      "bbox_max": [
+        0.7945603728294373,
+        -1.1742273569107056,
+        1.3592150211334229
+      ],
+      "bbox_volume_m3": 12.808843612670898,
+      "num_voxels": 6765,
+      "mean_objectness": 0.8520593694278172,
+      "first_seen": 126,
+      "last_seen": 416,
+      "count": 70,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.11957751959562302
+        },
+        "medium": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.11957754194736481
+        },
+        "fine": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.11957752704620361
+        }
+      }
+    },
+    {
+      "inst_id": 82,
+      "center": [
+        -1.114340901374817,
+        0.7981929779052734,
+        1.5527865886688232
+      ],
+      "bbox_min": [
+        -3.108959436416626,
+        0.28418055176734924,
+        -0.04425525665283203
+      ],
+      "bbox_max": [
+        -0.5442753434181213,
+        1.3564168214797974,
+        2.7364490032196045
+      ],
+      "bbox_volume_m3": 7.646790981292725,
+      "num_voxels": 7168,
+      "mean_objectness": 0.9470532073619518,
+      "first_seen": 127,
+      "last_seen": 419,
+      "count": 94,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 8,
+          "class_name": "sofa",
+          "cosine_similarity": 0.10806301236152649
+        },
+        "medium": {
+          "class_id": 6,
+          "class_name": "sofa",
+          "cosine_similarity": 0.10806304216384888
+        },
+        "fine": {
+          "class_id": 6,
+          "class_name": "sofa",
+          "cosine_similarity": 0.10806301236152649
+        }
+      }
+    },
+    {
+      "inst_id": 83,
+      "center": [
+        0.03633828088641167,
+        -1.722985029220581,
+        1.1844456195831299
+      ],
+      "bbox_min": [
+        -0.46786415576934814,
+        -2.1031510829925537,
+        -0.6185524463653564
+      ],
+      "bbox_max": [
+        1.0665249824523926,
+        0.19353029131889343,
+        2.7553341388702393
+      ],
+      "bbox_volume_m3": 11.889586448669434,
+      "num_voxels": 1933,
+      "mean_objectness": 0.9427386515362318,
+      "first_seen": 127,
+      "last_seen": 395,
+      "count": 86,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.09346502274274826
+        },
+        "medium": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.09346502274274826
+        },
+        "fine": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.09346502274274826
+        }
+      }
+    },
+    {
+      "inst_id": 84,
+      "center": [
+        0.4076724648475647,
+        -1.8237048387527466,
+        2.6338753700256348
+      ],
+      "bbox_min": [
+        -0.0653836727142334,
+        -1.989473581314087,
+        -0.07485318183898926
+      ],
+      "bbox_max": [
+        0.718852698802948,
+        -1.6294883489608765,
+        3.736769437789917
+      ],
+      "bbox_volume_m3": 1.0760725736618042,
+      "num_voxels": 416,
+      "mean_objectness": 0.8959991606799039,
+      "first_seen": 127,
+      "last_seen": 249,
+      "count": 11,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.1048893928527832
+        },
+        "medium": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.10488937795162201
+        },
+        "fine": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.10488936305046082
+        }
+      }
+    },
+    {
+      "inst_id": 85,
+      "center": [
+        -1.5360065698623657,
+        0.6271605491638184,
+        2.242637872695923
+      ],
+      "bbox_min": [
+        -2.653756618499756,
+        0.1735084503889084,
+        0.4291872978210449
+      ],
+      "bbox_max": [
+        0.7599968910217285,
+        1.1866745948791504,
+        6.381340026855469
+      ],
+      "bbox_volume_m3": 20.586708068847656,
+      "num_voxels": 1969,
+      "mean_objectness": 0.9126734830000821,
+      "first_seen": 127,
+      "last_seen": 417,
+      "count": 68,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.13069620728492737
+        },
+        "medium": {
+          "class_id": 7,
+          "class_name": "table",
+          "cosine_similarity": 0.13069620728492737
+        },
+        "fine": {
+          "class_id": 7,
+          "class_name": "table",
+          "cosine_similarity": 0.13069620728492737
+        }
+      }
+    },
+    {
+      "inst_id": 86,
+      "center": [
+        0.503045380115509,
+        -1.809372901916504,
+        2.8418943881988525
+      ],
+      "bbox_min": [
+        -0.12811440229415894,
+        -2.0831973552703857,
+        -0.13120794296264648
+      ],
+      "bbox_max": [
+        1.2586854696273804,
+        -1.5849316120147705,
+        5.0694379806518555
+      ],
+      "bbox_volume_m3": 3.5936195850372314,
+      "num_voxels": 1771,
+      "mean_objectness": 0.9495872418795314,
+      "first_seen": 128,
+      "last_seen": 385,
+      "count": 56,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.09906291961669922
+        },
+        "medium": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.09906291216611862
+        },
+        "fine": {
+          "class_id": 2,
+          "class_name": "ceiling",
+          "cosine_similarity": 0.09906290471553802
+        }
+      }
+    },
+    {
+      "inst_id": 87,
+      "center": [
+        0.4567151367664337,
+        0.42264601588249207,
+        0.4971429407596588
+      ],
+      "bbox_min": [
+        0.15233999490737915,
+        -0.6172145009040833,
+        -0.8581770062446594
+      ],
+      "bbox_max": [
+        0.8149769902229309,
+        1.3386098146438599,
+        1.0694468021392822
+      ],
+      "bbox_volume_m3": 2.4982032775878906,
+      "num_voxels": 6229,
+      "mean_objectness": 0.8857652884010875,
+      "first_seen": 128,
+      "last_seen": 435,
+      "count": 109,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 10,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.07793731987476349
+        },
+        "medium": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.10606209933757782
+        },
+        "fine": {
+          "class_id": 11,
+          "class_name": "picture",
+          "cosine_similarity": 0.10606212913990021
+        }
+      }
+    },
+    {
+      "inst_id": 88,
+      "center": [
+        -1.4251075983047485,
+        -0.8268451690673828,
+        -0.050738878548145294
+      ],
+      "bbox_min": [
+        -5.8212385177612305,
+        -1.961079478263855,
+        -0.996624231338501
+      ],
+      "bbox_max": [
+        0.8083738088607788,
+        1.0571233034133911,
+        1.5426172018051147
+      ],
+      "bbox_volume_m3": 50.808982849121094,
+      "num_voxels": 11788,
+      "mean_objectness": 0.8374218040821599,
+      "first_seen": 128,
+      "last_seen": 411,
+      "count": 51,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 4,
+          "class_name": "window",
+          "cosine_similarity": 0.13425086438655853
+        },
+        "medium": {
+          "class_id": 9,
+          "class_name": "window",
+          "cosine_similarity": 0.13425084948539734
+        },
+        "fine": {
+          "class_id": 9,
+          "class_name": "window",
+          "cosine_similarity": 0.13425084948539734
+        }
+      }
+    },
+    {
+      "inst_id": 89,
+      "center": [
+        -3.663350820541382,
+        0.437724232673645,
+        2.074561357498169
+      ],
+      "bbox_min": [
+        -4.056634426116943,
+        0.2960406243801117,
+        1.5226376056671143
+      ],
+      "bbox_max": [
+        -3.3079841136932373,
+        0.6217848658561707,
+        2.5023131370544434
+      ],
+      "bbox_volume_m3": 0.23891203105449677,
+      "num_voxels": 624,
+      "mean_objectness": 0.9468975283882834,
+      "first_seen": 146,
+      "last_seen": 411,
+      "count": 22,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 10,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.12108968943357468
+        },
+        "medium": {
+          "class_id": 28,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.12108969688415527
+        },
+        "fine": {
+          "class_id": 28,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.12108968943357468
+        }
+      }
+    },
+    {
+      "inst_id": 90,
+      "center": [
+        -3.763303279876709,
+        0.4270600974559784,
+        3.0857717990875244
+      ],
+      "bbox_min": [
+        -5.943618297576904,
+        0.2791552245616913,
+        1.7605880498886108
+      ],
+      "bbox_max": [
+        -3.22216534614563,
+        0.5910841822624207,
+        4.020616054534912
+      ],
+      "bbox_volume_m3": 1.9185376167297363,
+      "num_voxels": 965,
+      "mean_objectness": 0.9354353507359823,
+      "first_seen": 148,
+      "last_seen": 322,
+      "count": 15,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 10,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.1168980821967125
+        },
+        "medium": {
+          "class_id": 28,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.11689809709787369
+        },
+        "fine": {
+          "class_id": 28,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.11689808964729309
+        }
+      }
+    },
+    {
+      "inst_id": 91,
+      "center": [
+        -4.5214948654174805,
+        0.4595513343811035,
+        2.3127620220184326
+      ],
+      "bbox_min": [
+        -6.128404140472412,
+        0.27760136127471924,
+        1.031051754951477
+      ],
+      "bbox_max": [
+        -3.3853769302368164,
+        0.8117880821228027,
+        3.600036859512329
+      ],
+      "bbox_volume_m3": 3.7643048763275146,
+      "num_voxels": 751,
+      "mean_objectness": 0.9100942313671112,
+      "first_seen": 149,
+      "last_seen": 339,
+      "count": 12,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 10,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.1169990599155426
+        },
+        "medium": {
+          "class_id": 28,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.1169990599155426
+        },
+        "fine": {
+          "class_id": 28,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.1169990599155426
+        }
+      }
+    },
+    {
+      "inst_id": 92,
+      "center": [
+        -3.596153736114502,
+        0.41607922315597534,
+        5.273972988128662
+      ],
+      "bbox_min": [
+        -5.5369486808776855,
+        0.23091499507427216,
+        1.7461605072021484
+      ],
+      "bbox_max": [
+        -1.9358606338500977,
+        0.6909019351005554,
+        6.555289268493652
+      ],
+      "bbox_volume_m3": 7.966097354888916,
+      "num_voxels": 1767,
+      "mean_objectness": 0.9156717251217554,
+      "first_seen": 149,
+      "last_seen": 361,
+      "count": 63,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 7,
+          "class_name": "chair",
+          "cosine_similarity": 0.12841838598251343
+        },
+        "medium": {
+          "class_id": 5,
+          "class_name": "chair",
+          "cosine_similarity": 0.12841841578483582
+        },
+        "fine": {
+          "class_id": 5,
+          "class_name": "chair",
+          "cosine_similarity": 0.128418430685997
+        }
+      }
+    },
+    {
+      "inst_id": 93,
+      "center": [
+        -4.514322757720947,
+        -0.22518682479858398,
+        5.382256507873535
+      ],
+      "bbox_min": [
+        -6.687509059906006,
+        -1.865633249282837,
+        -0.38615933060646057
+      ],
+      "bbox_max": [
+        -0.1381557583808899,
+        1.2335243225097656,
+        11.218496322631836
+      ],
+      "bbox_volume_m3": 235.54522705078125,
+      "num_voxels": 36903,
+      "mean_objectness": 0.9089990854263306,
+      "first_seen": 149,
+      "last_seen": 415,
+      "count": 129,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.11291925609111786
+        },
+        "medium": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.11291924864053726
+        },
+        "fine": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.11291925609111786
+        }
+      }
+    },
+    {
+      "inst_id": 94,
+      "center": [
+        -5.113452434539795,
+        0.7537163496017456,
+        4.485623359680176
+      ],
+      "bbox_min": [
+        -6.062114238739014,
+        0.27181684970855713,
+        2.473284959793091
+      ],
+      "bbox_max": [
+        -4.304501056671143,
+        1.2551695108413696,
+        5.073440074920654
+      ],
+      "bbox_volume_m3": 4.493987560272217,
+      "num_voxels": 3185,
+      "mean_objectness": 0.9324991840582627,
+      "first_seen": 150,
+      "last_seen": 352,
+      "count": 52,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 8,
+          "class_name": "sofa",
+          "cosine_similarity": 0.12120991945266724
+        },
+        "medium": {
+          "class_id": 6,
+          "class_name": "sofa",
+          "cosine_similarity": 0.12120993435382843
+        },
+        "fine": {
+          "class_id": 6,
+          "class_name": "sofa",
+          "cosine_similarity": 0.12120991945266724
+        }
+      }
+    },
+    {
+      "inst_id": 95,
+      "center": [
+        -4.520284652709961,
+        0.6740286350250244,
+        7.35045862197876
+      ],
+      "bbox_min": [
+        -4.917593002319336,
+        0.22112147510051727,
+        6.126443862915039
+      ],
+      "bbox_max": [
+        -3.6051218509674072,
+        1.2701715230941772,
+        7.797229766845703
+      ],
+      "bbox_volume_m3": 2.3004181385040283,
+      "num_voxels": 2452,
+      "mean_objectness": 0.9149941007296244,
+      "first_seen": 155,
+      "last_seen": 362,
+      "count": 33,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.11645220220088959
+        },
+        "medium": {
+          "class_id": 13,
+          "class_name": "desk",
+          "cosine_similarity": 0.13811320066452026
+        },
+        "fine": {
+          "class_id": 13,
+          "class_name": "desk",
+          "cosine_similarity": 0.13811323046684265
+        }
+      }
+    },
+    {
+      "inst_id": 96,
+      "center": [
+        -3.9675824642181396,
+        0.04020247608423233,
+        9.352922439575195
+      ],
+      "bbox_min": [
+        -4.216725826263428,
+        -0.12307363748550415,
+        8.659131050109863
+      ],
+      "bbox_max": [
+        -3.8293392658233643,
+        0.25794368982315063,
+        9.602452278137207
+      ],
+      "bbox_volume_m3": 0.13923515379428864,
+      "num_voxels": 316,
+      "mean_objectness": 0.9326867055892945,
+      "first_seen": 159,
+      "last_seen": 215,
+      "count": 50,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 5,
+          "class_name": "cabinet",
+          "cosine_similarity": 0.0826544389128685
+        },
+        "medium": {
+          "class_id": 23,
+          "class_name": "microwave",
+          "cosine_similarity": 0.13728396594524384
+        },
+        "fine": {
+          "class_id": 23,
+          "class_name": "microwave",
+          "cosine_similarity": 0.13728395104408264
+        }
+      }
+    },
+    {
+      "inst_id": 97,
+      "center": [
+        -4.41153621673584,
+        -0.5575560331344604,
+        8.503423690795898
+      ],
+      "bbox_min": [
+        -4.726682186126709,
+        -1.7602742910385132,
+        7.033844470977783
+      ],
+      "bbox_max": [
+        -3.5596938133239746,
+        0.9343363642692566,
+        9.240802764892578
+      ],
+      "bbox_volume_m3": 6.939955234527588,
+      "num_voxels": 1893,
+      "mean_objectness": 0.8361719177990425,
+      "first_seen": 159,
+      "last_seen": 363,
+      "count": 41,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.11648444086313248
+        },
+        "medium": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.11648444831371307
+        },
+        "fine": {
+          "class_id": 0,
+          "class_name": "wall",
+          "cosine_similarity": 0.11648443341255188
+        }
+      }
+    },
+    {
+      "inst_id": 98,
+      "center": [
+        -3.849149227142334,
+        0.6470631957054138,
+        8.5952730178833
+      ],
+      "bbox_min": [
+        -4.170399188995361,
+        0.44118884205818176,
+        8.396978378295898
+      ],
+      "bbox_max": [
+        -3.6848819255828857,
+        0.9278941750526428,
+        8.784989356994629
+      ],
+      "bbox_volume_m3": 0.09168848395347595,
+      "num_voxels": 318,
+      "mean_objectness": 0.8265587733342097,
+      "first_seen": 159,
+      "last_seen": 200,
+      "count": 39,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 5,
+          "class_name": "cabinet",
+          "cosine_similarity": 0.11348268389701843
+        },
+        "medium": {
+          "class_id": 3,
+          "class_name": "cabinet",
+          "cosine_similarity": 0.11348266899585724
+        },
+        "fine": {
+          "class_id": 3,
+          "class_name": "cabinet",
+          "cosine_similarity": 0.11348268389701843
+        }
+      }
+    },
+    {
+      "inst_id": 99,
+      "center": [
+        -3.260728359222412,
+        0.9873862862586975,
+        9.319424629211426
+      ],
+      "bbox_min": [
+        -3.528214931488037,
+        0.8088359832763672,
+        9.187973976135254
+      ],
+      "bbox_max": [
+        -2.920912504196167,
+        1.2664662599563599,
+        9.642029762268066
+      ],
+      "bbox_volume_m3": 0.1261911690235138,
+      "num_voxels": 507,
+      "mean_objectness": 0.9673285211835588,
+      "first_seen": 160,
+      "last_seen": 365,
+      "count": 35,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 9,
+          "class_name": "bed",
+          "cosine_similarity": 0.06135597825050354
+        },
+        "medium": {
+          "class_id": 27,
+          "class_name": "trash can",
+          "cosine_similarity": 0.15449440479278564
+        },
+        "fine": {
+          "class_id": 27,
+          "class_name": "trash can",
+          "cosine_similarity": 0.15449440479278564
+        }
+      }
+    },
+    {
+      "inst_id": 100,
+      "center": [
+        -4.069252014160156,
+        0.02569744922220707,
+        9.868553161621094
+      ],
+      "bbox_min": [
+        -4.156942844390869,
+        -0.036207087337970734,
+        9.658068656921387
+      ],
+      "bbox_max": [
+        -3.966089963912964,
+        0.12167128175497055,
+        10.030271530151367
+      ],
+      "bbox_volume_m3": 0.011215046048164368,
+      "num_voxels": 89,
+      "mean_objectness": 0.8704355537891388,
+      "first_seen": 160,
+      "last_seen": 216,
+      "count": 40,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 10,
+          "class_name": "otherfurniture",
+          "cosine_similarity": 0.06301683187484741
+        },
+        "medium": {
+          "class_id": 18,
+          "class_name": "sink",
+          "cosine_similarity": 0.07767581939697266
+        },
+        "fine": {
+          "class_id": 18,
+          "class_name": "sink",
+          "cosine_similarity": 0.07767583429813385
+        }
+      }
+    },
+    {
+      "inst_id": 101,
+      "center": [
+        -3.999850273132324,
+        0.05113140121102333,
+        8.801299095153809
+      ],
+      "bbox_min": [
+        -4.264012336730957,
+        -0.4756774604320526,
+        8.420719146728516
+      ],
+      "bbox_max": [
+        -3.741177558898926,
+        0.49882423877716064,
+        9.157699584960938
+      ],
+      "bbox_volume_m3": 0.3754940629005432,
+      "num_voxels": 726,
+      "mean_objectness": 0.8911489408749801,
+      "first_seen": 160,
+      "last_seen": 329,
+      "count": 52,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 5,
+          "class_name": "cabinet",
+          "cosine_similarity": 0.0874100998044014
+        },
+        "medium": {
+          "class_id": 23,
+          "class_name": "microwave",
+          "cosine_similarity": 0.16768352687358856
+        },
+        "fine": {
+          "class_id": 23,
+          "class_name": "microwave",
+          "cosine_similarity": 0.16768352687358856
+        }
+      }
+    },
+    {
+      "inst_id": 102,
+      "center": [
+        -3.3700313568115234,
+        0.4370086193084717,
+        9.505187034606934
+      ],
+      "bbox_min": [
+        -3.7111563682556152,
+        0.1557251214981079,
+        8.592456817626953
+      ],
+      "bbox_max": [
+        -1.9088166952133179,
+        1.122821569442749,
+        10.38271713256836
+      ],
+      "bbox_volume_m3": 3.1204886436462402,
+      "num_voxels": 2258,
+      "mean_objectness": 0.9176413035392761,
+      "first_seen": 182,
+      "last_seen": 364,
+      "count": 25,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 5,
+          "class_name": "cabinet",
+          "cosine_similarity": 0.09171956032514572
+        },
+        "medium": {
+          "class_id": 23,
+          "class_name": "microwave",
+          "cosine_similarity": 0.14421498775482178
+        },
+        "fine": {
+          "class_id": 33,
+          "class_name": "dishwasher",
+          "cosine_similarity": 0.15183228254318237
+        }
+      }
+    },
+    {
+      "inst_id": 103,
+      "center": [
+        -3.714827537536621,
+        0.2078821361064911,
+        9.340751647949219
+      ],
+      "bbox_min": [
+        -4.011810779571533,
+        0.13534319400787354,
+        9.053789138793945
+      ],
+      "bbox_max": [
+        -3.544795513153076,
+        0.2611590623855591,
+        9.695655822753906
+      ],
+      "bbox_volume_m3": 0.03771475702524185,
+      "num_voxels": 181,
+      "mean_objectness": 0.8862124298300061,
+      "first_seen": 182,
+      "last_seen": 217,
+      "count": 28,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 9,
+          "class_name": "bed",
+          "cosine_similarity": 0.059581413865089417
+        },
+        "medium": {
+          "class_id": 23,
+          "class_name": "microwave",
+          "cosine_similarity": 0.09406525641679764
+        },
+        "fine": {
+          "class_id": 30,
+          "class_name": "stove",
+          "cosine_similarity": 0.09518523514270782
+        }
+      }
+    },
+    {
+      "inst_id": 104,
+      "center": [
+        -3.965944766998291,
+        0.12210285663604736,
+        9.609334945678711
+      ],
+      "bbox_min": [
+        -4.104881763458252,
+        0.04873097315430641,
+        9.521212577819824
+      ],
+      "bbox_max": [
+        -3.713362693786621,
+        0.21413050591945648,
+        10.186870574951172
+      ],
+      "bbox_volume_m3": 0.043106064200401306,
+      "num_voxels": 72,
+      "mean_objectness": 0.8622648507356644,
+      "first_seen": 182,
+      "last_seen": 211,
+      "count": 20,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.075787752866745
+        },
+        "medium": {
+          "class_id": 18,
+          "class_name": "sink",
+          "cosine_similarity": 0.08202089369297028
+        },
+        "fine": {
+          "class_id": 18,
+          "class_name": "sink",
+          "cosine_similarity": 0.08202089369297028
+        }
+      }
+    },
+    {
+      "inst_id": 105,
+      "center": [
+        -4.120069980621338,
+        0.030614499002695084,
+        9.208094596862793
+      ],
+      "bbox_min": [
+        -4.309932231903076,
+        -0.11673338711261749,
+        9.084355354309082
+      ],
+      "bbox_max": [
+        -3.9591786861419678,
+        0.188038632273674,
+        9.654463768005371
+      ],
+      "bbox_volume_m3": 0.060944512486457825,
+      "num_voxels": 120,
+      "mean_objectness": 0.7994583182864718,
+      "first_seen": 182,
+      "last_seen": 214,
+      "count": 9,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 6,
+          "class_name": "table",
+          "cosine_similarity": 0.06481107324361801
+        },
+        "medium": {
+          "class_id": 23,
+          "class_name": "microwave",
+          "cosine_similarity": 0.08250589668750763
+        },
+        "fine": {
+          "class_id": 32,
+          "class_name": "toaster",
+          "cosine_similarity": 0.08727242052555084
+        }
+      }
+    },
+    {
+      "inst_id": 106,
+      "center": [
+        0.449410080909729,
+        1.0757253170013428,
+        0.7821059823036194
+      ],
+      "bbox_min": [
+        0.22680401802062988,
+        0.7024407386779785,
+        0.18096113204956055
+      ],
+      "bbox_max": [
+        0.7183710336685181,
+        1.2350997924804688,
+        1.1019163131713867
+      ],
+      "bbox_volume_m3": 0.2411407232284546,
+      "num_voxels": 433,
+      "mean_objectness": 0.9229418396949768,
+      "first_seen": 305,
+      "last_seen": 428,
+      "count": 40,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 1,
+          "class_name": "floor",
+          "cosine_similarity": 0.07491600513458252
+        },
+        "medium": {
+          "class_id": 21,
+          "class_name": "tv",
+          "cosine_similarity": 0.08366506546735764
+        },
+        "fine": {
+          "class_id": 41,
+          "class_name": "speaker",
+          "cosine_similarity": 0.09501287341117859
+        }
+      }
+    },
+    {
+      "inst_id": 107,
+      "center": [
+        0.9215884208679199,
+        0.7337275147438049,
+        1.769484519958496
+      ],
+      "bbox_min": [
+        0.8404037356376648,
+        0.5520906448364258,
+        1.5962047576904297
+      ],
+      "bbox_max": [
+        1.019964337348938,
+        0.8768343329429626,
+        1.9162940979003906
+      ],
+      "bbox_volume_m3": 0.018664784729480743,
+      "num_voxels": 114,
+      "mean_objectness": 0.9056648580651534,
+      "first_seen": 375,
+      "last_seen": 429,
+      "count": 38,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 5,
+          "class_name": "cabinet",
+          "cosine_similarity": 0.09510992467403412
+        },
+        "medium": {
+          "class_id": 20,
+          "class_name": "shelf",
+          "cosine_similarity": 0.10325820744037628
+        },
+        "fine": {
+          "class_id": 20,
+          "class_name": "shelf",
+          "cosine_similarity": 0.10325822234153748
+        }
+      }
+    },
+    {
+      "inst_id": 108,
+      "center": [
+        0.8968530893325806,
+        0.4159408211708069,
+        1.6238569021224976
+      ],
+      "bbox_min": [
+        0.8039007186889648,
+        0.2699950337409973,
+        1.455338954925537
+      ],
+      "bbox_max": [
+        1.0024657249450684,
+        0.5281566381454468,
+        1.8429532051086426
+      ],
+      "bbox_volume_m3": 0.01986982859671116,
+      "num_voxels": 122,
+      "mean_objectness": 0.8848560987374722,
+      "first_seen": 376,
+      "last_seen": 435,
+      "count": 39,
+      "filtered": false,
+      "class_per_level": {
+        "coarse": {
+          "class_id": 5,
+          "class_name": "cabinet",
+          "cosine_similarity": 0.0904264971613884
+        },
+        "medium": {
+          "class_id": 20,
+          "class_name": "shelf",
+          "cosine_similarity": 0.09829862415790558
+        },
+        "fine": {
+          "class_id": 20,
+          "class_name": "shelf",
+          "cosine_similarity": 0.09829863905906677
+        }
+      }
+    }
+  ]
+}

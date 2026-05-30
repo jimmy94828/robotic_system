@@ -24,11 +24,11 @@ class ObjectQueryServer(Node):
         self.declare_parameter('3dmap_path', 'data/lab/test/robot_deploy_slam_example0_rgb_color.npz')
 
         # self.declare_parameter('map_path', 'data/lab/semantic_pcd_accumulated_gaussians.npz') predemo
-        self.declare_parameter('map_path', 'data/lab/test/robot_deploy_slam_example0_inst_color.npz')
+        self.declare_parameter('map_path', 'data/lab/test/robot_deploy_slam_example0_sem_color_fine.npz')
 
         self.declare_parameter('semantic_path', 'data/lab/semantic_pcd_accumulated_gaussians_meta.json')
         # self.declare_parameter('instance_path', 'data/lab/accumulated_gaussians_instance_semantic_info.json') predemo
-        self.declare_parameter('instance_path', 'data/lab/test/robot_deploy_slam_example0_instance_semantic_table.json')
+        self.declare_parameter('instance_path', 'data/lab/test/robot_deploy_slam_example0_instance_semantic_table_fine.json')
 
         self.declare_parameter('alignment_path', 'data/Util/alignment.yaml')
         self.declare_parameter('auto_align', False) 
@@ -129,6 +129,23 @@ class ObjectQueryServer(Node):
         xy = self.alignment['scale'] * (self.alignment['rot'] @ uv) + self.alignment['trans']
         z = self.alignment['scale'] * height
         return float(xy[0]), float(xy[1]), float(z)
+
+    def transform_points_to_map(self, points_xyz):
+        if self.alignment is None:
+            return np.asarray(points_xyz, dtype=np.float32)
+
+        points = np.asarray(points_xyz, dtype=float)
+        delta = points - self.alignment['mu'][None, :]
+        uv = np.column_stack(
+            (
+                delta @ self.alignment['e1'],
+                delta @ self.alignment['e2'],
+            )
+        )
+        height = delta @ self.alignment['normal']
+        xy = self.alignment['scale'] * (uv @ self.alignment['rot'].T) + self.alignment['trans'][None, :]
+        z = self.alignment['scale'] * height
+        return np.column_stack((xy, z)).astype(np.float32)
 
     def publish_candidate_options(self, name: str, instances, instance_ids):
         payload = {
@@ -238,7 +255,7 @@ class ObjectQueryServer(Node):
             # Load 3D point cloud for visualization
             if os.path.exists(map_3d_path):
                 data_3d = np.load(map_3d_path)
-                self.map_3d_points = data_3d['points']
+                self.map_3d_points = self.transform_points_to_map(data_3d['points'])
                 if 'colors' in data_3d:
                     c = data_3d['colors']
                     self.map_3d_colors = (c * 255).astype(np.uint8) if c.max() <= 1.0 else c.astype(np.uint8)
@@ -325,7 +342,7 @@ class ObjectQueryServer(Node):
             
 
             self.map_points = points
-            self.map_3d_points = points_3d
+            self.map_3d_points = self.transform_points_to_map(points_3d)
             self.map_3d_colors = colors_3d
 
             # 5. Generate Colors
@@ -499,7 +516,7 @@ class ObjectQueryServer(Node):
             id_counter = 0
             
             for i, pos in enumerate(locations):
-                x, y, z = pos
+                x, y, z = self.transform_point_to_map(pos)
                 display_name = f"{target_name} ({i+1})" if len(locations) > 1 else target_name
 
                 # Sphere

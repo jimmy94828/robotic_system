@@ -247,6 +247,7 @@ def transform_points_to_map_frame(
     points_xyz: np.ndarray,
     alignment: AlignmentTransform,
     z_offset: float = 0.0,
+    z_sign: float = 1.0,
 ) -> np.ndarray:
     delta = points_xyz.astype(np.float64) - alignment.mu[None, :]
     u = delta @ alignment.e1
@@ -254,8 +255,21 @@ def transform_points_to_map_frame(
     h = delta @ alignment.normal
     uv = np.stack((u, v), axis=1)
     xy = alignment.scale * (uv @ alignment.rot.T) + alignment.trans[None, :]
-    z = (alignment.scale * h) + z_offset
+    z = (z_sign * alignment.scale * h) + z_offset
     return np.column_stack((xy, z)).astype(np.float32)
+
+
+def choose_visual_z_sign(points_xyz: np.ndarray, z_mode: str) -> float:
+    if z_mode == "normal":
+        return 1.0
+    if z_mode == "inverted":
+        return -1.0
+
+    z_values = points_xyz[:, 2]
+    finite_z = z_values[np.isfinite(z_values)]
+    if finite_z.size == 0:
+        return 1.0
+    return -1.0 if float(np.median(finite_z)) < 0.0 else 1.0
 
 
 def filter_pointcloud_by_z(
@@ -365,6 +379,7 @@ class SelectedInstanceMarkerPublisher(Node):
         pointcloud_stride: int,
         pointcloud_refresh_sec: float,
         pointcloud_z_offset: float,
+        pointcloud_z_mode: str,
         pointcloud_min_z: Optional[float],
         pointcloud_max_z: Optional[float],
         disable_tf_fallback: bool,
@@ -384,6 +399,8 @@ class SelectedInstanceMarkerPublisher(Node):
         self._pointcloud_msg: Optional[PointCloud2] = None
         self._runtime_goal: Optional[RuntimeGoal] = None
         self._candidate_selection: Optional[CandidateSelection] = None
+        self._visual_z_sign = 1.0
+        self._visual_z_offset = pointcloud_z_offset
 
         alignment = load_map3d_to_map2d(alignment_path)
         if selections:
@@ -423,11 +440,13 @@ class SelectedInstanceMarkerPublisher(Node):
         if pointcloud_stride > 1:
             cloud_points = cloud_points[::pointcloud_stride]
             cloud_colors = cloud_colors[::pointcloud_stride]
-        transformed_points = transform_points_to_map_frame(
+        transformed_points_unoffset = transform_points_to_map_frame(
             cloud_points,
             alignment,
-            z_offset=pointcloud_z_offset,
         )
+        self._visual_z_sign = choose_visual_z_sign(transformed_points_unoffset, pointcloud_z_mode)
+        transformed_points = transformed_points_unoffset.copy()
+        transformed_points[:, 2] = (self._visual_z_sign * transformed_points[:, 2]) + pointcloud_z_offset
         original_point_count = transformed_points.shape[0]
         transformed_points, cloud_colors = filter_pointcloud_by_z(
             transformed_points,
@@ -464,11 +483,15 @@ class SelectedInstanceMarkerPublisher(Node):
             f"Publishing transformed point cloud to {pointcloud_topic} "
             f"({transformed_points.shape[0]} points after stride={pointcloud_stride}, "
             f"z filter min={pointcloud_min_z}, max={pointcloud_max_z}; "
-            f"source points={original_point_count})"
+            f"source points={original_point_count}, z_mode={pointcloud_z_mode}, "
+            f"z_sign={self._visual_z_sign:+.0f}, z_offset={pointcloud_z_offset})"
         )
         if transformed_points.shape[0] == 0:
             self.get_logger().warn("Point cloud Z filter removed all points. Relax --pointcloud-min-z/--pointcloud-max-z.")
         self.publish_pointcloud()
+
+    def _visual_z(self, map_z: float) -> float:
+        return (self._visual_z_sign * map_z) + self._visual_z_offset
 
     def _on_pose_msg(self, msg: PoseStamped) -> None:
         if msg.header.frame_id and msg.header.frame_id != self._frame_id and not self._warned_pose_frame:
@@ -645,7 +668,7 @@ class SelectedInstanceMarkerPublisher(Node):
         sphere.action = Marker.ADD
         sphere.pose.position.x = goal_x
         sphere.pose.position.y = goal_y
-        sphere.pose.position.z = max(goal.map_z, 0.02)
+        sphere.pose.position.z = max(self._visual_z(goal.map_z), 0.02)
         sphere.pose.orientation.w = 1.0
         sphere.scale.x = scale
         sphere.scale.y = scale
@@ -665,7 +688,7 @@ class SelectedInstanceMarkerPublisher(Node):
         text.action = Marker.ADD
         text.pose.position.x = goal_x
         text.pose.position.y = goal_y
-        text.pose.position.z = max(goal.map_z + 0.30, 0.35)
+        text.pose.position.z = max(self._visual_z(goal.map_z) + 0.30, 0.35)
         text.pose.orientation.w = 1.0
         text.scale.z = 0.22
         text.color.r = 1.0
@@ -746,7 +769,7 @@ class SelectedInstanceMarkerPublisher(Node):
             runtime_sphere.action = Marker.ADD
             runtime_sphere.pose.position.x = self._runtime_goal.map_x
             runtime_sphere.pose.position.y = self._runtime_goal.map_y
-            runtime_sphere.pose.position.z = max(self._runtime_goal.map_z, 0.02)
+            runtime_sphere.pose.position.z = max(self._visual_z(self._runtime_goal.map_z), 0.02)
             runtime_sphere.pose.orientation.w = 1.0
             runtime_sphere.scale.x = runtime_scale
             runtime_sphere.scale.y = runtime_scale
@@ -768,7 +791,7 @@ class SelectedInstanceMarkerPublisher(Node):
             runtime_text.action = Marker.ADD
             runtime_text.pose.position.x = self._runtime_goal.map_x
             runtime_text.pose.position.y = self._runtime_goal.map_y
-            runtime_text.pose.position.z = max(self._runtime_goal.map_z + 0.35, 0.40)
+            runtime_text.pose.position.z = max(self._visual_z(self._runtime_goal.map_z) + 0.35, 0.40)
             runtime_text.pose.orientation.w = 1.0
             runtime_text.scale.z = 0.24
             runtime_text.color.r = 1.0
@@ -795,7 +818,7 @@ class SelectedInstanceMarkerPublisher(Node):
                 candidate_sphere.action = Marker.ADD
                 candidate_sphere.pose.position.x = option.map_x
                 candidate_sphere.pose.position.y = option.map_y
-                candidate_sphere.pose.position.z = max(option.map_z, 0.02)
+                candidate_sphere.pose.position.z = max(self._visual_z(option.map_z), 0.02)
                 candidate_sphere.pose.orientation.w = 1.0
                 candidate_sphere.scale.x = 0.26
                 candidate_sphere.scale.y = 0.26
@@ -817,7 +840,7 @@ class SelectedInstanceMarkerPublisher(Node):
                 candidate_text.action = Marker.ADD
                 candidate_text.pose.position.x = option.map_x
                 candidate_text.pose.position.y = option.map_y
-                candidate_text.pose.position.z = max(option.map_z + 0.35, 0.40)
+                candidate_text.pose.position.z = max(self._visual_z(option.map_z) + 0.35, 0.40)
                 candidate_text.pose.orientation.w = 1.0
                 candidate_text.scale.z = 0.22
                 candidate_text.color.r = 1.0
@@ -1018,6 +1041,15 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Optional extra Z offset applied after transforming the point cloud into map frame",
     )
     parser.add_argument(
+        "--pointcloud-z-mode",
+        choices=["auto", "normal", "inverted"],
+        default="auto",
+        help=(
+            "Visual Z direction for the transformed point cloud. "
+            "auto flips Z when most transformed points are below map z=0."
+        ),
+    )
+    parser.add_argument(
         "--pointcloud-min-z",
         type=float,
         default=None,
@@ -1118,6 +1150,7 @@ def main() -> None:
             pointcloud_stride=args.pointcloud_stride,
             pointcloud_refresh_sec=args.pointcloud_refresh_sec,
             pointcloud_z_offset=args.pointcloud_z_offset,
+            pointcloud_z_mode=args.pointcloud_z_mode,
             pointcloud_min_z=args.pointcloud_min_z,
             pointcloud_max_z=args.pointcloud_max_z,
             disable_tf_fallback=args.disable_tf_fallback,
