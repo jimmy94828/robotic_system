@@ -32,24 +32,25 @@ class DecomposerClient:
         if not text:
             raise TaskDecompositionError("Task instruction is empty.")
 
-        if self.llm_client.backend == "local_transformers":
+        if self.llm_client.backend in {"local_transformers", "vllm"}:
             return self._decompose_task_local_transformers(text, context or {})
 
         return self._decompose_task_placeholder(text)
 
     def _decompose_task_local_transformers(self, task_instruction: str, context: dict) -> dict:
-        # Reuse the existing QwenClient loading/generation path to avoid adding a
-        # second model lifecycle. These are private helpers, but keeping them here
-        # avoids touching the runtime model setup.
-        self.llm_client._ensure_local_model_loaded()
+        # Reuse the existing QwenClient generation path to avoid adding a
+        # second model/API lifecycle.
+        if self.llm_client.backend == "local_transformers":
+            self.llm_client._ensure_local_model_loaded()
         prompt = self._build_decomposition_prompt(task_instruction, context)
         messages = [
             {
                 "role": "system",
                 "content": (
-                    "You are a robot task decomposer. Return only one valid JSON "
-                    "object. Do not include markdown, explanations, or <think> text. "
-                    "Output JSON only."
+                    "You are a robot task decomposer running in JSON-only mode. "
+                    "Thinking mode is disabled. Never output <think> or hidden reasoning. "
+                    "Return exactly one valid JSON object and nothing else. "
+                    "The first character of your response must be { and the last character must be }."
                 ),
             },
             {"role": "user", "content": prompt},
@@ -78,6 +79,8 @@ class DecomposerClient:
             },
             "rules": [
                 "Return exactly one JSON object and no extra text.",
+                "Do not output reasoning, markdown, comments, or <think> blocks.",
+                "The response must start with { and end with }.",
                 "Each subtask must be atomic and executable by the existing agent planner.",
                 "Do not output object_query/navigation/grasp_place/finish capability calls in this stage.",
                 "For multiple objects joined by and/commas, create one subtask per object.",
@@ -109,7 +112,11 @@ class DecomposerClient:
                 },
             ],
         }
-        return json.dumps(payload, ensure_ascii=False)
+        return (
+            json.dumps(payload, ensure_ascii=False)
+            + "\n/no_think\n"
+            + "Return only the JSON object. Start with { and end with }."
+        )
 
     def _decompose_task_placeholder(self, task_instruction: str) -> dict:
         clauses = _split_sequential_clauses(task_instruction)

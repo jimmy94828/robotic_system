@@ -1336,11 +1336,88 @@ Use this for development without driving the real robot. The script opens three 
 - Top-right: interactive manual command shell
 - Bottom: agent-based decision maker mock pipeline
 
-Run:
+The mock helper now defaults to the decision-only vLLM backend. This is separate
+from the Avatar LLM stack; do not change Avatar code for this flow.
+
+#### Start The Decision vLLM Server
+
+Start the vLLM server from a host terminal, not from inside the `robot_ros`
+container. In other words, run this from a prompt like `acm@...`, not
+`(robot_ros) root@acm:/robot_ws#`.
 
 ```bash
-./scripts/agent_mock_pipeline_tmux.sh
+docker run --rm --runtime=nvidia \
+  --name decision-vllm \
+  -e HF_HUB_OFFLINE=1 \
+  -e HF_HOME=/data/models/huggingface \
+  -v /home/acm/robotic_agent/models:/models \
+  -v /home/acm/.cache/huggingface:/data/models/huggingface \
+  -p 8001:8000 \
+  ghcr.io/nvidia-ai-iot/vllm:latest-jetson-thor \
+  python -m vllm.entrypoints.openai.api_server \
+    --model /models/Qwen3-8B \
+    --served-model-name decision-qwen \
+    --host 0.0.0.0 \
+    --port 8000 \
+    --dtype bfloat16 \
+    --gpu-memory-utilization 0.45 \
+    --max-model-len 8192 \
+    --max-num-seqs 1 \
+    --trust-remote-code
+```
+
+Use `--max-model-len 8192` when keeping task decomposition enabled. A 4096-token
+server can reject decomposition prompts because the prompt is already around
+4000 tokens before output tokens are reserved. If 8192 causes OOM, lower
+`--gpu-memory-utilization`, use a smaller context, or reduce prompt/output size.
+
+Stop the decision vLLM server from the host with:
+
+```bash
+docker stop decision-vllm
+```
+
+#### Check The Server
+
+From the ROS container or the mock pipeline command pane, verify that the model
+is reachable:
+
+```bash
+curl http://localhost:8001/v1/models
+```
+
+A healthy response includes `decision-qwen`. If this fails from inside the ROS
+container, set `VLLM_BASE_URL` to a host/container address reachable from that
+container instead of `localhost`.
+
+#### Start The Mock Pipeline
+
+Run from the ROS workspace:
+
+```bash
+cd /home/acm/robotic_agent/robotic_system/robot_ws
+QWEN_MAX_NEW_TOKENS=96 ./scripts/agent_mock_pipeline_tmux.sh
 tmux attach -t agent_mock
+```
+
+The script defaults are:
+
+```bash
+PLANNER_BACKEND=vllm
+VLLM_BASE_URL=http://localhost:8001
+VLLM_MODEL=decision-qwen
+QWEN_MAX_NEW_TOKENS=96
+VLLM_TEMPERATURE=0
+VLLM_TIMEOUT_SEC=60
+```
+
+Override them when needed:
+
+```bash
+VLLM_BASE_URL=http://<reachable-host-ip>:8001 \
+VLLM_MODEL=decision-qwen \
+QWEN_MAX_NEW_TOKENS=96 \
+./scripts/agent_mock_pipeline_tmux.sh
 ```
 
 The top-right pane is an initialized shell. Publish a command manually from there:
@@ -1350,17 +1427,21 @@ ros2 topic pub --once /manual_command std_msgs/msg/String \
   "{data: 'bring pringles on table to sofa'}"
 ```
 
-<!-- By default this script uses the local Qwen backend:
+Useful troubleshooting notes:
 
-```bash
-LLM_BACKEND=local_transformers
-```
-
-The script sets this through `PLANNER_BACKEND=local_transformers` by default. To run a fast smoke test without loading Qwen, override it explicitly:
+- `Connection refused` on `localhost:8001` means the decision vLLM server is not
+  running or is not reachable from the ROS container.
+- HTTP 400 with `maximum context length` means vLLM is reachable, but the prompt
+  plus requested output tokens exceed `--max-model-len`. Use 8192 context or
+  reduce tokens/prompt size.
+- `returned non-JSON content` means the model responded but did not satisfy the
+  JSON-only contract, often by emitting `<think>` text. This is a prompt/output
+  formatting issue, not a server connectivity issue.
+- To run the old fast deterministic smoke path, override the backend explicitly:
 
 ```bash
 PLANNER_BACKEND=placeholder ./scripts/agent_mock_pipeline_tmux.sh
-``` -->
+```
 
 ### 10.2 Real-Robot Pipeline
 
@@ -1378,10 +1459,17 @@ Run:
 tmux attach -t agent_live
 ```
 
-<!-- By default this script also uses the local Qwen backend:
+The live helper also defaults to the decision-only vLLM backend. Start and check
+the `decision-vllm` server as described in section 10.1 before launching this
+pipeline. The default live backend settings are:
 
 ```bash
-LLM_BACKEND=local_transformers
+PLANNER_BACKEND=vllm
+VLLM_BASE_URL=http://localhost:8001
+VLLM_MODEL=decision-qwen
+QWEN_MAX_NEW_TOKENS=96
+VLLM_TEMPERATURE=0
+VLLM_TIMEOUT_SEC=60
 ```
 
 The default Kachaka endpoint is:
@@ -1390,10 +1478,19 @@ The default Kachaka endpoint is:
 192.168.1.3:26400
 ```
 
-Override it when needed:
+Override settings when needed:
 
 ```bash
-KACHAKA_ENDPOINT=192.168.1.3:26400 ./scripts/agent_live_pipeline_tmux.sh
+KACHAKA_ENDPOINT=192.168.1.3:26400 \
+VLLM_BASE_URL=http://<reachable-host-ip>:8001 \
+QWEN_MAX_NEW_TOKENS=96 \
+./scripts/agent_live_pipeline_tmux.sh
+```
+
+To run the old deterministic smoke path without vLLM, override the backend:
+
+```bash
+PLANNER_BACKEND=placeholder ./scripts/agent_live_pipeline_tmux.sh
 ```
 
 The live script runs the agent node with real execution enabled:
@@ -1404,7 +1501,7 @@ ros2 run decision_maker agent_decision_maker_node \
   -p enable_map_visualizer:=false \
   -p mock_execution:=false \
   -p agent_max_replans:=2
-``` -->
+```
 
 ### 10.3 Run Only The Agent-Based Decision Node
 

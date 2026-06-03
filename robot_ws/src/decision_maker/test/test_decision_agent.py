@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from decision_maker.decision_agent import (
@@ -475,3 +477,58 @@ def test_source_aware_bring_falls_back_to_source_after_object_query_failure():
 
     assert call["capability"] == "object_query"
     assert call["target"] == "table"
+
+
+def test_vllm_backend_uses_openai_chat_completions(monkeypatch):
+    calls = []
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def read(self):
+            return json.dumps({
+                "choices": [
+                    {
+                        "message": {
+                            "content": json.dumps({
+                                "capability": "object_query",
+                                "target": "apple",
+                            })
+                        }
+                    }
+                ]
+            }).encode("utf-8")
+
+    def fake_urlopen(request, timeout):
+        calls.append({
+            "url": request.full_url,
+            "payload": json.loads(request.data.decode("utf-8")),
+            "timeout": timeout,
+        })
+        return FakeResponse()
+
+    monkeypatch.setenv("LLM_BACKEND", "vllm")
+    monkeypatch.setenv("VLLM_BASE_URL", "http://localhost:8001")
+    monkeypatch.setenv("VLLM_MODEL", "decision-qwen")
+    monkeypatch.setenv("QWEN_MAX_NEW_TOKENS", "96")
+    monkeypatch.setattr(
+        "decision_maker.decision_agent.urllib.request.urlopen",
+        fake_urlopen,
+    )
+
+    call = QwenClient().decide_next_capability(
+        "bring apple to table",
+        {"known_poses": {}},
+        [],
+        None,
+    )
+
+    assert call == {"capability": "object_query", "target": "apple"}
+    assert calls[0]["url"] == "http://localhost:8001/v1/chat/completions"
+    assert calls[0]["payload"]["model"] == "decision-qwen"
+    assert calls[0]["payload"]["max_tokens"] == 96
+    assert calls[0]["payload"]["temperature"] == 0.0

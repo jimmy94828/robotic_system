@@ -10,6 +10,8 @@ from __future__ import annotations
 import json
 import os
 import re
+import urllib.error
+import urllib.request
 from typing import Any, Dict, Iterable, List
 
 
@@ -23,7 +25,7 @@ class PlanValidationError(ValueError):
 
 
 class QwenClient:
-    """Modular Qwen client with placeholder and local Transformers backends."""
+    """Modular Qwen client with placeholder, vLLM, and local Transformers backends."""
 
     DEFAULT_MODEL_PATH = "/home/acm/robotic_agent/models/Qwen3-8B"
 
@@ -31,6 +33,10 @@ class QwenClient:
         self.backend = os.getenv("LLM_BACKEND", "local_transformers").strip().lower()
         self.model_path = os.getenv("QWEN_MODEL_PATH", self.DEFAULT_MODEL_PATH)
         self.max_new_tokens = int(os.getenv("QWEN_MAX_NEW_TOKENS", "512"))
+        self.vllm_base_url = os.getenv("VLLM_BASE_URL", "http://localhost:8001").rstrip("/")
+        self.vllm_model = os.getenv("VLLM_MODEL", "decision-qwen")
+        self.vllm_temperature = float(os.getenv("VLLM_TEMPERATURE", "0"))
+        self.vllm_timeout_sec = float(os.getenv("VLLM_TIMEOUT_SEC", "60"))
         self._model = None
         self._processor = None
         self._tokenizer = None
@@ -50,7 +56,7 @@ class QwenClient:
         if not text:
             raise PlanValidationError("Task instruction is empty.")
 
-        if self.backend == "local_transformers":
+        if self.backend in {"local_transformers", "vllm"}:
             return self._generate_plan_local_transformers(task_instruction, context)
 
         steps = self._heuristic_steps(text)
@@ -75,7 +81,7 @@ class QwenClient:
         if not text:
             raise PlanValidationError("Original task is empty.")
 
-        if self.backend == "local_transformers":
+        if self.backend in {"local_transformers", "vllm"}:
             return self._decide_next_capability_local_transformers(
                 original_task,
                 current_state,
@@ -272,7 +278,6 @@ class QwenClient:
         history: List[dict],
         last_execution_result: dict | None,
     ) -> dict:
-        self._ensure_local_model_loaded()
         prompt = self._build_capability_prompt(
             original_task,
             current_state,
@@ -283,10 +288,10 @@ class QwenClient:
             {
                 "role": "system",
                 "content": (
-                    "You are a closed-loop robot decision agent. "
-                    "Return only one valid JSON object for the next capability call. "
-                    "Do not include markdown, explanations, or <think> text. "
-                    "Output JSON only."
+                    "You are a closed-loop robot decision agent running in JSON-only mode. "
+                    "Thinking mode is disabled. Never output <think> or hidden reasoning. "
+                    "Return exactly one valid JSON object for the next capability call and nothing else. "
+                    "The first character of your response must be { and the last character must be }."
                 ),
             },
             {"role": "user", "content": prompt},
@@ -295,15 +300,15 @@ class QwenClient:
         return self._parse_json_response(content)
 
     def _generate_plan_local_transformers(self, task_instruction: str, context: dict) -> dict:
-        self._ensure_local_model_loaded()
         prompt = self._build_planning_prompt(task_instruction, context)
         messages = [
             {
                 "role": "system",
                 "content": (
-                    "You are a robot task planner. Return only valid JSON. "
-                    "Do not include markdown, explanations, or <think> text. "
-                    "Output JSON only."
+                    "You are a robot task planner running in JSON-only mode. "
+                    "Thinking mode is disabled. Never output <think> or hidden reasoning. "
+                    "Return exactly one valid JSON object and nothing else. "
+                    "The first character of your response must be { and the last character must be }."
                 ),
             },
             {"role": "user", "content": prompt},
@@ -312,6 +317,10 @@ class QwenClient:
         return self._parse_json_response(content)
 
     def _generate_chat_content(self, messages: List[dict]) -> str:
+        if self.backend == "vllm":
+            return self._generate_chat_content_vllm(messages)
+
+        self._ensure_local_model_loaded()
         try:
             import torch
         except ImportError as exc:
@@ -358,6 +367,43 @@ class QwenClient:
             skip_special_tokens=True,
             clean_up_tokenization_spaces=False,
         )[0]
+
+    def _generate_chat_content_vllm(self, messages: List[dict]) -> str:
+        payload = {
+            "model": self.vllm_model,
+            "messages": messages,
+            "temperature": self.vllm_temperature,
+            "max_tokens": self.max_new_tokens,
+            "stream": False,
+        }
+        data = json.dumps(payload).encode("utf-8")
+        request = urllib.request.Request(
+            f"{self.vllm_base_url}/v1/chat/completions",
+            data=data,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=self.vllm_timeout_sec) as response:
+                response_data = json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            body = exc.read().decode("utf-8", errors="replace")
+            raise PlanValidationError(
+                f"vLLM request failed with HTTP {exc.code}: {body}"
+            ) from exc
+        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
+            raise PlanValidationError(
+                f"vLLM request failed for {self.vllm_base_url}: {exc}"
+            ) from exc
+
+        choices = response_data.get("choices")
+        if not choices:
+            raise PlanValidationError(f"vLLM returned no choices: {response_data!r}")
+        message = choices[0].get("message", {})
+        content = message.get("content")
+        if not isinstance(content, str) or not content.strip():
+            raise PlanValidationError(f"vLLM returned empty content: {response_data!r}")
+        return content
 
     def _ensure_local_model_loaded(self) -> None:
         if self._model is not None and (self._processor is not None or self._tokenizer is not None):
@@ -476,9 +522,15 @@ class QwenClient:
                 "For multiple objects joined by and/commas, decompose into one transfer per object; never use the combined list as a target.",
                 "Never use combined phrases such as 'pringle on cabinet' as a target.",
                 "Return exactly one JSON object and no extra text.",
+                "Do not output reasoning, markdown, comments, or <think> blocks.",
+                "The response must start with { and end with }.",
             ],
         }
-        return json.dumps(payload, ensure_ascii=False)
+        return (
+            json.dumps(payload, ensure_ascii=False)
+            + "\n/no_think\n"
+            + "Return only the JSON object. Start with { and end with }."
+        )
 
     def _build_capability_prompt(
         self,
@@ -510,6 +562,8 @@ class QwenClient:
                 "If a capability failed, use last_execution_result to select a corrected next call instead of stopping.",
                 "For multiple objects joined by and/commas, move one object at a time through source, grasp, destination, and place.",
                 "Return exactly one JSON object and no extra text.",
+                "Do not output reasoning, markdown, comments, or <think> blocks.",
+                "The response must start with { and end with }.",
             ],
             "examples": [
                 {
@@ -540,7 +594,11 @@ class QwenClient:
                 },
             ],
         }
-        return json.dumps(payload, ensure_ascii=False)
+        return (
+            json.dumps(payload, ensure_ascii=False)
+            + "\n/no_think\n"
+            + "Return only the JSON object. Start with { and end with }."
+        )
 
     def _parse_json_response(self, content: str) -> dict:
         text = self._strip_json_fence(self._strip_thinking_text(content))

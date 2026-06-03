@@ -2,7 +2,12 @@
 set -euo pipefail
 
 SESSION_NAME="${SESSION_NAME:-agent_live}"
-PLANNER_BACKEND="${PLANNER_BACKEND:-local_transformers}"
+PLANNER_BACKEND="${PLANNER_BACKEND:-vllm}"
+VLLM_BASE_URL="${VLLM_BASE_URL:-http://localhost:8001}"
+VLLM_MODEL="${VLLM_MODEL:-decision-qwen}"
+QWEN_MAX_NEW_TOKENS="${QWEN_MAX_NEW_TOKENS:-256}"
+VLLM_TEMPERATURE="${VLLM_TEMPERATURE:-0}"
+VLLM_TIMEOUT_SEC="${VLLM_TIMEOUT_SEC:-60}"
 KACHAKA_ENDPOINT="${KACHAKA_ENDPOINT:-192.168.1.3:26400}"
 AGENT_MAX_REPLANS="${AGENT_MAX_REPLANS:-2}"
 
@@ -26,7 +31,7 @@ if tmux has-session -t "${SESSION_NAME}" 2>/dev/null; then
   exit 1
 fi
 
-SETUP_CMD="cd /robot_ws && source /opt/ros/humble/setup.bash && source /opt/conda/etc/profile.d/conda.sh && conda activate robot_ros && source install/setup.bash && export LLM_BACKEND=${PLANNER_BACKEND} && AGENT_EXE=\$(ros2 pkg prefix decision_maker)/lib/decision_maker/agent_decision_maker_node && if [ -f \"\$AGENT_EXE\" ]; then sed -i \"1s|.*|#!/opt/conda/envs/robot_ros/bin/python3|\" \"\$AGENT_EXE\"; fi"
+SETUP_CMD="cd /robot_ws && source /opt/ros/humble/setup.bash && source /opt/conda/etc/profile.d/conda.sh && conda activate robot_ros && source install/setup.bash && export LLM_BACKEND=${PLANNER_BACKEND} VLLM_BASE_URL=${VLLM_BASE_URL} VLLM_MODEL=${VLLM_MODEL} QWEN_MAX_NEW_TOKENS=${QWEN_MAX_NEW_TOKENS} VLLM_TEMPERATURE=${VLLM_TEMPERATURE} VLLM_TIMEOUT_SEC=${VLLM_TIMEOUT_SEC} && AGENT_EXE=\$(ros2 pkg prefix decision_maker)/lib/decision_maker/agent_decision_maker_node && if [ -f \"\$AGENT_EXE\" ]; then sed -i \"1s|.*|#!/opt/conda/envs/robot_ros/bin/python3|\" \"\$AGENT_EXE\"; fi"
 
 # Layout:
 #   top-left:     object_query server
@@ -53,7 +58,7 @@ tmux send-keys -t "${NAV_PANE}" "clear; echo '[kachaka_nav] starting with KACHAK
 
 # Bottom-left: live agent decision node.
 tmux send-keys -t "${BOTTOM_LEFT_PANE}" "${SETUP_CMD}" C-m
-tmux send-keys -t "${BOTTOM_LEFT_PANE}" "clear; echo \"[agent] starting live pipeline with LLM_BACKEND=\$LLM_BACKEND, replans=${AGENT_MAX_REPLANS}\"; ros2 run decision_maker agent_decision_maker_node --ros-args -p enable_map_visualizer:=false -p mock_execution:=false -p agent_max_replans:=${AGENT_MAX_REPLANS}" C-m
+tmux send-keys -t "${BOTTOM_LEFT_PANE}" "clear; echo \"[agent] starting live pipeline with LLM_BACKEND=\$LLM_BACKEND VLLM_BASE_URL=\$VLLM_BASE_URL VLLM_MODEL=\$VLLM_MODEL max_tokens=\$QWEN_MAX_NEW_TOKENS, replans=${AGENT_MAX_REPLANS}\"; ros2 run decision_maker agent_decision_maker_node --ros-args -p enable_map_visualizer:=false -p mock_execution:=false -p agent_max_replans:=${AGENT_MAX_REPLANS}" C-m
 
 # Bottom-right: natural-language command input node.
 tmux send-keys -t "${NL_PANE}" "${SETUP_CMD}" C-m
@@ -70,6 +75,12 @@ echo "Navigation pane:   top-right     ros2 run kachaka_nav modular_nav_node"
 echo "Agent pane:        bottom-left   ros2 run decision_maker agent_decision_maker_node"
 echo "NL command pane:   bottom-right  ros2 run decision_maker nl_command_node"
 echo "Planner backend:   ${PLANNER_BACKEND}"
+if [ "${PLANNER_BACKEND}" = "vllm" ]; then
+  echo "vLLM base URL:    ${VLLM_BASE_URL}"
+  echo "vLLM model:       ${VLLM_MODEL}"
+  echo "Max new tokens:   ${QWEN_MAX_NEW_TOKENS}"
+  echo "Temperature:      ${VLLM_TEMPERATURE}"
+fi
 echo "Kachaka endpoint:  ${KACHAKA_ENDPOINT}"
 echo "Agent replans:     ${AGENT_MAX_REPLANS}"
 echo "Mouse scroll:      enabled in ${TMUX_CONF}"
