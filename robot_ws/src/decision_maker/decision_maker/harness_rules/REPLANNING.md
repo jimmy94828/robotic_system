@@ -20,7 +20,7 @@ When a capability fails, the next decision receives:
 - If object lookup fails, try a more appropriate symbolic target before stopping.
 - For source-aware transfer tasks such as `bring <object> on <source> to <destination>` or `move <object> from <source> to <destination>`, if `object_query(<object>)` fails, retry with `object_query(<source>)`.
 - If navigation fails, do not proceed to grasp/place as if navigation succeeded. Retry or choose a corrected target/pose first.
-- If grasp fails, do not navigate to destination for placing.
+- If grasp fails, do not navigate to destination for placing. First suspect camera visibility or robot heading; realign/re-navigate to the last source target and retry grasp when appropriate.
 - If place fails, do not finish.
 - Avoid infinite loops; respect `agent_max_steps` and `agent_max_replans`.
 

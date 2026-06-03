@@ -408,7 +408,7 @@ class DecisionMakingNode(Node):
     # =============================================================
     # OBJECT QUERY WRAPPER
     # =============================================================
-    def _query_object_position(self, object_name: str, timeout_sec: float = 30.0) -> Optional[tuple]:
+    def _query_object_position(self, object_name: str, timeout_sec: float = 60.0) -> Optional[tuple]:
         """Request 3D position AND transform it to 2D Nav Frame."""
         if not self.obj_client.wait_for_service(timeout_sec=3.0):
             self.get_logger().error("❌ ObjectQuery service not available.")
@@ -475,7 +475,7 @@ class DecisionMakingNode(Node):
             _, payload = cmd.split(':', 1)
             payload = payload.strip()
             
-            x, y, th = 0.0, 0.0, 0.0
+            x, y, th = 0.0, 0.0, math.nan
             target_z = 0.0
             target_label = payload if payload else "nav_target"
 
@@ -541,9 +541,9 @@ class DecisionMakingNode(Node):
             goal = Navigate.Goal()
             goal.target_x = float(x)
             goal.target_y = float(y)
-            # goal.target_theta = float(th) 
+            goal.target_theta = float(th)
 
-            self.get_logger().info(f"🚀 Sending Nav Goal: ({x:.2f}, {y:.2f})")
+            self.get_logger().info(f"🚀 Sending Nav Goal: ({x:.2f}, {y:.2f}, {th:.2f})")
             
             fut = self.nav_client.send_goal_async(goal, feedback_callback=self._on_nav_feedback)
             start = time.time()

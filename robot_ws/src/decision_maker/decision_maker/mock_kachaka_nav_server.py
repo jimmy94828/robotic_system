@@ -29,7 +29,9 @@ class MockKachakaNavServer(Node):
 
     def goal_cb(self, goal_request):
         self.get_logger().info(
-            f"NAV goal received: ({goal_request.target_x:.2f}, {goal_request.target_y:.2f})"
+            f"NAV goal received: "
+            f"({goal_request.target_x:.2f}, {goal_request.target_y:.2f}, "
+            f"{getattr(goal_request, 'target_theta', 0.0):.2f})"
         )
         return GoalResponse.ACCEPT
 

@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-humble-rosbag2-storage-mcap \
     ros-humble-rosbag2-transport \
     git curl python3-pip \
-    git nano \
+    git nano tmux \
     python3-colcon-common-extensions \
     python3-rosdep \
     ros-humble-rmw-cyclonedds-cpp \

@@ -23,6 +23,10 @@ class AgentDecisionMakingNode(DecisionMakingNode):
         self.llm_client = QwenClient()
         self.agent = DecisionAgent(self.llm_client)
         self.task_decomposer = TaskDecomposer(DecomposerClient(self.llm_client))
+        self.declare_parameter("preload_llm_model", True)
+        self.preload_llm_model = (
+            self.get_parameter("preload_llm_model").get_parameter_value().bool_value
+        )
         self.declare_parameter("mock_execution", False)
         self.mock_execution = (
             self.get_parameter("mock_execution").get_parameter_value().bool_value
@@ -38,6 +42,18 @@ class AgentDecisionMakingNode(DecisionMakingNode):
         self.declare_parameter("agent_max_replans", 2)
         self.agent_max_replans = (
             self.get_parameter("agent_max_replans").get_parameter_value().integer_value
+        )
+        self.declare_parameter("recover_grasp_failure_with_realign", True)
+        self.recover_grasp_failure_with_realign = (
+            self.get_parameter("recover_grasp_failure_with_realign")
+            .get_parameter_value()
+            .bool_value
+        )
+        self.declare_parameter("grasp_realign_max_attempts", 1)
+        self.grasp_realign_max_attempts = (
+            self.get_parameter("grasp_realign_max_attempts")
+            .get_parameter_value()
+            .integer_value
         )
         self.declare_parameter("mock_object_query", True)
         self.mock_object_query = (
@@ -63,6 +79,7 @@ class AgentDecisionMakingNode(DecisionMakingNode):
         self.harness = LightweightPlanningHarness(
             max_replans_per_task=self.agent_max_replans
         )
+        self.task_reply_pub = self.create_publisher(String, "/task_reply", 10)
         self.declare_parameter("robot_pose_global_frame", "map")
         self.declare_parameter("robot_pose_base_frame", "base_link")
         self.declare_parameter("robot_pose_timeout_sec", 1.0)
@@ -85,12 +102,56 @@ class AgentDecisionMakingNode(DecisionMakingNode):
                 self.tf_listener = TransformListener(self.tf_buffer, self)
             except Exception as exc:
                 self.get_logger().warn(f"⚠️ Robot pose TF listener unavailable: {exc}")
+        self._preload_llm_model_if_requested()
         mode = "mock execution" if self.mock_execution else "live execution"
         object_query_mode = "mock" if self.mock_execution and self.mock_object_query else "live"
         self.get_logger().info(
             f"🧠 AgentDecisionMakingNode ready with closed-loop planner "
             f"({mode}, object_query={object_query_mode}, harness replans={self.agent_max_replans})."
         )
+
+    def publish_task_reply(
+        self,
+        task_instruction: str,
+        success: bool,
+        message: str,
+        **extra,
+    ) -> None:
+        payload = {
+            "task": task_instruction,
+            "success": bool(success),
+            "status": "success" if success else "failed",
+            "message": message,
+        }
+        payload.update(extra)
+        msg = String()
+        msg.data = json.dumps(payload, ensure_ascii=False)
+        self.task_reply_pub.publish(msg)
+        self.get_logger().info("📤 Task reply: " + msg.data)
+
+    def _preload_llm_model_if_requested(self) -> None:
+        if not self.preload_llm_model:
+            self.get_logger().info("🧠 LLM model preload disabled by parameter.")
+            return
+
+        if self.llm_client.backend != "local_transformers":
+            self.get_logger().info(
+                f"🧠 LLM backend '{self.llm_client.backend}' does not require startup model preload."
+            )
+            return
+
+        self.get_logger().info(
+            f"🧠 Preloading local Qwen model at node startup: {self.llm_client.model_path}"
+        )
+        start_time = time.monotonic()
+        try:
+            self.llm_client.preload_model()
+        except Exception as exc:
+            self.get_logger().error(f"❌ Failed to preload local Qwen model: {exc}")
+            return
+
+        elapsed = time.monotonic() - start_time
+        self.get_logger().info(f"✅ Local Qwen model preloaded in {elapsed:.1f}s.")
 
     def on_text_event(self, msg: String):
         text = msg.data.strip()
@@ -108,7 +169,14 @@ class AgentDecisionMakingNode(DecisionMakingNode):
 
     def run_decomposed_task_loop(self, task_instruction: str) -> bool:
         if not self.enable_task_decomposition:
-            return self.run_iterative_task_loop(task_instruction)
+            success = self.run_iterative_task_loop(task_instruction)
+            self.publish_task_reply(
+                task_instruction,
+                success,
+                "task completed" if success else "task failed",
+                decomposition_enabled=False,
+            )
+            return success
 
         decomposition_context = self.harness.build_decomposition_context(
             task_instruction=task_instruction,
@@ -172,6 +240,13 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             self.get_logger().error(
                 f"🛑 Task decomposition failed after replanning attempts: {message}"
             )
+            self.publish_task_reply(
+                task_instruction,
+                False,
+                message,
+                stage="task_decomposition",
+                error=last_decomposition_error,
+            )
             return False
 
         subtasks = decomposition["subtasks"]
@@ -189,14 +264,31 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             )
             success = self.run_iterative_task_loop(subtask_text)
             if not success:
+                message = f"Subtask {subtask_id} failed: {subtask_text}"
                 self.get_logger().error(
-                    f"🛑 Subtask {subtask_id} failed; stopping original task "
-                    f"'{task_instruction}'. Failed subtask: {subtask_text}"
+                    f"🛑 {message}; stopping original task '{task_instruction}'."
+                )
+                self.publish_task_reply(
+                    task_instruction,
+                    False,
+                    message,
+                    failed_subtask={
+                        "subtask_id": subtask_id,
+                        "text": subtask_text,
+                        "original_text": original_subtask_text,
+                    },
+                    decomposition=decomposition,
                 )
                 return False
             self.get_logger().info(f"✅ Subtask {subtask_id} completed: {subtask_text}")
 
         self.get_logger().info(f"✅ All subtasks completed for: {task_instruction}")
+        self.publish_task_reply(
+            task_instruction,
+            True,
+            "all subtasks completed",
+            decomposition=decomposition,
+        )
         return True
 
     def _subtask_text_for_agent(self, subtask: dict) -> str:
@@ -220,13 +312,21 @@ class AgentDecisionMakingNode(DecisionMakingNode):
         else:
             destination = None
 
+        text_lower = text.lower()
+        is_handover = subtask_type == "handover" or text_lower.startswith("handover ")
+
         if obj and source and destination:
+            if is_handover:
+                return f"handover {obj} on {source} to {destination}"
             if subtask_type == "move":
                 return f"move {obj} from {source} to {destination}"
             if subtask_type in {"bring", "conditional"}:
                 return f"bring {obj} on {source} to {destination}"
-        if obj and destination and subtask_type == "bring":
-            return f"bring {obj} to {destination}"
+        if obj and destination:
+            if is_handover:
+                return f"handover {obj} to {destination}"
+            if subtask_type == "bring":
+                return f"bring {obj} to {destination}"
         return text
 
     def run_iterative_task_loop(self, task_instruction: str) -> bool:
@@ -248,41 +348,48 @@ class AgentDecisionMakingNode(DecisionMakingNode):
 
         for step_index in range(1, self.agent_max_steps + 1):
             current_state["step_index"] = step_index
-            decision_state = self.harness.prepare_decision_state(
-                current_state,
-                history,
-                last_result,
-            )
-            try:
-                capability_call = self.agent.decide_next_capability(
-                    task_instruction,
-                    decision_state,
+            forced_call = current_state.pop("force_next_capability_call", None)
+            if forced_call:
+                capability_call = forced_call
+                self.get_logger().warn(
+                    "🔁 Forced recovery retry capability call: "
+                    + json.dumps(capability_call, ensure_ascii=False)
+                )
+            else:
+                decision_state = self.harness.prepare_decision_state(
+                    current_state,
                     history,
                     last_result,
                 )
-            except (PlanValidationError, Exception) as exc:
-                last_result = {
-                    "last_action": "agent_decision",
-                    "success": False,
-                    "message": str(exc),
-                }
-                self.harness.record_observation(
-                    current_state,
-                    {"capability": "agent_decision", "step": step_index},
-                    last_result,
-                )
-                if self.harness.can_replan_after_failure(current_state):
-                    used = self.harness.mark_replan_used(current_state)
-                    self.get_logger().warn(
-                        f"🔁 Agent decision failed; feeding error back for replan "
-                        f"({used}/{self.agent_max_replans}): {exc}"
+                try:
+                    capability_call = self.agent.decide_next_capability(
+                        task_instruction,
+                        decision_state,
+                        history,
+                        last_result,
                     )
-                    continue
-                self.get_logger().error(
-                    f"❌ Agent decision failed after replanning at step {step_index}: {exc}"
-                )
-                return False
-
+                except (PlanValidationError, Exception) as exc:
+                    last_result = {
+                        "last_action": "agent_decision",
+                        "success": False,
+                        "message": str(exc),
+                    }
+                    self.harness.record_observation(
+                        current_state,
+                        {"capability": "agent_decision", "step": step_index},
+                        last_result,
+                    )
+                    if self.harness.can_replan_after_failure(current_state):
+                        used = self.harness.mark_replan_used(current_state)
+                        self.get_logger().warn(
+                            f"🔁 Agent decision failed; feeding error back for replan "
+                            f"({used}/{self.agent_max_replans}): {exc}"
+                        )
+                        continue
+                    self.get_logger().error(
+                        f"❌ Agent decision failed after replanning at step {step_index}: {exc}"
+                    )
+                    return False
             verification_context = self.harness.build_verification_context(
                 capability_call,
                 current_state,
@@ -336,6 +443,51 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             )
 
             if not result.get("success", False):
+                recovery_result = self._try_recover_grasp_failure_with_realign(
+                    current_state,
+                    history,
+                    capability_call,
+                    result,
+                )
+                if recovery_result is not None:
+                    history.append({"step": step_index, "call": capability_call, "result": result})
+                    recovery_call = recovery_result["call"]
+                    recovery_observation = recovery_result["result"]
+                    self.harness.record_observation(
+                        current_state,
+                        recovery_call,
+                        recovery_observation,
+                    )
+                    history.append({
+                        "step": step_index,
+                        "call": recovery_call,
+                        "result": recovery_observation,
+                    })
+                    last_result = recovery_observation
+                    self.get_logger().info(
+                        "👁️ Capability observation: "
+                        + json.dumps(recovery_observation, ensure_ascii=False)
+                    )
+                    if recovery_observation.get("success"):
+                        current_state["force_next_capability_call"] = dict(capability_call)
+                        self.get_logger().warn(
+                            "🔁 Realignment completed; forcing retry of the failed grasp before any destination navigation."
+                        )
+                    continue
+
+                if (
+                    capability_call.get("capability") == "grasp_place"
+                    and capability_call.get("action") == "grasp"
+                ):
+                    history.append({"step": step_index, "call": capability_call, "result": result})
+                    self.get_logger().error(
+                        f"🛑 Grasp failed after recovery/retry; object "
+                        f"'{capability_call.get('target')}' is not held. "
+                        f"Stopping subtask instead of navigating to a destination. "
+                        f"Reason: {result.get('message', 'unknown error')}"
+                    )
+                    return False
+
                 if self.harness.can_replan_after_failure(current_state):
                     used = self.harness.mark_replan_used(current_state)
                     self.get_logger().warn(
@@ -358,6 +510,94 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             f"⏰ Agent task '{task_instruction}' exceeded max_steps={self.agent_max_steps}."
         )
         return False
+
+    def _try_recover_grasp_failure_with_realign(
+        self,
+        current_state: dict,
+        history: list,
+        failed_call: dict,
+        failed_result: dict,
+    ) -> dict | None:
+        if not self.recover_grasp_failure_with_realign:
+            return None
+        if failed_call.get("capability") != "grasp_place":
+            return None
+        if failed_call.get("action") != "grasp":
+            return None
+
+        message = str(failed_result.get("message", "")).lower()
+        camera_like_failure = any(
+            token in message
+            for token in (
+                "image",
+                "camera",
+                "rgb",
+                "depth",
+                "not found",
+                "not detected",
+                "no synchronized",
+                "view",
+                "visible",
+                "grasp failed",
+            )
+        )
+        if message and not camera_like_failure:
+            return None
+
+        target_object = failed_call.get("target", "unknown")
+        recovery_counts = current_state.setdefault("grasp_realign_recovery_counts", {})
+        attempts_used = int(recovery_counts.get(target_object, 0))
+        if attempts_used >= self.grasp_realign_max_attempts:
+            self.get_logger().warn(
+                f"🔁 Grasp realignment already attempted for {target_object} "
+                f"({attempts_used}/{self.grasp_realign_max_attempts}); returning to normal replanning."
+            )
+            return None
+
+        nav_entry = self._last_successful_navigation_entry(history)
+        if nav_entry is None:
+            self.get_logger().warn(
+                "🔁 Grasp failed, but no successful navigation target is available for realignment."
+            )
+            return None
+
+        nav_call = nav_entry["call"]
+        nav_result = nav_entry["result"]
+        target = nav_result.get("target") or nav_call.get("target")
+        pose = nav_result.get("pose") or nav_call.get("pose")
+        if pose is None and target:
+            pose = current_state.get("known_poses", {}).get(target)
+
+        recovery_call = {
+            "capability": "navigation",
+            "target": target,
+            "reason": "Recover from grasp failure by realigning the robot camera toward the last grasp source.",
+        }
+        if pose:
+            recovery_call["pose"] = pose
+
+        recovery_counts[target_object] = attempts_used + 1
+        self.get_logger().warn(
+            "🔁 Grasp failed; realigning at last navigation target before retrying grasp. "
+            f"target={target}, object={target_object}, "
+            f"attempt={recovery_counts[target_object]}/{self.grasp_realign_max_attempts}, "
+            f"message={failed_result.get('message', 'unknown error')}"
+        )
+        recovery_observation = self.execute_navigation(
+            target=target,
+            pose=pose,
+            current_state=current_state,
+        )
+        recovery_observation["recovery_for"] = "grasp_failure"
+        return {"call": recovery_call, "result": recovery_observation}
+
+    def _last_successful_navigation_entry(self, history: list) -> dict | None:
+        for entry in reversed(history):
+            call = entry.get("call", {})
+            result = entry.get("result", {})
+            if call.get("capability") == "navigation" and result.get("success"):
+                return entry
+        return None
 
     def execute_capability_call(self, capability_call: dict, current_state: dict) -> dict:
         capability = capability_call["capability"]
@@ -567,16 +807,16 @@ class AgentDecisionMakingNode(DecisionMakingNode):
                 return failure
             if action == "grasp" and current_state is not None:
                 current_state["held_object"] = target
-            elif action == "place" and current_state is not None:
+            elif action in {"place", "handover"} and current_state is not None:
                 current_state["held_object"] = None
             result = {
                 "last_action": "grasp_place",
                 "action": action,
                 "target": target,
-                "success": action in {"grasp", "place"},
+                "success": action in {"grasp", "place", "handover"},
                 "message": (
                     f"mock {action} completed"
-                    if action in {"grasp", "place"}
+                    if action in {"grasp", "place", "handover"}
                     else f"unsupported mock action: {action}"
                 ),
             }
@@ -612,6 +852,21 @@ class AgentDecisionMakingNode(DecisionMakingNode):
                 "success": bool(success),
                 "message": "place completed" if success else "place failed",
             }
+
+        if action == "handover":
+            success = self._execute_handover(f"handover:{target}")
+            if success and current_state is not None:
+                current_state["held_object"] = None
+            result = {
+                "last_action": "grasp_place",
+                "action": "handover",
+                "target": target,
+                "success": bool(success),
+                "message": "handover completed" if success else "handover failed",
+            }
+            if destination:
+                result["destination"] = destination
+            return result
 
         return {
             "last_action": "grasp_place",
@@ -692,9 +947,13 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             goal = Navigate.Goal()
             goal.target_x = float(pose["x"])
             goal.target_y = float(pose["y"])
+            # Object-query poses do not provide a reliable yaw. NaN asks the
+            # navigation node to face the target from the current robot pose.
+            goal.target_theta = float(pose.get("target_theta", pose.get("yaw", math.nan)))
 
             self.get_logger().info(
-                f"🧭 Sending Nav Goal from pose: ({goal.target_x:.2f}, {goal.target_y:.2f})"
+                f"🧭 Sending Nav Goal from pose: "
+                f"({goal.target_x:.2f}, {goal.target_y:.2f}, {goal.target_theta:.2f})"
             )
             fut = self.nav_client.send_goal_async(
                 goal,

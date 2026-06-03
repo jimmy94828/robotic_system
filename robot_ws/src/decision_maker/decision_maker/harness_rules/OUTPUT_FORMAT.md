@@ -34,6 +34,12 @@ Allowed `capability` values:
 {"capability":"grasp_place","action":"place","target":"pringles","destination":"sofa","reason":"Place the object at the destination."}
 ```
 
+## handover
+
+```json
+{"capability":"grasp_place","action":"handover","target":"pringles","reason":"Hand over the object at the destination."}
+```
+
 ## robot_pose
 
 ```json

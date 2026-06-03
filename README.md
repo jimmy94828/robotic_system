@@ -1299,3 +1299,142 @@ ros2 run decision_maker nl_command_node
 When a command such as `place the bottle on table to chair` is executed, the visualization publisher will show candidate instances from object query, the active navigation target from `decision_maker_node.py`, the robot pose arrow, and the accumulated trajectory in RViz2.
 
 </details>
+
+<details>
+<summary><strong>10. Agent-Based Decision Maker Helpers</strong></summary>
+
+## 10. Agent-Based Decision Maker Helpers
+
+This project includes helper scripts for launching the agent-based decision maker pipeline in tmux. These scripts are intended to reduce the number of terminals needed during mock and real-robot tests.
+
+Before running either script inside the ROS container, enter the workspace:
+
+```bash
+cd /robot_ws
+```
+
+If a tmux session already exists, kill it first:
+
+```bash
+tmux kill-session -t agent_mock
+tmux kill-session -t agent_live
+```
+
+### 10.1 Mock / Hybrid Mock Pipeline
+
+Use this for development without driving the real robot. The script opens three panes:
+
+- Top-left: `object_query_server`
+- Top-right: interactive manual command shell
+- Bottom: agent-based decision maker mock pipeline
+
+Run:
+
+```bash
+./scripts/agent_mock_pipeline_tmux.sh
+tmux attach -t agent_mock
+```
+
+The top-right pane is an initialized shell. Publish a command manually from there:
+
+```bash
+ros2 topic pub --once /manual_command std_msgs/msg/String \
+  "{data: 'bring pringles on table to sofa'}"
+```
+
+<!-- By default this script uses the local Qwen backend:
+
+```bash
+LLM_BACKEND=local_transformers
+```
+
+The script sets this through `PLANNER_BACKEND=local_transformers` by default. To run a fast smoke test without loading Qwen, override it explicitly:
+
+```bash
+PLANNER_BACKEND=placeholder ./scripts/agent_mock_pipeline_tmux.sh
+``` -->
+
+### 10.2 Real-Robot Pipeline
+
+Use this for real Kachaka / robot testing. The script opens four panes:
+
+- Top-left: `object_query_server`
+- Top-right: `kachaka_nav modular_nav_node`
+- Bottom-left: `agent_decision_maker_node`
+- Bottom-right: `nl_command_node`
+
+Run:
+
+```bash
+./scripts/agent_live_pipeline_tmux.sh
+tmux attach -t agent_live
+```
+
+<!-- By default this script also uses the local Qwen backend:
+
+```bash
+LLM_BACKEND=local_transformers
+```
+
+The default Kachaka endpoint is:
+
+```bash
+192.168.1.3:26400
+```
+
+Override it when needed:
+
+```bash
+KACHAKA_ENDPOINT=192.168.1.3:26400 ./scripts/agent_live_pipeline_tmux.sh
+```
+
+The live script runs the agent node with real execution enabled:
+
+```bash
+ros2 run decision_maker agent_decision_maker_node \
+  --ros-args \
+  -p enable_map_visualizer:=false \
+  -p mock_execution:=false \
+  -p agent_max_replans:=2
+``` -->
+
+### 10.3 Run Only The Agent-Based Decision Node
+
+To run only the agent-based decision node manually, initialize the ROS environment first:
+
+```bash
+cd /robot_ws
+source /opt/ros/humble/setup.bash
+source /opt/conda/etc/profile.d/conda.sh
+conda activate robot_ros
+source install/setup.bash
+```
+
+If the installed console script uses `/usr/bin/python3`, patch it to use the conda environment Python:
+
+```bash
+AGENT_EXE=$(ros2 pkg prefix decision_maker)/lib/decision_maker/agent_decision_maker_node
+sed -i '1s|.*|#!/opt/conda/envs/robot_ros/bin/python3|' "$AGENT_EXE"
+```
+
+Run with real execution:
+
+```bash
+ros2 run decision_maker agent_decision_maker_node \
+  --ros-args \
+  -p enable_map_visualizer:=false \
+  -p mock_execution:=false \
+  -p agent_max_replans:=2
+```
+
+Run with mock execution:
+
+```bash
+ros2 run decision_maker agent_decision_maker_node \
+  --ros-args \
+  -p enable_map_visualizer:=false \
+  -p mock_execution:=true \
+  -p mock_object_query:=true \
+  -p agent_max_replans:=2
+```
+</details>

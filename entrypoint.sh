@@ -8,7 +8,11 @@ source /opt/conda/etc/profile.d/conda.sh
 conda activate robot_ros
 
 cd /robot_ws
-colcon build --symlink-install
+if [ -f install/.colcon_install_layout ] && grep -qx merged install/.colcon_install_layout; then
+  colcon build --merge-install --symlink-install
+else
+  colcon build --symlink-install
+fi
 # dependency
 if [ -d "/robot_ws/src" ]; then 
    source install/setup.bash
@@ -23,5 +27,4 @@ export PYTHONPATH=$PYTHONPATH:/opt/conda/envs/robot_ros/lib/python3.10/site-pack
 # (B) 跑Kachaka ROS2 topic/service
 # ex: ros2 run kachaka_ros2_bridge ros2_bridge
 
-# tail -f /dev/null
-exec bash
+tail -f /dev/null

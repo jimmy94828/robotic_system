@@ -71,6 +71,7 @@ class MapClicker(Node):
         goal_msg = Navigate.Goal()
         goal_msg.target_x = float(x)
         goal_msg.target_y = float(y)
+        goal_msg.target_theta = float('nan')
         
         self.get_logger().info(f"Sending Goal -> X: {x:.2f}, Y: {y:.2f}")
         

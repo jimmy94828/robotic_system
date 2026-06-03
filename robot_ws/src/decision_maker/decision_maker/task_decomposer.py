@@ -14,7 +14,7 @@ from typing import Any, Dict, List
 from .decision_agent import PlanValidationError, QwenClient
 
 
-SUPPORTED_SUBTASK_TYPES = {"bring", "move", "conditional", "query", "other"}
+SUPPORTED_SUBTASK_TYPES = {"bring", "move", "handover", "conditional", "query", "other"}
 
 
 class TaskDecompositionError(ValueError):
@@ -48,7 +48,8 @@ class DecomposerClient:
                 "role": "system",
                 "content": (
                     "You are a robot task decomposer. Return only one valid JSON "
-                    "object. Do not include markdown or explanations."
+                    "object. Do not include markdown, explanations, or <think> text. "
+                    "Output JSON only."
                 ),
             },
             {"role": "user", "content": prompt},

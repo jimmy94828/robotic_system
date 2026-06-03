@@ -88,13 +88,13 @@ class LightweightPlanningHarness:
                 "Use observations from previous capability calls before deciding the next call.",
                 "For bring/place tasks with an explicit source, locate and navigate to the source before grasping the object.",
                 "For move tasks with 'from <source>', first query the object; if that fails, query and navigate to the source.",
-                "After grasping, locate and navigate to the destination before placing.",
+                "After grasping, locate and navigate to the destination before placing or handing over.",
                 "Use finish only after the task goal has been achieved.",
             ],
             "skill_constraints": {
                 "object_query": "Requires target. Returns a symbolic target pose if found.",
                 "navigation": "Requires target or pose. Prefer a pose returned by object_query when available.",
-                "grasp_place": "Requires action grasp/place. Grasp requires target. Place requires target and destination.",
+                "grasp_place": "Requires action grasp/place/handover. Grasp and handover require target. Place requires target and destination.",
                 "robot_pose": "Requires no target. Returns the robot current pose from TF or mock state.",
                 "finish": "Requires task_done=true and should only be used when the task is complete.",
             },
@@ -105,6 +105,7 @@ class LightweightPlanningHarness:
                     {"capability": "object_query", "target": "table", "reason": "Need source pose."},
                     {"capability": "navigation", "target": "table", "pose": {"x": 1.0, "y": 2.0, "theta": 0.0}, "reason": "Navigate to source."},
                     {"capability": "grasp_place", "action": "grasp", "target": "pringles", "reason": "Grasp target object."},
+                    {"capability": "grasp_place", "action": "handover", "target": "pringles", "reason": "Hand over target object."},
                     {"capability": "robot_pose", "reason": "Check current robot pose."},
                     {"capability": "finish", "task_done": True, "reason": "Task completed."},
                 ],
@@ -262,13 +263,59 @@ class LightweightPlanningHarness:
             if target and target not in current_state.get("known_poses", {}):
                 return True, "navigation target has no cached pose; executor may perform live lookup."
 
-        if capability == "grasp_place" and capability_call.get("action") == "place":
+        if capability == "grasp_place" and capability_call.get("action") in {"place", "handover"}:
             held_object = current_state.get("held_object")
             target = capability_call.get("target")
-            if held_object and target and held_object != target:
-                return False, f"cannot place {target}; current held_object is {held_object}."
+            if not held_object:
+                return False, f"cannot {capability_call.get('action')} {target}; no object is currently held."
+            if target and held_object != target:
+                return False, f"cannot {capability_call.get('action')} {target}; current held_object is {held_object}."
+
+            destination = _destination_from_task(current_state.get("task", ""))
+            if destination:
+                current_nav = self._latest_successful_navigation_target(history)
+                if current_nav != destination:
+                    return (
+                        False,
+                        f"cannot {capability_call.get('action')} {target} before navigating to destination {destination}; "
+                        f"latest navigation target is {current_nav}.",
+                    )
+
+        if capability == "navigation":
+            unresolved_grasp = self._latest_unresolved_grasp_failure(history)
+            if unresolved_grasp:
+                last_source = self._latest_successful_navigation_target(history)
+                target = capability_call.get("target")
+                if target and last_source and target != last_source:
+                    return (
+                        False,
+                        f"cannot navigate to {target} after failed grasp of {unresolved_grasp}; "
+                        f"object is not held. Retry grasp or recover at source {last_source} first.",
+                    )
 
         return True, "capability call verified"
+
+    def _latest_unresolved_grasp_failure(self, history: List[dict]) -> str | None:
+        latest_failed_target = None
+        for entry in history:
+            call = entry.get("call", {})
+            result = entry.get("result", {})
+            if call.get("capability") != "grasp_place" or call.get("action") != "grasp":
+                continue
+            target = call.get("target")
+            if result.get("success"):
+                latest_failed_target = None
+            elif target:
+                latest_failed_target = target
+        return latest_failed_target
+
+    def _latest_successful_navigation_target(self, history: List[dict]) -> str | None:
+        for entry in reversed(history):
+            call = entry.get("call", {})
+            result = entry.get("result", {})
+            if call.get("capability") == "navigation" and result.get("success"):
+                return result.get("target") or call.get("target")
+        return None
 
     def record_observation(
         self,
@@ -302,3 +349,20 @@ class LightweightPlanningHarness:
 def _looks_like_multi_object_task(text: str) -> bool:
     normalized = f" {text.strip().lower()} "
     return " and " in normalized or "," in normalized
+
+
+def _destination_from_task(text: str) -> str | None:
+    normalized = str(text or "").strip().lower()
+    if " to " not in normalized:
+        return None
+    destination = normalized.rsplit(" to ", 1)[1].strip()
+    if not destination:
+        return None
+    destination = destination.split(" and ", 1)[0].strip(" .,;:")
+    for prep in (" on ", " in ", " at ", " from ", " near ", " by ", " inside "):
+        if prep in destination:
+            destination = destination.split(prep, 1)[0].strip()
+    for article in ("the ", "a ", "an "):
+        if destination.startswith(article):
+            destination = destination[len(article):].strip()
+    return " ".join(destination.split()) or None

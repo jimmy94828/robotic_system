@@ -11,9 +11,15 @@ import numpy as np
 import json
 import os
 import random
+import re
+import select
+import sys
+import threading
 from scipy.spatial.transform import Rotation as R
 from collections import defaultdict
 import yaml
+from rclpy.callback_groups import ReentrantCallbackGroup
+from rclpy.executors import MultiThreadedExecutor
 
 class ObjectQueryServer(Node):
     def __init__(self):
@@ -32,6 +38,7 @@ class ObjectQueryServer(Node):
 
         self.declare_parameter('alignment_path', 'data/Util/alignment.yaml')
         self.declare_parameter('auto_align', False) 
+        self.declare_parameter('choice_timeout_sec', 60.0)
 
         map_3d_path = self.get_parameter('3dmap_path').get_parameter_value().string_value
         map_path = self.get_parameter('map_path').get_parameter_value().string_value
@@ -39,10 +46,27 @@ class ObjectQueryServer(Node):
         instance_path = self.get_parameter('instance_path').get_parameter_value().string_value
         alignment_path = self.get_parameter('alignment_path').get_parameter_value().string_value
         auto_align = self.get_parameter('auto_align').get_parameter_value().bool_value
+        self.choice_timeout_sec = (
+            self.get_parameter('choice_timeout_sec').get_parameter_value().double_value
+        )
 
         # === ROS Entities ===
-        self.srv = self.create_service(ObjectQuery, '/object_query', self.handle_query)
+        self.choice_callback_group = ReentrantCallbackGroup()
+        self.srv = self.create_service(
+            ObjectQuery,
+            '/object_query',
+            self.handle_query,
+            callback_group=self.choice_callback_group,
+        )
         self.pub_objects = self.create_publisher(String, '/object_list', 10)
+        self.choice_pub = self.create_publisher(String, '/object_query_choice', 10)
+        self.reply_sub = self.create_subscription(
+            String,
+            '/object_query_reply',
+            self.handle_choice_reply,
+            10,
+            callback_group=self.choice_callback_group,
+        )
         self.marker_pub = self.create_publisher(MarkerArray, '/semantic_map_markers', 10)
         self.pcl_pub = self.create_publisher(PointCloud2, '/map_pointcloud', 10)
         preview_qos = QoSProfile(depth=1, durability=QoSDurabilityPolicy.TRANSIENT_LOCAL)
@@ -55,6 +79,10 @@ class ObjectQueryServer(Node):
         # === Data container ===
         self.object_db = defaultdict(list) 
         self.object_instance_ids = defaultdict(list)
+        self._choice_lock = threading.Lock()
+        self._choice_condition = threading.Condition(self._choice_lock)
+        self._choice_replies = {}
+        self._choice_counter = 0
         
         self.map_points = None
         self.map_colors = None
@@ -80,6 +108,74 @@ class ObjectQueryServer(Node):
         self.pcl_timer = self.create_timer(1.0, self.publish_point_cloud)  # Publish every 1 second
 
         self.get_logger().info(f'✅ ObjectQuery service ready. Auto-align & Center: {auto_align}')
+
+
+    def handle_choice_reply(self, msg: String):
+        """Accept Avatar/user replies for object disambiguation.
+
+        Supported payloads:
+        - "0"
+        - {"index": 0}
+        - {"request_id": "table-1", "index": 0}
+        """
+        text = msg.data.strip()
+        if not text:
+            return
+
+        request_id = None
+        index = None
+        try:
+            payload = json.loads(text)
+            if isinstance(payload, dict):
+                request_id = payload.get('request_id')
+                index = payload.get('index', payload.get('choice'))
+            else:
+                index = payload
+        except json.JSONDecodeError:
+            request_id, index = self._parse_relaxed_choice_reply(text)
+
+        try:
+            selected_idx = int(index)
+        except (TypeError, ValueError):
+            self.get_logger().warn(
+                "Invalid /object_query_reply payload. Expected '0', "
+                "{\"index\":0}, or {\"request_id\":\"table-1\",\"index\":0}. "
+                f"Got: {msg.data}"
+            )
+            return
+
+        with self._choice_condition:
+            key = str(request_id) if request_id else '__latest__'
+            self._choice_replies[key] = selected_idx
+            self._choice_condition.notify_all()
+
+        self.get_logger().info(
+            f"Received /object_query_reply: request_id={request_id or '<latest>'}, index={selected_idx}"
+        )
+
+    def _parse_relaxed_choice_reply(self, text: str):
+        """Parse common non-JSON replies from UI layers.
+
+        Accepts:
+        - 0
+        - {request_id: table-1, index: 0}
+        - request_id=table-1,index=0
+        """
+        stripped = text.strip()
+        if stripped.isdigit():
+            return None, stripped
+
+        request_match = re.search(
+            r"request_id\s*[:=]\s*[\"']?([^,}\"']+)[\"']?",
+            stripped,
+        )
+        index_match = re.search(
+            r"(?:index|choice)\s*[:=]\s*[\"']?(\d+)[\"']?",
+            stripped,
+        )
+        request_id = request_match.group(1).strip() if request_match else None
+        index = index_match.group(1).strip() if index_match else None
+        return request_id, index
 
     # --------------------------------------------------------------
     def load_alignment(self, alignment_path: str):
@@ -130,10 +226,12 @@ class ObjectQueryServer(Node):
         z = self.alignment['scale'] * height
         return float(xy[0]), float(xy[1]), float(z)
 
-    def publish_candidate_options(self, name: str, instances, instance_ids):
+    def publish_candidate_options(self, name: str, instances, instance_ids, request_id: str | None = None):
         payload = {
             'event': 'active',
             'name': name,
+            'request_id': request_id,
+            'reply_topic': '/object_query_reply',
             'options': [],
         }
         for i, pos in enumerate(instances):
@@ -154,11 +252,13 @@ class ObjectQueryServer(Node):
         msg = String()
         msg.data = json.dumps(payload)
         self.candidate_pub.publish(msg)
+        self.choice_pub.publish(msg)
 
     def clear_candidate_options(self):
         msg = String()
         msg.data = json.dumps({'event': 'clear'})
         self.candidate_pub.publish(msg)
+        self.choice_pub.publish(msg)
 
     # --------------------------------------------------------------
     def load_instance_map(self, instance_path: str, map_3d_path: str):
@@ -411,6 +511,7 @@ class ObjectQueryServer(Node):
     def handle_query(self, request, response):
         """Handles query. Returns position and UPDATES visualization for that object only."""
         name = request.name.strip().lower()
+        self.get_logger().info(f"Received ObjectQuery request: {name}")
         found, point = self.search_object(name)
         
         response.found = found
@@ -434,7 +535,8 @@ class ObjectQueryServer(Node):
             instance_ids = self.object_instance_ids.get(name, [])
             if len(instances) > 1:
                 self.get_logger().info(f"Multiple instances of '{name}' found. Waiting for user selection.")
-                self.publish_candidate_options(name, instances, instance_ids)
+                request_id = self._next_choice_request_id(name)
+                self.publish_candidate_options(name, instances, instance_ids, request_id=request_id)
                 for i, inst in enumerate(instances):
                     instance_id = instance_ids[i] if i < len(instance_ids) else 'n/a'
                     map_x, map_y, map_z = self.transform_point_to_map(inst)
@@ -443,17 +545,7 @@ class ObjectQueryServer(Node):
                         f"raw=({inst[0]:.2f}, {inst[1]:.2f}, {inst[2]:.2f}) "
                         f"map=({map_x:.2f}, {map_y:.2f}, {map_z:.2f})"
                     )
-                choosen_index = input(
-                    f"Multiple instances of '{name}' found. Enter index (0-{len(instances)-1}) to select, "
-                    "or press Enter for random: "
-                )
-                selected_idx = None
-                if choosen_index.isdigit():
-                    idx = int(choosen_index)
-                    if 0 <= idx < len(instances):
-                        selected_idx = idx
-                    else:
-                        self.get_logger().warn(f"Invalid index entered. Selecting randomly.")
+                selected_idx = self.wait_for_choice(name, request_id, len(instances))
                 if selected_idx is None:
                     selected_idx = random.randrange(len(instances))
                     self.get_logger().info(f"Randomly selected index [{selected_idx}] for '{name}'.")
@@ -466,6 +558,68 @@ class ObjectQueryServer(Node):
         else:
             self.clear_candidate_options()
             return False, Point(x=0.0, y=0.0, z=0.0)
+
+
+
+    def _next_choice_request_id(self, name: str) -> str:
+        with self._choice_lock:
+            self._choice_counter += 1
+            return f"{name}-{self._choice_counter}"
+
+    def wait_for_choice(self, name: str, request_id: str, option_count: int):
+        prompt = (
+            f"Multiple instances of '{name}' found. Enter index (0-{option_count - 1}) to select, "
+            "or press Enter for random: "
+        )
+        try:
+            print(prompt, end='', flush=True)
+        except Exception:
+            pass
+
+        deadline = self.get_clock().now().nanoseconds / 1e9 + self.choice_timeout_sec
+        with self._choice_condition:
+            while True:
+                for key in (request_id, '__latest__'):
+                    if key in self._choice_replies:
+                        idx = self._choice_replies.pop(key)
+                        if 0 <= idx < option_count:
+                            self.get_logger().info(
+                                f"Selected index [{idx}] for '{name}' from /object_query_reply."
+                            )
+                            return idx
+                        self.get_logger().warn(
+                            f"Invalid /object_query_reply index {idx}; selecting randomly."
+                        )
+                        return None
+
+                if self._terminal_has_line_ready():
+                    text = sys.stdin.readline().strip()
+                    if not text:
+                        return None
+                    if text.isdigit():
+                        idx = int(text)
+                        if 0 <= idx < option_count:
+                            self.get_logger().info(
+                                f"Selected index [{idx}] for '{name}' from terminal input."
+                            )
+                            return idx
+                    self.get_logger().warn("Invalid terminal choice; selecting randomly.")
+                    return None
+
+                remaining = deadline - self.get_clock().now().nanoseconds / 1e9
+                if remaining <= 0:
+                    self.get_logger().warn(
+                        f"Timed out waiting for '{name}' choice after {self.choice_timeout_sec:.1f}s."
+                    )
+                    return None
+                self._choice_condition.wait(timeout=min(0.2, remaining))
+
+    def _terminal_has_line_ready(self) -> bool:
+        try:
+            readable, _, _ = select.select([sys.stdin], [], [], 0.0)
+            return bool(readable)
+        except Exception:
+            return False
 
     def publish_object_list(self):
         serializable_db = {k: v for k, v in self.object_db.items()}
@@ -560,9 +714,16 @@ class ObjectQueryServer(Node):
 def main():
     rclpy.init()
     node = ObjectQueryServer()
-    try: rclpy.spin(node)
-    except KeyboardInterrupt: pass
-    finally: node.destroy_node(); rclpy.shutdown()
+    executor = MultiThreadedExecutor(num_threads=2)
+    executor.add_node(node)
+    try:
+        executor.spin()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        executor.shutdown()
+        node.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

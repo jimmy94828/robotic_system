@@ -15,7 +15,7 @@ from typing import Any, Dict, Iterable, List
 
 SUPPORTED_ACTIONS = {"goto", "grasp", "place", "handover"}
 SUPPORTED_CAPABILITIES = {"object_query", "navigation", "grasp_place", "robot_pose", "finish"}
-SUPPORTED_GRASP_PLACE_ACTIONS = {"grasp", "place"}
+SUPPORTED_GRASP_PLACE_ACTIONS = {"grasp", "place", "handover"}
 
 
 class PlanValidationError(ValueError):
@@ -25,14 +25,22 @@ class PlanValidationError(ValueError):
 class QwenClient:
     """Modular Qwen client with placeholder and local Transformers backends."""
 
-    DEFAULT_MODEL_PATH = "/home/acm/robotic_agent/models/Qwen3-VL-4B-Instruct-FP8"
+    DEFAULT_MODEL_PATH = "/home/acm/robotic_agent/models/Qwen3-8B"
 
     def __init__(self):
-        self.backend = os.getenv("LLM_BACKEND", "placeholder").strip().lower()
+        self.backend = os.getenv("LLM_BACKEND", "local_transformers").strip().lower()
         self.model_path = os.getenv("QWEN_MODEL_PATH", self.DEFAULT_MODEL_PATH)
         self.max_new_tokens = int(os.getenv("QWEN_MAX_NEW_TOKENS", "512"))
         self._model = None
         self._processor = None
+        self._tokenizer = None
+
+    def preload_model(self) -> bool:
+        """Load the configured LLM backend before the first task arrives."""
+        if self.backend != "local_transformers":
+            return False
+        self._ensure_local_model_loaded()
+        return True
 
     # ------------------------------------------------------------------
     # Baseline single-shot plan API, kept for comparison.
@@ -277,7 +285,8 @@ class QwenClient:
                 "content": (
                     "You are a closed-loop robot decision agent. "
                     "Return only one valid JSON object for the next capability call. "
-                    "Do not include markdown or explanations."
+                    "Do not include markdown, explanations, or <think> text. "
+                    "Output JSON only."
                 ),
             },
             {"role": "user", "content": prompt},
@@ -293,7 +302,8 @@ class QwenClient:
                 "role": "system",
                 "content": (
                     "You are a robot task planner. Return only valid JSON. "
-                    "Do not include markdown or explanations."
+                    "Do not include markdown, explanations, or <think> text. "
+                    "Output JSON only."
                 ),
             },
             {"role": "user", "content": prompt},
@@ -309,20 +319,27 @@ class QwenClient:
                 "Local Qwen backend requires torch. Install torch in the ROS container."
             ) from exc
 
+        tokenizer_or_processor = self._processor or self._tokenizer
+        if tokenizer_or_processor is None:
+            raise PlanValidationError("Local Qwen backend was not loaded correctly.")
+
         try:
-            chat_text = self._processor.apply_chat_template(
+            chat_text = tokenizer_or_processor.apply_chat_template(
                 messages,
                 tokenize=False,
                 add_generation_prompt=True,
+                enable_thinking=False,
             )
-            inputs = self._processor(text=[chat_text], return_tensors="pt")
         except TypeError:
-            chat_text = self._processor.apply_chat_template(
+            chat_text = tokenizer_or_processor.apply_chat_template(
                 messages,
                 tokenize=False,
                 add_generation_prompt=True,
             )
-            inputs = self._processor(chat_text, return_tensors="pt")
+        try:
+            inputs = tokenizer_or_processor(text=[chat_text], return_tensors="pt")
+        except TypeError:
+            inputs = tokenizer_or_processor(chat_text, return_tensors="pt")
 
         if torch.cuda.is_available():
             inputs = inputs.to("cuda")
@@ -336,14 +353,14 @@ class QwenClient:
 
         input_len = inputs["input_ids"].shape[1]
         generated_ids = generated_ids[:, input_len:]
-        return self._processor.batch_decode(
+        return tokenizer_or_processor.batch_decode(
             generated_ids,
             skip_special_tokens=True,
             clean_up_tokenization_spaces=False,
         )[0]
 
     def _ensure_local_model_loaded(self) -> None:
-        if self._model is not None and self._processor is not None:
+        if self._model is not None and (self._processor is not None or self._tokenizer is not None):
             return
 
         if not os.path.isdir(self.model_path):
@@ -351,7 +368,7 @@ class QwenClient:
 
         try:
             import torch
-            from transformers import AutoProcessor
+            from transformers import AutoConfig
         except ImportError as exc:
             raise PlanValidationError(
                 "Local Qwen backend requires transformers and torch. "
@@ -360,28 +377,60 @@ class QwenClient:
 
         self._disable_deepgemm_hub_probe()
 
-        try:
-            from transformers import AutoModelForImageTextToText as ModelClass
-        except ImportError:
+        dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
+        device_map = "auto" if torch.cuda.is_available() else None
+
+        config = AutoConfig.from_pretrained(
+            self.model_path,
+            trust_remote_code=True,
+        )
+        model_type = str(getattr(config, "model_type", "")).lower()
+        architectures = [str(item).lower() for item in getattr(config, "architectures", []) or []]
+        is_vision_model = "vl" in model_type or any("vision" in item or "image" in item for item in architectures)
+
+        if is_vision_model:
             try:
-                from transformers import AutoModelForVision2Seq as ModelClass
+                from transformers import AutoProcessor
+                try:
+                    from transformers import AutoModelForImageTextToText as ModelClass
+                except ImportError:
+                    from transformers import AutoModelForVision2Seq as ModelClass
             except ImportError as exc:
                 raise PlanValidationError(
                     "Installed transformers is too old for Qwen3-VL. "
-                    "Upgrade transformers before loading the local model."
+                    "Upgrade transformers before loading the local vision-language model."
                 ) from exc
 
-        dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
-        self._processor = AutoProcessor.from_pretrained(
-            self.model_path,
-            trust_remote_code=True,
-        )
-        self._model = ModelClass.from_pretrained(
-            self.model_path,
-            dtype=dtype,
-            device_map="auto" if torch.cuda.is_available() else None,
-            trust_remote_code=True,
-        )
+            self._processor = AutoProcessor.from_pretrained(
+                self.model_path,
+                trust_remote_code=True,
+            )
+            self._model = ModelClass.from_pretrained(
+                self.model_path,
+                dtype=dtype,
+                device_map=device_map,
+                trust_remote_code=True,
+            )
+        else:
+            try:
+                from transformers import AutoModelForCausalLM, AutoTokenizer
+            except ImportError as exc:
+                raise PlanValidationError(
+                    "Local text Qwen backend requires AutoTokenizer and AutoModelForCausalLM. "
+                    "Upgrade transformers before loading Qwen3-8B."
+                ) from exc
+
+            self._tokenizer = AutoTokenizer.from_pretrained(
+                self.model_path,
+                trust_remote_code=True,
+            )
+            self._model = AutoModelForCausalLM.from_pretrained(
+                self.model_path,
+                dtype=dtype,
+                device_map=device_map,
+                trust_remote_code=True,
+            )
+
         self._model.eval()
 
     def _disable_deepgemm_hub_probe(self) -> None:
@@ -449,9 +498,11 @@ class QwenClient:
                 "Do not output a full multi-step plan.",
                 "object_query requires target.",
                 "navigation requires target or pose.",
-                "grasp_place action must be grasp or place.",
+                "grasp_place action must be grasp, place, or handover.",
                 "grasp requires target.",
                 "place requires target and destination.",
+                "handover requires target and should be used when the task asks to hand over/give the object at the destination.",
+                "For handover tasks, navigate to the destination/person first, then call grasp_place with action=handover and target=<object>.",
                 "robot_pose returns the robot current pose and requires no target.",
                 "finish requires task_done true and should only be used after the task is complete.",
                 "For 'move <object> from <source> to <destination>', first try object_query on the object. If the object lookup fails, query the source and navigate there.",
@@ -478,23 +529,67 @@ class QwenClient:
                         "reason": "After reaching the source, grasp the target object.",
                     },
                 },
+                {
+                    "state": "arrived at handover destination while holding object",
+                    "output": {
+                        "capability": "grasp_place",
+                        "action": "handover",
+                        "target": "pringles",
+                        "reason": "Hand over the object at the destination.",
+                    },
+                },
             ],
         }
         return json.dumps(payload, ensure_ascii=False)
 
     def _parse_json_response(self, content: str) -> dict:
-        text = self._strip_json_fence(content)
+        text = self._strip_json_fence(self._strip_thinking_text(content))
         try:
             return json.loads(text)
         except json.JSONDecodeError:
-            start = text.find("{")
-            end = text.rfind("}")
-            if start >= 0 and end > start:
-                try:
-                    return json.loads(text[start : end + 1])
-                except json.JSONDecodeError:
-                    pass
-            raise PlanValidationError(f"Local Qwen returned non-JSON content: {content!r}")
+            pass
+
+        for candidate in self._iter_json_object_candidates(text):
+            try:
+                return json.loads(candidate)
+            except json.JSONDecodeError:
+                continue
+
+        raise PlanValidationError(f"Local Qwen returned non-JSON content: {content!r}")
+
+    def _strip_thinking_text(self, text: str) -> str:
+        stripped = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL | re.IGNORECASE)
+        end_tag = "</think>"
+        if end_tag in stripped.lower():
+            index = stripped.lower().rfind(end_tag)
+            stripped = stripped[index + len(end_tag):]
+        return stripped.strip()
+
+    def _iter_json_object_candidates(self, text: str):
+        starts = [index for index, char in enumerate(text) if char == "{"]
+        for start in starts:
+            depth = 0
+            in_string = False
+            escaped = False
+            for index in range(start, len(text)):
+                char = text[index]
+                if in_string:
+                    if escaped:
+                        escaped = False
+                    elif char == "\\":
+                        escaped = True
+                    elif char == '"':
+                        in_string = False
+                    continue
+                if char == '"':
+                    in_string = True
+                elif char == "{":
+                    depth += 1
+                elif char == "}":
+                    depth -= 1
+                    if depth == 0:
+                        yield text[start:index + 1]
+                        break
 
     def _strip_json_fence(self, text: str) -> str:
         stripped = text.strip()
@@ -589,11 +684,15 @@ def validate_capability_call(call: Dict[str, Any]) -> Dict[str, Any]:
     elif capability == "grasp_place":
         action = _required_top_level_string(call, "action")
         if action not in SUPPORTED_GRASP_PLACE_ACTIONS:
-            raise PlanValidationError("grasp_place action must be 'grasp' or 'place'.")
+            raise PlanValidationError("grasp_place action must be 'grasp', 'place', or 'handover'.")
         normalized["action"] = action
         normalized["target"] = _required_top_level_string(call, "target")
         if action == "place":
             normalized["destination"] = _required_top_level_string(call, "destination")
+        elif action == "handover":
+            destination = call.get("destination")
+            if isinstance(destination, str) and destination.strip():
+                normalized["destination"] = destination.strip().lower()
     elif capability == "robot_pose":
         frame = call.get("frame")
         if isinstance(frame, str) and frame.strip():
@@ -634,6 +733,9 @@ def normalize_capability_call(
     if expected is None:
         return call
 
+    # Safety for transfer tasks: after grasp, destination lookup/navigation must
+    # happen before place/handover. This prevents an LLM from handing over while
+    # the robot is still at the source location.
     if call.get("capability") == expected.get("capability") and call.get("reason"):
         expected = dict(expected)
         expected["reason"] = call["reason"]
@@ -685,7 +787,7 @@ def _expected_transfer_sequence_capability(
             )
         elif final_action == "handover":
             script.append(
-                {"capability": "grasp_place", "action": "place", "target": obj, "destination": dest, "reason": f"Hand over {obj} at the destination."}
+                {"capability": "grasp_place", "action": "handover", "target": obj, "reason": f"Hand over {obj} at the destination."}
             )
     script.append({"capability": "finish", "task_done": True, "reason": "The transfer task is complete."})
 

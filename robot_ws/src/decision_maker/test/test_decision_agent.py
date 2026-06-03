@@ -138,6 +138,59 @@ def test_validate_capability_call_rules():
         })
 
 
+
+
+def test_validate_capability_call_accepts_handover_action():
+    assert validate_capability_call({
+        "capability": "grasp_place",
+        "action": "handover",
+        "target": "pringles",
+    }) == {
+        "capability": "grasp_place",
+        "action": "handover",
+        "target": "pringles",
+    }
+
+
+def test_placeholder_handover_transfer_ends_with_handover_action():
+    agent = DecisionAgent(QwenClient())
+    task = "handover pringles on sofa to table"
+    state = {"known_poses": {}}
+    history = []
+    last = None
+    calls = []
+
+    for _ in range(7):
+        call = agent.decide_next_capability(task, state, history, last)
+        calls.append(call)
+        if call["capability"] == "object_query":
+            state["known_poses"][call["target"]] = {"x": 1.0, "y": 2.0, "theta": 0.0}
+            last = {
+                "last_action": "object_query",
+                "target": call["target"],
+                "success": True,
+                "result": {"pose": state["known_poses"][call["target"]]},
+            }
+        else:
+            last = {"last_action": call["capability"], "success": True}
+        history.append({"call": call, "result": last})
+
+    assert [call["capability"] for call in calls] == [
+        "object_query",
+        "navigation",
+        "grasp_place",
+        "object_query",
+        "navigation",
+        "grasp_place",
+        "finish",
+    ]
+    assert calls[0]["target"] == "pringles"
+    assert calls[3]["target"] == "table"
+    assert calls[5]["action"] == "handover"
+    assert calls[5]["target"] == "pringles"
+    assert "destination" not in calls[5]
+
+
 def test_placeholder_iterative_sequence_for_transfer_task():
     agent = DecisionAgent(QwenClient())
     task = "bring pringles on table to sofa"

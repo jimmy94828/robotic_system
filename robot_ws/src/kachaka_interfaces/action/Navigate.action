@@ -1,6 +1,7 @@
-# Goal: The destination coordinates
+# Goal: The destination pose. Use NaN target_theta to face the target from the current pose.
 float64 target_x
 float64 target_y
+float64 target_theta
 ---
 # Result: Final status after the action completes
 bool success

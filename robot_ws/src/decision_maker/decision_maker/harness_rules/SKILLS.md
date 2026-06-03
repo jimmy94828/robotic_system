@@ -36,7 +36,7 @@ Constraints:
 
 ## grasp_place
 
-Purpose: Grasp or place an object through the existing manipulation interface.
+Purpose: Grasp, place, or hand over an object through the existing manipulation interface.
 
 Grasp input:
 
@@ -50,12 +50,19 @@ Place input:
 {"capability":"grasp_place","action":"place","target":"pringles","destination":"sofa","reason":"Place the object at the destination."}
 ```
 
+Handover input:
+
+```json
+{"capability":"grasp_place","action":"handover","target":"pringles","reason":"Hand over the object at the destination."}
+```
+
 Constraints:
 
-- `action` must be `grasp` or `place`.
+- `action` must be `grasp`, `place`, or `handover`.
 - `grasp` requires `target`.
+- `handover` requires `target` and should be used when the task asks to hand over/give the object.
 - `place` requires `target` and `destination`.
-- Place only an object that is expected to be held.
+- Place or hand over only an object that is expected to be held.
 
 ## robot_pose
 
