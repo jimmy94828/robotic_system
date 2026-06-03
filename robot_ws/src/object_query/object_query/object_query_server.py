@@ -7,6 +7,7 @@ from object_query_interfaces.srv import ObjectQuery
 from visualization_msgs.msg import Marker, MarkerArray
 from sensor_msgs.msg import PointCloud2, PointField
 import struct
+import cv2
 import numpy as np
 import json
 import os
@@ -14,6 +15,7 @@ import random
 from scipy.spatial.transform import Rotation as R
 from collections import defaultdict
 import yaml
+from datetime import datetime
 
 class ObjectQueryServer(Node):
     def __init__(self):
@@ -32,6 +34,16 @@ class ObjectQueryServer(Node):
 
         self.declare_parameter('alignment_path', 'data/Util/alignment.yaml')
         self.declare_parameter('auto_align', False) 
+        self.declare_parameter('bev_preview_enabled', True)
+        self.declare_parameter('bev_tmp_dir', '/home/weichen/robotic-project/robot_ws/data/tmp')
+        self.declare_parameter('bev_resolution', 0.015)
+        self.declare_parameter('bev_margin_m', 0.5)
+        self.declare_parameter('bev_max_size_px', 2200)
+        self.declare_parameter('bev_point_stride', 4)
+        self.declare_parameter('bev_z_mode', 'auto')
+        self.declare_parameter('bev_z_offset', 0.0)
+        self.declare_parameter('bev_min_z', -1000000.0)
+        self.declare_parameter('bev_max_z', 1.8)
 
         map_3d_path = self.get_parameter('3dmap_path').get_parameter_value().string_value
         map_path = self.get_parameter('map_path').get_parameter_value().string_value
@@ -55,6 +67,7 @@ class ObjectQueryServer(Node):
         # === Data container ===
         self.object_db = defaultdict(list) 
         self.object_instance_ids = defaultdict(list)
+        self.instance_records = []
         
         self.map_points = None
         self.map_colors = None
@@ -147,12 +160,14 @@ class ObjectQueryServer(Node):
         z = self.alignment['scale'] * height
         return np.column_stack((xy, z)).astype(np.float32)
 
-    def publish_candidate_options(self, name: str, instances, instance_ids):
+    def publish_candidate_options(self, name: str, instances, instance_ids, preview_paths=None):
         payload = {
             'event': 'active',
             'name': name,
             'options': [],
         }
+        if preview_paths:
+            payload['bev_preview'] = preview_paths
         for i, pos in enumerate(instances):
             map_x, map_y, map_z = self.transform_point_to_map(pos)
             payload['options'].append(
@@ -177,6 +192,287 @@ class ObjectQueryServer(Node):
         msg.data = json.dumps({'event': 'clear'})
         self.candidate_pub.publish(msg)
 
+    @staticmethod
+    def _coerce_xyz(value):
+        if value is None:
+            return None
+        try:
+            if len(value) < 3:
+                return None
+            return (float(value[0]), float(value[1]), float(value[2]))
+        except (TypeError, ValueError):
+            return None
+
+    @staticmethod
+    def _safe_filename_token(text: str) -> str:
+        token = ''.join(ch if ch.isalnum() or ch in ('-', '_') else '_' for ch in text.strip().lower())
+        return token or 'object'
+
+    def _bbox_corners(self, bbox_min, bbox_max):
+        mn = self._coerce_xyz(bbox_min)
+        mx = self._coerce_xyz(bbox_max)
+        if mn is None or mx is None:
+            return None
+        return np.array(
+            [
+                [mn[0], mn[1], mn[2]],
+                [mn[0], mn[1], mx[2]],
+                [mn[0], mx[1], mn[2]],
+                [mn[0], mx[1], mx[2]],
+                [mx[0], mn[1], mn[2]],
+                [mx[0], mn[1], mx[2]],
+                [mx[0], mx[1], mn[2]],
+                [mx[0], mx[1], mx[2]],
+            ],
+            dtype=np.float32,
+        )
+
+    @staticmethod
+    def _world_to_pixel_xy(xy, bounds, resolution, height):
+        min_x, _, min_y, _ = bounds
+        px = np.rint((xy[:, 0] - min_x) / resolution).astype(np.int32)
+        py = height - 1 - np.rint((xy[:, 1] - min_y) / resolution).astype(np.int32)
+        return px, py
+
+    @staticmethod
+    def _z_value_in_slice(z_value, slice_min_z, slice_max_z):
+        return slice_min_z <= z_value <= slice_max_z
+
+    @staticmethod
+    def _choose_visual_z_sign(points_xyz: np.ndarray, z_mode: str) -> float:
+        if z_mode == 'normal':
+            return 1.0
+        if z_mode == 'inverted':
+            return -1.0
+
+        z_values = points_xyz[:, 2]
+        finite_z = z_values[np.isfinite(z_values)]
+        if finite_z.size == 0:
+            return 1.0
+        return -1.0 if float(np.median(finite_z)) < 0.0 else 1.0
+
+    @staticmethod
+    def _rotate_pixel_clockwise(px: int, py: int, source_height: int):
+        return source_height - 1 - py, px
+
+    def export_bev_preview_for_selection(self, name: str, instances, instance_ids):
+        if not self.get_parameter('bev_preview_enabled').value:
+            return None
+        if self.map_3d_points is None or self.map_3d_colors is None:
+            self.get_logger().warn('BEV preview skipped: RGB map point cloud is not loaded.')
+            return None
+
+        tmp_dir = self.get_parameter('bev_tmp_dir').value
+        os.makedirs(tmp_dir, exist_ok=True)
+
+        stride = max(1, int(self.get_parameter('bev_point_stride').value))
+        points = self.map_3d_points[::stride]
+        colors = self.map_3d_colors[::stride]
+        finite = np.isfinite(points[:, 0]) & np.isfinite(points[:, 1]) & np.isfinite(points[:, 2])
+        points = points[finite]
+        colors = colors[finite]
+        if points.shape[0] == 0:
+            self.get_logger().warn('BEV preview skipped: RGB map has no finite points.')
+            return None
+
+        z_mode = str(self.get_parameter('bev_z_mode').value).strip().lower()
+        if z_mode not in ('auto', 'normal', 'inverted'):
+            self.get_logger().warn(f"Invalid bev_z_mode='{z_mode}', falling back to auto.")
+            z_mode = 'auto'
+        visual_z_sign = self._choose_visual_z_sign(points, z_mode)
+        visual_z_offset = float(self.get_parameter('bev_z_offset').value)
+        visual_z = (visual_z_sign * points[:, 2]) + visual_z_offset
+
+        raw_min_z = float(self.get_parameter('bev_min_z').value)
+        raw_max_z = float(self.get_parameter('bev_max_z').value)
+        slice_min_z = min(raw_min_z, raw_max_z)
+        slice_max_z = max(raw_min_z, raw_max_z)
+        before_z_filter = points.shape[0]
+        height_mask = (visual_z >= slice_min_z) & (visual_z <= slice_max_z)
+        points = points[height_mask]
+        colors = colors[height_mask]
+        removed_by_z = before_z_filter - points.shape[0]
+        if points.shape[0] == 0:
+            self.get_logger().warn(
+                f'BEV preview skipped: height slice z=[{slice_min_z:.2f}, {slice_max_z:.2f}] '
+                'removed all RGB map points.'
+            )
+            return None
+
+        xy_sources = [points[:, :2]]
+        candidate_instance_map = []
+        skipped_candidates_by_z = 0
+        for i, inst in enumerate(instances):
+            instance_id = str(instance_ids[i]) if i < len(instance_ids) else ''
+            center_map = self.transform_point_to_map(inst)
+            visual_center_z = (visual_z_sign * center_map[2]) + visual_z_offset
+            if not self._z_value_in_slice(visual_center_z, slice_min_z, slice_max_z):
+                skipped_candidates_by_z += 1
+                continue
+            center_xy = np.array([center_map[0], center_map[1]], dtype=np.float32)
+            xy_sources.append(center_xy.reshape(1, 2))
+            candidate_instance_map.append(
+                {
+                    'index': i,
+                    'name': name,
+                    'instance_id': instance_id,
+                    'center_raw': inst,
+                    'center_map': center_map,
+                    'visual_z': visual_center_z,
+                }
+            )
+
+        all_xy = np.vstack(xy_sources)
+        margin = float(self.get_parameter('bev_margin_m').value)
+        min_x = float(np.nanmin(all_xy[:, 0]) - margin)
+        max_x = float(np.nanmax(all_xy[:, 0]) + margin)
+        min_y = float(np.nanmin(all_xy[:, 1]) - margin)
+        max_y = float(np.nanmax(all_xy[:, 1]) + margin)
+
+        resolution = max(float(self.get_parameter('bev_resolution').value), 1e-4)
+        max_size_px = max(64, int(self.get_parameter('bev_max_size_px').value))
+        width = int(np.ceil((max_x - min_x) / resolution)) + 1
+        height = int(np.ceil((max_y - min_y) / resolution)) + 1
+        largest = max(width, height)
+        if largest > max_size_px:
+            resolution *= largest / max_size_px
+            width = int(np.ceil((max_x - min_x) / resolution)) + 1
+            height = int(np.ceil((max_y - min_y) / resolution)) + 1
+
+        bounds = (min_x, max_x, min_y, max_y)
+        image = np.full((height, width, 3), 18, dtype=np.uint8)
+        px, py = self._world_to_pixel_xy(points[:, :2], bounds, resolution, height)
+        in_bounds = (px >= 0) & (px < width) & (py >= 0) & (py < height)
+        image[py[in_bounds], px[in_bounds]] = colors[in_bounds][:, ::-1]
+
+        annotated_image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
+        rotated_height, rotated_width = annotated_image.shape[:2]
+        color = (0, 255, 255)
+        text_color = (0, 255, 255)
+        radius = 7
+
+        for rec in candidate_instance_map:
+            center_xy = np.array([[rec['center_map'][0], rec['center_map'][1]]], dtype=np.float32)
+            center_px, center_py = self._world_to_pixel_xy(center_xy, bounds, resolution, height)
+            raw_cx = int(center_px[0])
+            raw_cy = int(center_py[0])
+            if 0 <= raw_cx < width and 0 <= raw_cy < height:
+                cx, cy = self._rotate_pixel_clockwise(raw_cx, raw_cy, height)
+                cx = int(np.clip(cx, 0, rotated_width - 1))
+                cy = int(np.clip(cy, 0, rotated_height - 1))
+                cv2.circle(annotated_image, (cx, cy), radius + 2, (0, 0, 0), -1)
+                cv2.circle(annotated_image, (cx, cy), radius, color, -1)
+                label = str(rec['index'])
+                font_scale = 0.8
+                text_thickness = 2
+                outline_thickness = 4
+                text_size, baseline = cv2.getTextSize(
+                    label,
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    font_scale,
+                    text_thickness,
+                )
+                text_w, text_h = text_size
+                label_x = cx + 9
+                if label_x + text_w >= rotated_width:
+                    label_x = cx - text_w - 9
+                label_y = cy - 9
+                label_x = int(np.clip(label_x, 0, max(0, rotated_width - text_w - 1)))
+                label_y = int(np.clip(label_y, text_h + 2, max(text_h + 2, rotated_height - baseline - 2)))
+                cv2.putText(
+                    annotated_image,
+                    label,
+                    (label_x, label_y),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    font_scale,
+                    (0, 0, 0),
+                    outline_thickness,
+                    cv2.LINE_AA,
+                )
+                cv2.putText(
+                    annotated_image,
+                    label,
+                    (label_x, label_y),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    font_scale,
+                    text_color,
+                    text_thickness,
+                    cv2.LINE_AA,
+                )
+
+        # timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')
+        name_token = self._safe_filename_token(name)
+        # rgb_path = os.path.join(tmp_dir, f'{timestamp}_{name_token}_rgb_bev.png')
+        overlay_path = os.path.join(tmp_dir, f'{name_token}_instances_bev.png')
+        # metadata_path = os.path.join(tmp_dir, f'{timestamp}_{name_token}_bev_options.json')
+
+        # if not cv2.imwrite(rgb_path, annotated_image):
+        #     self.get_logger().warn(f'Failed to write RGB BEV image: {rgb_path}')
+        if not cv2.imwrite(overlay_path, annotated_image):
+            self.get_logger().warn(f'Failed to write instance BEV image: {overlay_path}')
+
+        options = []
+        for i, pos in enumerate(instances):
+            map_x, map_y, map_z = self.transform_point_to_map(pos)
+            options.append(
+                {
+                    'index': i,
+                    'instance_id': instance_ids[i] if i < len(instance_ids) else '',
+                    'raw_xyz': [float(pos[0]), float(pos[1]), float(pos[2])],
+                    'map_xyz': [map_x, map_y, map_z],
+                }
+            )
+
+        metadata = {
+            'generated_at': datetime.now().isoformat(timespec='seconds'),
+            'query_name': name,
+            # 'rgb_bev_path': rgb_path,
+            'instances_bev_path': overlay_path,
+            # 'options_path': metadata_path,
+            'resolution_m_per_px': resolution,
+            'height_slice_z': {
+                'min_z': slice_min_z,
+                'max_z': slice_max_z,
+                'visual_z_mode': z_mode,
+                'visual_z_sign': visual_z_sign,
+                'visual_z_offset': visual_z_offset,
+                'rgb_points_removed': int(removed_by_z),
+                'candidate_instances_removed': int(skipped_candidates_by_z),
+            },
+            'visual_rotation': 'clockwise_90_degrees',
+            'bounds_xy': {
+                'min_x': min_x,
+                'max_x': max_x,
+                'min_y': min_y,
+                'max_y': max_y,
+            },
+            'candidate_options': options,
+            'all_instances': [
+                {
+                    'name': rec['name'],
+                    'index': rec['index'],
+                    'instance_id': rec['instance_id'],
+                    'center_map_xyz': [
+                        float(rec['center_map'][0]),
+                        float(rec['center_map'][1]),
+                        float(rec['center_map'][2]),
+                    ],
+                    'visual_z': float(rec['visual_z']),
+                }
+                for rec in candidate_instance_map
+            ],
+        }
+        # with open(metadata_path, 'w', encoding='utf-8') as f:
+        #     json.dump(metadata, f, indent=2)
+
+        # self.get_logger().info(f'Saved BEV RGB map: {rgb_path}')
+        # self.get_logger().info(f'Saved BEV instance preview: {overlay_path}')
+        return {
+            # 'rgb_bev_path': rgb_path,
+            'instances_bev_path': overlay_path,
+            # 'metadata_path': metadata_path,
+        }
+
     # --------------------------------------------------------------
     def load_instance_map(self, instance_path: str, map_3d_path: str):
         """Load object positions from instance JSON (centroid per instance). Also loads 3D point cloud."""
@@ -191,6 +487,7 @@ class ObjectQueryServer(Node):
 
             self.object_db.clear()
             self.object_instance_ids.clear()
+            self.instance_records.clear()
 
             if isinstance(instances, dict):
                 instance_iter = instances.items()
@@ -242,10 +539,18 @@ class ObjectQueryServer(Node):
                     skipped_instances += 1
                     continue
 
-                self.object_db[name].append(
-                    (float(centroid[0]), float(centroid[1]), float(centroid[2]))
-                )
+                center_xyz = (float(centroid[0]), float(centroid[1]), float(centroid[2]))
+                self.object_db[name].append(center_xyz)
                 self.object_instance_ids[name].append(str(inst_id))
+                self.instance_records.append(
+                    {
+                        'name': name,
+                        'instance_id': str(inst_id),
+                        'center': center_xyz,
+                        'bbox_min': self._coerce_xyz(inst.get('bbox_min')),
+                        'bbox_max': self._coerce_xyz(inst.get('bbox_max')),
+                    }
+                )
                 loaded_instances += 1
 
             self.get_logger().info(
@@ -362,6 +667,7 @@ class ObjectQueryServer(Node):
             # 6. Build Object Database
             self.object_db.clear()
             self.object_instance_ids.clear()
+            self.instance_records.clear()
             for sid, name in id_to_name.items():
                 mask = semantic_ids == sid
                 if np.any(mask):
@@ -371,7 +677,17 @@ class ObjectQueryServer(Node):
                     centroid = (min_pt + max_pt) / 2.0
                     key = name.lower()
                     self.object_db[key].append(tuple(centroid.tolist()))
-                    self.object_instance_ids[key].append(f'semantic_{sid}')
+                    instance_id = f'semantic_{sid}'
+                    self.object_instance_ids[key].append(instance_id)
+                    self.instance_records.append(
+                        {
+                            'name': key,
+                            'instance_id': instance_id,
+                            'center': tuple(centroid.tolist()),
+                            'bbox_min': tuple(min_pt.tolist()),
+                            'bbox_max': tuple(max_pt.tolist()),
+                        }
+                    )
 
             self.get_logger().info(f'✅ Built object DB with {len(self.object_db)} categories.')
 
@@ -451,7 +767,12 @@ class ObjectQueryServer(Node):
             instance_ids = self.object_instance_ids.get(name, [])
             if len(instances) > 1:
                 self.get_logger().info(f"Multiple instances of '{name}' found. Waiting for user selection.")
-                self.publish_candidate_options(name, instances, instance_ids)
+                preview_paths = self.export_bev_preview_for_selection(name, instances, instance_ids)
+                self.publish_candidate_options(name, instances, instance_ids, preview_paths)
+                if preview_paths:
+                    self.get_logger().info(
+                        f"Open BEV preview before selecting: {preview_paths['instances_bev_path']}"
+                    )
                 for i, inst in enumerate(instances):
                     instance_id = instance_ids[i] if i < len(instance_ids) else 'n/a'
                     map_x, map_y, map_z = self.transform_point_to_map(inst)
@@ -481,6 +802,7 @@ class ObjectQueryServer(Node):
                 self.clear_candidate_options()
             return True, Point(x=best_pt[0], y=best_pt[1], z=best_pt[2])
         else:
+            preview_paths = self.export_bev_preview_for_selection(name, instances, instance_ids)
             self.clear_candidate_options()
             return False, Point(x=0.0, y=0.0, z=0.0)
 

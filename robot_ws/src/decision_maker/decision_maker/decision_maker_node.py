@@ -30,16 +30,17 @@ class MapVisualizer:
     Keeps an internal display buffer which other threads update via methods.
     The GUI thread performs cv2.imshow/cv2.waitKey to ensure proper display.
     """
-    def __init__(self, map_yaml_path: str, logger):
+    def __init__(self, map_yaml_path: str, logger, rotate_clockwise_90: bool = True):
         import threading as _th
         self.logger = logger
+        self.rotate_clockwise_90 = bool(rotate_clockwise_90)
         if not os.path.exists(map_yaml_path):
             raise FileNotFoundError(map_yaml_path)
 
         with open(map_yaml_path, 'r') as f:
             cfg = yaml.safe_load(f)
 
-        self.resolution = float(cfg.get('resolution', 0.05))
+        self.resolution = float(cfg.get('resolution', 0.015))
         self.origin = cfg.get('origin', [0.0, 0.0, 0.0])
 
         map_dir = os.path.dirname(map_yaml_path)
@@ -62,7 +63,11 @@ class MapVisualizer:
             # drop alpha by converting to BGR
             img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
 
-        self.map_image = img
+        self.source_h, self.source_w = img.shape[:2]
+        if self.rotate_clockwise_90:
+            self.map_image = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
+        else:
+            self.map_image = img
         self.h, self.w = self.map_image.shape[:2]
         self.window_name = 'map_visualizer'
 
@@ -74,12 +79,18 @@ class MapVisualizer:
         # start GUI thread
         self._thread = _th.Thread(target=self._gui_loop, daemon=True)
         self._thread.start()
-        self.logger.info(f'📍 MapVisualizer initialized: {self.w}x{self.h}, res={self.resolution:.3f}m/px')
+        rotation_msg = 'clockwise_90' if self.rotate_clockwise_90 else 'none'
+        self.logger.info(
+            f'📍 MapVisualizer initialized: {self.w}x{self.h}, '
+            f'res={self.resolution:.3f}m/px, rotation={rotation_msg}'
+        )
 
     def world_to_pixel(self, x: float, y: float) -> tuple:
         px = int((x - self.origin[0]) / self.resolution)
         py = int((y - self.origin[1]) / self.resolution)
-        py = self.h - py
+        py = self.source_h - py
+        if self.rotate_clockwise_90:
+            px, py = self.source_h - 1 - py, px
         return px, py
 
     def reset(self):
@@ -166,12 +177,18 @@ class DecisionMakingNode(Node):
         # Optional parameter to point to map yaml (PNG must be next to it)
         try:
             self.declare_parameter('map_yaml', 'data/lab/kachaka_native.yaml')
+            self.declare_parameter('map_rotate_clockwise_90', True)
             map_yaml = self.get_parameter('map_yaml').get_parameter_value().string_value
+            rotate_map = self.get_parameter('map_rotate_clockwise_90').get_parameter_value().bool_value
             if map_yaml and not os.path.isabs(map_yaml):
                 map_yaml = os.path.abspath(map_yaml)
             if map_yaml and os.path.exists(map_yaml):
                 try:
-                    self.visualizer = MapVisualizer(map_yaml, self.get_logger())
+                    self.visualizer = MapVisualizer(
+                        map_yaml,
+                        self.get_logger(),
+                        rotate_clockwise_90=rotate_map,
+                    )
                 except Exception as e:
                     self.get_logger().error(f"❌ Failed to init MapVisualizer: {e}")
                     self.visualizer = None
