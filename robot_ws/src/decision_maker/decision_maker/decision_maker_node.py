@@ -191,7 +191,7 @@ class DecisionMakingNode(Node):
             self.visualizer = None
         
         # ====== Grasp approach threshold ======
-        self.declare_parameter('grasp_approach_dist', 0.5)   # set the arm to reach the object within 0.5 meters
+        self.declare_parameter('grasp_approach_dist', 0.3)   # set the arm to reach the object within 0.3 meters
         self._grasp_threshold = self.get_parameter('grasp_approach_dist').get_parameter_value().double_value
         self._nav_distance_remaining = float('inf')          # update by nav feedback to know how far we are from the target, used for grasp approach logic
 

@@ -4,28 +4,18 @@
 
 ## Table of Contents
 
+- [System Overview](#system-overview)
 - [1. Executive Summary](#section-1-executive-summary)
 - [2. Repository Structure](#section-2-repository-structure)
 - [3. Environment and Dependency Configuration](#section-3-environment-and-dependency-configuration)
 - [4. Package Descriptions](#section-4-package-by-package-technical-analysis)
-- [4.1 `decision_maker`](#section-41-decision_maker)
-- [4.2 `mm_interface`](#section-42-mm_interface)
-- [4.3 `get_pose`](#section-43-get_pose)
-- [4.4 `kachaka_interfaces`](#section-44-kachaka_interfaces)
-- [4.5 `kachaka_laser_api`](#section-45-kachaka_laser_api)
-- [4.6 `kachaka_nav`](#section-46-kachaka_nav)
-- [4.7 `map_alignment`](#section-47-map_alignment)
-- [4.8 `object_query`](#section-48-object_query)
-- [4.9 `object_query_interfaces`](#section-49-object_query_interfaces)
 - [5. Custom ROS Interfaces Summary](#section-5-custom-ros-interfaces-summary)
 - [6. Runtime Data Assets and Alignment Utilities](#section-6-data-assets-and-utility-scripts)
-- [6.1 `data/Util`](#section-61-datautil)
-- [6.2 `data/lab`](#section-62-datalab)
-- [6.3 `data/map_alignment`](#section-63-datamapalignment)
 - [7. Runtime Interaction Between Packages](#section-7-runtime-interaction-between-packages)
 - [8. Setup and Execution Guide](#section-8-practical-setup-and-execution-guide)
 - [9. Visualization with RViz2](#section-9-visualization-with-rviz2)
 
+## System Overview
 ![Diagram](./system_pipeline.png)
 
 <details>
@@ -178,6 +168,18 @@ If you need to add or change Python packages, ROS packages, or system dependenci
 <summary id="section-4-package-by-package-technical-analysis"><strong>4. Package Descriptions</strong></summary>
 
 The detailed subsections below focus on the core packages used in the main semantic-navigation pipeline. Supporting interface or prototype packages such as `decision_maker_interfaces`, `semantic_slam`, and `semantic_slam_interfaces` are still part of the repository and are summarized in sections 2 and 5.
+
+### In This Section
+
+- [4.1 `decision_maker`](#section-41-decision_maker)
+- [4.2 `mm_interface`](#section-42-mm_interface)
+- [4.3 `get_pose`](#section-43-get_pose)
+- [4.4 `kachaka_interfaces`](#section-44-kachaka_interfaces)
+- [4.5 `kachaka_laser_api`](#section-45-kachaka_laser_api)
+- [4.6 `kachaka_nav`](#section-46-kachaka_nav)
+- [4.7 `map_alignment`](#section-47-map_alignment)
+- [4.8 `object_query`](#section-48-object_query)
+- [4.9 `object_query_interfaces`](#section-49-object_query_interfaces)
 
 <a id="section-41-decision_maker"></a>
 
@@ -805,6 +807,12 @@ Both `mm_interface` and `decision_maker_interfaces` define a `TaskCommand.action
 
 <details>
 <summary id="section-6-data-assets-and-utility-scripts"><strong>6. Runtime Data Assets and Alignment Utilities</strong></summary>
+
+### In This Section
+
+- [6.1 `data/Util`](#section-61-datautil)
+- [6.2 `data/lab`](#section-62-datalab)
+- [6.3 `data/map_alignment`](#section-63-datamapalignment)
 
 <a id="section-61-datautil"></a>
 

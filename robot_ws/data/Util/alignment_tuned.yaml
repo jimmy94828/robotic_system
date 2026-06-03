@@ -1,0 +1,44 @@
+extrinsic_mode_selected: cam_to_base(inv)|basis(+,+)
+index_offset_cam_to_base2d: 0
+with_scale: true
+robust: true
+trim_keep: 0.8
+robust_iters: 3
+rmse_xy: 0.3576372264499252
+plane_fit:
+  angle_normal_to_map3d_Z_deg: 86.74813731065537
+  mu:
+    x: -0.1664787396509154
+    y: 0.9940242188669124
+    z: 7.488818094932255
+  normal_n:
+  - 0.06760240486140996
+  - -0.996098469730599
+  - 0.056725245308528155
+  basis_e1:
+  - 0.9977123407350276
+  - 0.06749305314076326
+  - -0.0038435557451130106
+  basis_e2:
+  - -4.336808689946366e-19
+  - 0.056855310887185796
+  - 0.9983824285422502
+  uv_definition: u=dot(p-mu,e1), v=dot(p-mu,e2)
+sim2:
+  s: 1.0377166821739847
+  R:
+  - - -0.9380044286954107
+    - 0.3466232706380173
+  - - -0.3466232706380173
+    - -0.9380044286954107
+  t:
+    x: 2.3649712858716407
+    y: -6.856327995514005
+  theta_rad: -2.7876238630787618
+  theta_deg: -159.71908222436753
+counts:
+  matched: 440
+  inliers: 352
+manual_tuning:
+  tool: robot_ws/tools/tune_alignment_overlay.py
+  note: Only sim2 was adjusted; plane_fit was kept unchanged.
