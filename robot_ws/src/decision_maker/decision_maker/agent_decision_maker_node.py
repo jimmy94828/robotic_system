@@ -3,6 +3,8 @@ import math
 import random
 import threading
 import time
+from datetime import datetime
+from pathlib import Path
 
 import rclpy
 from kachaka_interfaces.action import Navigate
@@ -79,6 +81,14 @@ class AgentDecisionMakingNode(DecisionMakingNode):
         self.harness = LightweightPlanningHarness(
             max_replans_per_task=self.agent_max_replans
         )
+        self.declare_parameter("enable_task_report", True)
+        self.enable_task_report = (
+            self.get_parameter("enable_task_report").get_parameter_value().bool_value
+        )
+        self.declare_parameter("task_report_dir", "/robot_ws/task_reports")
+        self.task_report_dir = (
+            self.get_parameter("task_report_dir").get_parameter_value().string_value
+        )
         self.task_reply_pub = self.create_publisher(String, "/task_reply", 10)
         self.declare_parameter("robot_pose_global_frame", "map")
         self.declare_parameter("robot_pose_base_frame", "base_link")
@@ -129,6 +139,73 @@ class AgentDecisionMakingNode(DecisionMakingNode):
         self.task_reply_pub.publish(msg)
         self.get_logger().info("📤 Task reply: " + msg.data)
 
+    def _new_task_report(self, task_instruction: str) -> dict:
+        return {
+            "task": task_instruction,
+            "started_at": datetime.now().isoformat(timespec="seconds"),
+            "_started_monotonic": time.monotonic(),
+            "success": None,
+            "status": "running",
+            "message": "",
+            "decomposition": None,
+            "reasoning_events": [],
+            "decisions": [],
+            "subtasks": [],
+        }
+
+    def _record_reasoning_event(
+        self,
+        report: dict | None,
+        stage: str,
+        duration_sec: float,
+        success: bool,
+        **extra,
+    ) -> None:
+        if report is None:
+            return
+        event = {
+            "stage": stage,
+            "duration_sec": round(float(duration_sec), 3),
+            "success": bool(success),
+        }
+        event.update(extra)
+        report.setdefault("reasoning_events", []).append(event)
+
+    def _write_task_report(self, report: dict | None, success: bool, message: str) -> None:
+        if not self.enable_task_report or report is None:
+            return
+
+        total_duration = time.monotonic() - float(
+            report.get("_started_monotonic", time.monotonic())
+        )
+        output = dict(report)
+        output.pop("_started_monotonic", None)
+        output.update({
+            "finished_at": datetime.now().isoformat(timespec="seconds"),
+            "total_duration_sec": round(total_duration, 3),
+            "success": bool(success),
+            "status": "success" if success else "failed",
+            "message": message,
+        })
+
+        try:
+            report_dir = Path(self.task_report_dir)
+            report_dir.mkdir(parents=True, exist_ok=True)
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            safe_task = "".join(
+                char if char.isalnum() else "_"
+                for char in report.get("task", "task").lower()
+            ).strip("_")
+            safe_task = "_".join(part for part in safe_task.split("_") if part)[:60] or "task"
+            path = report_dir / f"{timestamp}_{safe_task}.json"
+            path.write_text(
+                json.dumps(output, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            self.get_logger().info(f"📝 Task report written: {path}")
+        except Exception as exc:
+            self.get_logger().warn(f"⚠️ Failed to write task report: {exc}")
+
     def _preload_llm_model_if_requested(self) -> None:
         if not self.preload_llm_model:
             self.get_logger().info("🧠 LLM model preload disabled by parameter.")
@@ -168,14 +245,17 @@ class AgentDecisionMakingNode(DecisionMakingNode):
         thread.start()
 
     def run_decomposed_task_loop(self, task_instruction: str) -> bool:
+        report = self._new_task_report(task_instruction)
         if not self.enable_task_decomposition:
-            success = self.run_iterative_task_loop(task_instruction)
+            success = self.run_iterative_task_loop(task_instruction, report=report)
+            message = "task completed" if success else "task failed"
             self.publish_task_reply(
                 task_instruction,
                 success,
-                "task completed" if success else "task failed",
+                message,
                 decomposition_enabled=False,
             )
+            self._write_task_report(report, success, message)
             return success
 
         decomposition_context = self.harness.build_decomposition_context(
@@ -202,11 +282,27 @@ class AgentDecisionMakingNode(DecisionMakingNode):
                     f"{last_decomposition_error.get('message', 'unknown error')}"
                 )
             try:
+                reasoning_start = time.monotonic()
                 candidate = self.task_decomposer.decompose(
                     task_instruction,
                     context=decomposition_context,
                 )
+                self._record_reasoning_event(
+                    report,
+                    "task_decomposition",
+                    time.monotonic() - reasoning_start,
+                    True,
+                    attempt=attempt,
+                )
             except (TaskDecompositionError, Exception) as exc:
+                self._record_reasoning_event(
+                    report,
+                    "task_decomposition",
+                    time.monotonic() - reasoning_start,
+                    False,
+                    attempt=attempt,
+                    error=str(exc),
+                )
                 last_decomposition_error = {
                     "stage": "task_decomposition",
                     "success": False,
@@ -221,6 +317,7 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             self.get_logger().info(
                 "🧩 Task decomposition: " + json.dumps(candidate, ensure_ascii=False)
             )
+            report["decomposition"] = candidate
             if verified:
                 decomposition = candidate
                 self.get_logger().info(
@@ -247,6 +344,7 @@ class AgentDecisionMakingNode(DecisionMakingNode):
                 stage="task_decomposition",
                 error=last_decomposition_error,
             )
+            self._write_task_report(report, False, message)
             return False
 
         subtasks = decomposition["subtasks"]
@@ -262,7 +360,27 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             self.get_logger().info(
                 f"🧩 Running subtask {subtask_id}/{len(subtasks)}: {subtask_text}"
             )
-            success = self.run_iterative_task_loop(subtask_text)
+            subtask_report = {
+                "subtask_id": subtask_id,
+                "text": subtask_text,
+                "original_text": original_subtask_text,
+                "started_at": datetime.now().isoformat(timespec="seconds"),
+                "_started_monotonic": time.monotonic(),
+                "success": None,
+                "duration_sec": None,
+            }
+            report.setdefault("subtasks", []).append(subtask_report)
+            success = self.run_iterative_task_loop(
+                subtask_text,
+                report=report,
+                subtask_report=subtask_report,
+            )
+            subtask_report["success"] = bool(success)
+            subtask_report["finished_at"] = datetime.now().isoformat(timespec="seconds")
+            subtask_report["duration_sec"] = round(
+                time.monotonic() - float(subtask_report.pop("_started_monotonic")),
+                3,
+            )
             if not success:
                 message = f"Subtask {subtask_id} failed: {subtask_text}"
                 self.get_logger().error(
@@ -279,6 +397,7 @@ class AgentDecisionMakingNode(DecisionMakingNode):
                     },
                     decomposition=decomposition,
                 )
+                self._write_task_report(report, False, message)
                 return False
             self.get_logger().info(f"✅ Subtask {subtask_id} completed: {subtask_text}")
 
@@ -289,6 +408,7 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             "all subtasks completed",
             decomposition=decomposition,
         )
+        self._write_task_report(report, True, "all subtasks completed")
         return True
 
     def _subtask_text_for_agent(self, subtask: dict) -> str:
@@ -329,7 +449,12 @@ class AgentDecisionMakingNode(DecisionMakingNode):
                 return f"bring {obj} to {destination}"
         return text
 
-    def run_iterative_task_loop(self, task_instruction: str) -> bool:
+    def run_iterative_task_loop(
+        self,
+        task_instruction: str,
+        report: dict | None = None,
+        subtask_report: dict | None = None,
+    ) -> bool:
         current_state = self.harness.build_initial_state(
             task_instruction=task_instruction,
             supported_capabilities=self._build_agent_context()["supported_capabilities"],
@@ -362,13 +487,32 @@ class AgentDecisionMakingNode(DecisionMakingNode):
                     last_result,
                 )
                 try:
+                    reasoning_start = time.monotonic()
                     capability_call = self.agent.decide_next_capability(
                         task_instruction,
                         decision_state,
                         history,
                         last_result,
                     )
+                    decision_reasoning_sec = time.monotonic() - reasoning_start
+                    self._record_reasoning_event(
+                        report,
+                        "capability_decision",
+                        decision_reasoning_sec,
+                        True,
+                        subtask=task_instruction,
+                        step=step_index,
+                    )
                 except (PlanValidationError, Exception) as exc:
+                    self._record_reasoning_event(
+                        report,
+                        "capability_decision",
+                        time.monotonic() - reasoning_start,
+                        False,
+                        subtask=task_instruction,
+                        step=step_index,
+                        error=str(exc),
+                    )
                     last_result = {
                         "last_action": "agent_decision",
                         "success": False,
@@ -390,6 +534,8 @@ class AgentDecisionMakingNode(DecisionMakingNode):
                         f"❌ Agent decision failed after replanning at step {step_index}: {exc}"
                     )
                     return False
+            if forced_call:
+                decision_reasoning_sec = 0.0
             verification_context = self.harness.build_verification_context(
                 capability_call,
                 current_state,
@@ -404,6 +550,21 @@ class AgentDecisionMakingNode(DecisionMakingNode):
                 "🧠 Agent capability call: "
                 + json.dumps(capability_call, ensure_ascii=False)
             )
+            decision_entry = {
+                "subtask": task_instruction,
+                "step": step_index,
+                "capability_call": capability_call,
+                "reasoning_duration_sec": round(float(decision_reasoning_sec), 3),
+                "forced": bool(forced_call),
+                "verified": bool(verified),
+                "verification_message": verification_message,
+            }
+            if report is not None:
+                report.setdefault("decisions", []).append(decision_entry)
+                if subtask_report is not None:
+                    subtask_report.setdefault("decision_indexes", []).append(
+                        len(report.get("decisions", [])) - 1
+                    )
             if not verified:
                 last_result = {
                     "last_action": "harness_verification",
@@ -412,6 +573,7 @@ class AgentDecisionMakingNode(DecisionMakingNode):
                     "rejected_call": capability_call,
                     "verification_context": verification_context,
                 }
+                decision_entry["result"] = last_result
                 self.harness.record_observation(current_state, capability_call, last_result)
                 if self.harness.can_replan_after_failure(current_state):
                     used = self.harness.mark_replan_used(current_state)
@@ -428,6 +590,10 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             )
 
             if capability_call["capability"] == "finish":
+                decision_entry["result"] = {
+                    "success": True,
+                    "message": capability_call.get("reason", "finish"),
+                }
                 self.get_logger().info(
                     f"✅ Agent finished task '{task_instruction}': "
                     f"{capability_call.get('reason', '')}"
@@ -435,6 +601,7 @@ class AgentDecisionMakingNode(DecisionMakingNode):
                 return True
 
             result = self.execute_capability_call(capability_call, current_state)
+            decision_entry["result"] = result
             self.harness.record_observation(current_state, capability_call, result)
             last_result = result
 
@@ -453,6 +620,22 @@ class AgentDecisionMakingNode(DecisionMakingNode):
                     history.append({"step": step_index, "call": capability_call, "result": result})
                     recovery_call = recovery_result["call"]
                     recovery_observation = recovery_result["result"]
+                    if report is not None:
+                        recovery_decision = {
+                            "subtask": task_instruction,
+                            "step": step_index,
+                            "capability_call": recovery_call,
+                            "reasoning_duration_sec": 0.0,
+                            "forced": True,
+                            "verified": True,
+                            "verification_message": "automatic grasp-failure realignment recovery",
+                            "result": recovery_observation,
+                        }
+                        report.setdefault("decisions", []).append(recovery_decision)
+                        if subtask_report is not None:
+                            subtask_report.setdefault("decision_indexes", []).append(
+                                len(report.get("decisions", [])) - 1
+                            )
                     self.harness.record_observation(
                         current_state,
                         recovery_call,

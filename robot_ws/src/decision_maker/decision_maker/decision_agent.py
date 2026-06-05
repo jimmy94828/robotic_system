@@ -540,59 +540,31 @@ class QwenClient:
         last_execution_result: dict | None,
     ) -> str:
         payload = {
-            "original_task": original_task,
-            "current_state": current_state,
-            "history": history,
+            "task": original_task,
+            "state": current_state,
+            "recent_history": history[-5:],
             "last_execution_result": last_execution_result,
             "allowed_capabilities": sorted(SUPPORTED_CAPABILITIES),
+            "json_contract": "Return exactly one JSON object. No markdown, no reasoning, no <think>.",
             "rules": [
-                "Choose exactly one next capability call.",
-                "Do not output a full multi-step plan.",
-                "object_query requires target.",
-                "navigation requires target or pose.",
-                "grasp_place action must be grasp, place, or handover.",
-                "grasp requires target.",
-                "place requires target and destination.",
-                "handover requires target and should be used when the task asks to hand over/give the object at the destination.",
-                "For handover tasks, navigate to the destination/person first, then call grasp_place with action=handover and target=<object>.",
-                "robot_pose returns the robot current pose and requires no target.",
-                "finish requires task_done true and should only be used after the task is complete.",
-                "For 'move <object> from <source> to <destination>', first try object_query on the object. If the object lookup fails, query the source and navigate there.",
-                "For '<object> on/in/at/from <source> to <destination>', first try object_query on the object. If the object lookup fails, query the source and navigate there.",
-                "If a capability failed, use last_execution_result to select a corrected next call instead of stopping.",
-                "For multiple objects joined by and/commas, move one object at a time through source, grasp, destination, and place.",
-                "Return exactly one JSON object and no extra text.",
-                "Do not output reasoning, markdown, comments, or <think> blocks.",
-                "The response must start with { and end with }.",
+                "Choose one next capability call only.",
+                "object_query: target required.",
+                "navigation: target or pose required.",
+                "grasp_place: action must be grasp/place/handover; grasp/handover need target; place needs target+destination.",
+                "finish: task_done=true only after task completion.",
+                "For source-aware transfers, first try object_query(object); if it fails, query/navigate source.",
+                "After grasp, query/navigate destination before final action.",
+                "If task says hand over/give/pass/pick up and hand over, final grasp_place action must be handover, not place.",
+                "Do not navigate to destination after failed grasp unless the object is held.",
             ],
-            "examples": [
-                {
-                    "state": "need source location",
-                    "output": {
-                        "capability": "object_query",
-                        "target": "table",
-                        "reason": "Need to locate the source before navigation.",
-                    },
-                },
-                {
-                    "state": "arrived at source",
-                    "output": {
-                        "capability": "grasp_place",
-                        "action": "grasp",
-                        "target": "pringles",
-                        "reason": "After reaching the source, grasp the target object.",
-                    },
-                },
-                {
-                    "state": "arrived at handover destination while holding object",
-                    "output": {
-                        "capability": "grasp_place",
-                        "action": "handover",
-                        "target": "pringles",
-                        "reason": "Hand over the object at the destination.",
-                    },
-                },
-            ],
+            "schemas": {
+                "object_query": {"capability": "object_query", "target": "table", "reason": "..."},
+                "navigation": {"capability": "navigation", "target": "table", "pose": {"x": 1.0, "y": 2.0, "theta": 0.0}, "reason": "..."},
+                "grasp": {"capability": "grasp_place", "action": "grasp", "target": "pringles", "reason": "..."},
+                "place": {"capability": "grasp_place", "action": "place", "target": "pringles", "destination": "sofa", "reason": "..."},
+                "handover": {"capability": "grasp_place", "action": "handover", "target": "pringles", "reason": "..."},
+                "finish": {"capability": "finish", "task_done": True, "reason": "..."},
+            },
         }
         return (
             json.dumps(payload, ensure_ascii=False)
@@ -1045,6 +1017,18 @@ def _try_parse_transfer_command(task_instruction: str) -> tuple[str, str, str, s
 
 def _try_parse_transfer_sequence(task_instruction: str) -> List[tuple[str, str, str, str, str | None]] | None:
     text = task_instruction.strip().lower()
+    pickup_handover = re.match(
+        r"^(?:pick up|get|grab)\s+(.+?)\s+(?:from|on|in|at)\s+(.+?)\s+and\s+(?:hand\s+it\s+over|handover\s+it|give\s+it|pass\s+it)\s+to\s+(.+)$",
+        text,
+    )
+    if pickup_handover:
+        obj, source, destination = pickup_handover.groups()
+        obj = _clean_phrase(obj)
+        source = _clean_phrase(source)
+        destination = _clean_handover_destination(destination)
+        if obj and source and destination:
+            return [(obj, obj, destination, "handover", source)]
+
     if text.startswith("move "):
         match = re.match(r"^move\s+(.+?)\s+from\s+(.+?)\s+to\s+(.+)$", text)
         if not match:
@@ -1069,6 +1053,13 @@ def _try_parse_transfer_sequence(task_instruction: str) -> List[tuple[str, str, 
                 return None
     return None
 
+
+def _clean_handover_destination(text: str) -> str:
+    cleaned = _clean_phrase(re.split(r"\s+" + _PREPOSITIONS + r"\s+", text.strip().lower())[0])
+    match = re.search(r"\b(?:me|person|user|human)\s+(?:at|on|in|near|by)\s+(.+)$", text.strip().lower())
+    if match:
+        return _clean_phrase(match.group(1))
+    return cleaned
 
 def _parse_transfer(arg: str) -> tuple[str, str, str]:
     first = _parse_transfer_sequence(arg, "place")[0]

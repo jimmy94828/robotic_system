@@ -61,54 +61,50 @@ class DecomposerClient:
     def _build_decomposition_prompt(self, task_instruction: str, context: dict) -> str:
         payload = {
             "task_instruction": task_instruction,
-            "context": context,
-            "goal": "Decompose the command into atomic robot subtasks.",
-            "active_rule_documents": context.get("rule_documents", {}),
-            "output_schema": {
+            "goal": "Return ordered atomic subtasks for the robot agent.",
+            "context": {
+                "stage": context.get("stage"),
+                "mode": context.get("mode"),
+                "compact_rules": context.get("compact_rules", []),
+                "output_schema": context.get("output_schema"),
+            },
+            "schema": {
                 "original_task": task_instruction,
                 "subtasks": [
                     {
                         "subtask_id": 1,
-                        "text": "bring bottle on sofa to table",
-                        "type": "bring",
-                        "object": "bottle",
-                        "source": "sofa",
-                        "destination": "table",
+                        "text": "handover pringles on table to sofa",
+                        "type": "handover",
+                        "object": "pringles",
+                        "source": "table",
+                        "destination": "sofa",
                     }
                 ],
             },
             "rules": [
-                "Return exactly one JSON object and no extra text.",
-                "Do not output reasoning, markdown, comments, or <think> blocks.",
-                "The response must start with { and end with }.",
-                "Each subtask must be atomic and executable by the existing agent planner.",
-                "Do not output object_query/navigation/grasp_place/finish capability calls in this stage.",
-                "For multiple objects joined by and/commas, create one subtask per object.",
-                "For then/and then/after that, preserve the requested order.",
-                "For move <object> from <source> to <destination>, keep source and destination.",
-                "If the user says <object> on/in/at <source> to <destination>, preserve the source in both the source field and the subtask text.",
-                "For simple conditions, keep the condition in the subtask text and fill the object/source/destination fields when possible.",
-                "Resolve simple pronouns like it to the object mentioned in the condition or previous clause.",
+                "JSON only; start with { and end with }.",
+                "No reasoning, markdown, comments, or <think> blocks.",
+                "Do not output object_query/navigation/grasp_place/finish here.",
+                "Multiple objects joined by and/commas become separate ordered subtasks.",
+                "Preserve source and destination for from/on/in/at-source transfers.",
+                "If task says hand over/give/pass/deliver to a person, type must be handover and text must start with handover.",
+                "For 'pick up X from/on S and hand it over to me at D', output one handover subtask: handover X on S to D.",
+                "For then/and then/after that, preserve order.",
+                "Resolve it/them to the mentioned object when clear.",
             ],
             "examples": [
                 {
                     "input": "bring bottle and apple to table",
-                    "output": {
-                        "original_task": "bring bottle and apple to table",
-                        "subtasks": [
-                            {"subtask_id": 1, "text": "bring bottle to table", "type": "bring", "object": "bottle", "source": None, "destination": "table"},
-                            {"subtask_id": 2, "text": "bring apple to table", "type": "bring", "object": "apple", "source": None, "destination": "table"},
-                        ],
-                    },
+                    "subtasks": [
+                        {"subtask_id": 1, "text": "bring bottle to table", "type": "bring", "object": "bottle", "source": None, "destination": "table"},
+                        {"subtask_id": 2, "text": "bring apple to table", "type": "bring", "object": "apple", "source": None, "destination": "table"},
+                    ],
                 },
                 {
-                    "input": "if the bottle is on sofa, bring it to table",
-                    "output": {
-                        "original_task": "if the bottle is on sofa, bring it to table",
-                        "subtasks": [
-                            {"subtask_id": 1, "text": "if bottle is on sofa, bring bottle to table", "type": "conditional", "object": "bottle", "source": "sofa", "destination": "table"}
-                        ],
-                    },
+                    "input": "pick up the pringle from the table and hand it over to me at the sofa",
+                    "subtasks": [
+                        {"subtask_id": 1, "text": "handover pringle on table to sofa", "type": "handover", "object": "pringle", "source": "table", "destination": "sofa"}
+                    ],
                 },
             ],
         }
@@ -261,7 +257,27 @@ def _parse_conditional_clause(clause: str, last_object: str | None) -> dict | No
 
 def _parse_transfer_clause(clause: str, last_object: str | None) -> List[dict] | None:
     text = _replace_pronoun_object(_clean_text(clause), last_object)
+
+    pickup_handover = re.match(
+        r"^(?:pick up|get|grab)\s+(.+?)\s+(?:from|on|in|at)\s+(.+?)\s+and\s+(?:hand\s+it\s+over|handover\s+it|give\s+it|pass\s+it)\s+to\s+(.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if pickup_handover:
+        obj, source, destination = pickup_handover.groups()
+        obj = _clean_text(obj)
+        source = _clean_text(source)
+        destination = _strip_handover_destination(destination)
+        return [{
+            "text": f"handover {obj} on {source} to {destination}",
+            "type": "handover",
+            "object": obj,
+            "source": source,
+            "destination": destination,
+        }]
+
     for pattern, task_type in (
+        (r"^(?:handover|hand\s+over|give|pass)\s+(.+?)\s+to\s+(.+)$", "handover"),
         (r"^(?:bring|take|carry)\s+(.+?)\s+to\s+(.+)$", "bring"),
         (r"^move\s+(.+?)\s+from\s+(.+?)\s+to\s+(.+)$", "move"),
     ):
@@ -275,27 +291,49 @@ def _parse_transfer_clause(clause: str, last_object: str | None) -> List[dict] |
             object_phrase, destination = match.groups()
             source = None
 
-        destination = _strip_destination_modifiers(destination)
+        destination = _strip_handover_destination(destination) if task_type == "handover" else _strip_destination_modifiers(destination)
         objects = _split_object_list(object_phrase)
         if not objects:
             return None
 
         subtasks = []
         for obj in objects:
+            source_for_obj = source
+            nav_obj = obj
+            prep_match = re.search(r"\s+(?:on|in|at|from|inside)\s+", obj)
+            if prep_match:
+                nav_obj = _clean_text(obj[: prep_match.start()])
+                source_for_obj = _clean_text(obj[prep_match.end():])
+
             if task_type == "move":
-                subtask_text = f"move {obj} from {_clean_text(source)} to {destination}"
+                subtask_text = f"move {nav_obj} from {_clean_text(source_for_obj)} to {destination}"
+            elif task_type == "handover":
+                subtask_text = f"handover {nav_obj}"
+                if source_for_obj:
+                    subtask_text += f" on {_clean_text(source_for_obj)}"
+                subtask_text += f" to {destination}"
             else:
-                subtask_text = f"bring {obj} to {destination}"
+                subtask_text = f"bring {nav_obj}"
+                if source_for_obj:
+                    subtask_text += f" on {_clean_text(source_for_obj)}"
+                subtask_text += f" to {destination}"
             subtasks.append({
                 "text": subtask_text,
                 "type": task_type,
-                "object": obj,
-                "source": _optional_clean(source),
+                "object": nav_obj,
+                "source": _optional_clean(source_for_obj),
                 "destination": destination,
             })
         return subtasks
     return None
 
+
+def _strip_handover_destination(text: str) -> str:
+    cleaned = _strip_destination_modifiers(text)
+    match = re.search(r"\b(?:me|person|user|human)\s+(?:at|on|in|near|by)\s+(.+)$", cleaned)
+    if match:
+        return _clean_text(match.group(1))
+    return cleaned
 
 def _split_object_list(text: str) -> List[str]:
     normalized = _clean_text(text)

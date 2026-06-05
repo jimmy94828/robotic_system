@@ -1396,7 +1396,7 @@ Run from the ROS workspace:
 
 ```bash
 cd /home/acm/robotic_agent/robotic_system/robot_ws
-QWEN_MAX_NEW_TOKENS=96 ./scripts/agent_mock_pipeline_tmux.sh
+./scripts/agent_mock_pipeline_tmux.sh
 tmux attach -t agent_mock
 ```
 

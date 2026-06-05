@@ -82,45 +82,22 @@ class LightweightPlanningHarness:
         extra_context: Dict[str, Any],
     ) -> Dict[str, Any]:
         return {
-            "planning_rules": [
-                "Choose exactly one next capability call per decision.",
-                "Do not output a full multi-step plan in closed-loop mode.",
-                "Use observations from previous capability calls before deciding the next call.",
-                "For bring/place tasks with an explicit source, locate and navigate to the source before grasping the object.",
-                "For move tasks with 'from <source>', first query the object; if that fails, query and navigate to the source.",
-                "After grasping, locate and navigate to the destination before placing or handing over.",
-                "Use finish only after the task goal has been achieved.",
+            "compact_rules": [
+                "Emit exactly one next capability call, never a full plan.",
+                "Use observations/history before choosing the next call.",
+                "For source-aware transfers, query object first; if not found, query/navigate source.",
+                "After grasp, query/navigate destination before place or handover.",
+                "Use handover, not place, for hand over/give/pass-to-person tasks.",
+                "Use finish only after the task goal is achieved.",
             ],
             "skill_constraints": {
-                "object_query": "Requires target. Returns a symbolic target pose if found.",
-                "navigation": "Requires target or pose. Prefer a pose returned by object_query when available.",
-                "grasp_place": "Requires action grasp/place/handover. Grasp and handover require target. Place requires target and destination.",
-                "robot_pose": "Requires no target. Returns the robot current pose from TF or mock state.",
-                "finish": "Requires task_done=true and should only be used when the task is complete.",
+                "object_query": "target required",
+                "navigation": "target or pose required",
+                "grasp_place": "action grasp/place/handover; place needs destination",
+                "robot_pose": "no target",
+                "finish": "task_done=true",
             },
-            "output_format": {
-                "allowed_capabilities": list(supported_capabilities),
-                "one_json_object_only": True,
-                "examples": [
-                    {"capability": "object_query", "target": "table", "reason": "Need source pose."},
-                    {"capability": "navigation", "target": "table", "pose": {"x": 1.0, "y": 2.0, "theta": 0.0}, "reason": "Navigate to source."},
-                    {"capability": "grasp_place", "action": "grasp", "target": "pringles", "reason": "Grasp target object."},
-                    {"capability": "grasp_place", "action": "handover", "target": "pringles", "reason": "Hand over target object."},
-                    {"capability": "robot_pose", "reason": "Check current robot pose."},
-                    {"capability": "finish", "task_done": True, "reason": "Task completed."},
-                ],
-            },
-            "failure_policy": [
-                "If a capability fails, inspect last_execution_result before choosing the next call.",
-                "For move tasks, an object_query failure on the object can be corrected by querying the declared source.",
-                "Do not immediately finish after a failed capability.",
-                "Avoid repeating an identical failed call unless new information is available.",
-            ],
-            "available_rule_documents": list(self.RULE_DOCUMENT_NAMES),
-            "task_start_rule_documents": ["PLANNING.md", "SKILLS.md", "OUTPUT_FORMAT.md"],
-            "decision_rule_documents": ["MEMORY.md", "OUTPUT_FORMAT.md"],
-            "verification_rule_documents": ["VERIFICATION.md"],
-            "replanning_rule_documents": ["REPLANNING.md"],
+            "allowed_capabilities": list(supported_capabilities),
             "extra_context": extra_context,
         }
 
@@ -135,23 +112,28 @@ class LightweightPlanningHarness:
             "stage": "task_decomposition",
             "original_task": task_instruction,
             "mode": "mock" if mock_execution else "live",
-            "rule_documents": self._select_rule_documents([
-                "DECOMPOSITION.md",
-                "DECOMPOSITION_FORMAT.md",
-                "SKILLS.md",
-            ]),
-            "decomposition_goal": (
-                "Split the original command into ordered atomic subtasks before "
-                "each subtask enters the closed-loop agent planner. Do not emit "
-                "capability calls at this stage."
-            ),
-            "decomposition_constraints": [
-                "Each subtask should be executable by the existing agent flow.",
-                "Multiple objects should become multiple ordered subtasks.",
-                "Sequential clauses such as then/and then/after that should preserve order.",
-                "Move tasks should preserve source and destination.",
-                "Simple conditional tasks should keep the condition in the subtask text.",
+            "compact_rules": [
+                "Split complex commands into ordered atomic subtasks.",
+                "Do not emit capability calls in decomposition.",
+                "Multiple objects become one subtask per object.",
+                "Preserve then/and then/after that order.",
+                "Preserve source and destination for from/on/in/at-source transfers.",
+                "hand over/give/pass tasks become type=handover and must stay handover subtasks.",
             ],
+            "output_schema": {
+                "original_task": task_instruction,
+                "subtasks": [
+                    {
+                        "subtask_id": 1,
+                        "text": "handover pringles on table to sofa",
+                        "type": "handover",
+                        "object": "pringles",
+                        "source": "table",
+                        "destination": "sofa",
+                    }
+                ],
+            },
+            "supported_subtask_types": ["bring", "move", "handover", "conditional", "query", "other"],
             "supported_capabilities_after_decomposition": list(supported_capabilities),
             "extra_context": extra_context or {},
         }
@@ -189,33 +171,48 @@ class LightweightPlanningHarness:
         history: List[dict],
         last_execution_result: dict | None,
     ) -> Dict[str, Any]:
-        decision_state = copy.deepcopy(current_state)
-        harness = decision_state.setdefault("harness", {})
-        feedback = harness.setdefault("feedback", {})
+        harness = current_state.get("harness", {})
+        feedback = harness.get("feedback", {})
         recent_history = history[-5:]
-        feedback["recent_history"] = recent_history
-        feedback["last_execution_result"] = last_execution_result
-
         stage = "decision"
-        document_names = ["MEMORY.md", "OUTPUT_FORMAT.md"]
+        compact_rules = [
+            "Choose one valid capability call.",
+            "Use cached known_poses when available.",
+            "Do not finish until the task goal is complete.",
+        ]
         if not history and last_execution_result is None:
             stage = "task_start"
-            document_names = ["PLANNING.md", "SKILLS.md", "OUTPUT_FORMAT.md", "MEMORY.md"]
+            compact_rules = list(harness.get("feedforward", {}).get("compact_rules", compact_rules))
         elif last_execution_result and last_execution_result.get("success") is False:
+            stage = "replan"
+            compact_rules = [
+                "Use last_execution_result to repair the next call.",
+                "If object_query(object) failed in a source-aware task, query the source.",
+                "If grasp failed, retry/recover at the source; do not navigate to destination unless holding the object.",
+                "Do not repeat an identical failed call without new information.",
+            ]
             if last_execution_result.get("last_action") == "harness_verification":
-                stage = "verification_replan"
-                document_names = ["MEMORY.md", "OUTPUT_FORMAT.md", "VERIFICATION.md", "REPLANNING.md"]
-            else:
-                stage = "execution_replan"
-                document_names = ["MEMORY.md", "OUTPUT_FORMAT.md", "REPLANNING.md"]
+                compact_rules.append("Respect the verifier rejection reason before choosing a new call.")
 
-        harness["active_context"] = {
-            "stage": stage,
-            "rule_documents": self._select_rule_documents(document_names),
-            "recent_memory": recent_history,
-            "last_execution_result": last_execution_result,
+        return {
+            "task": current_state.get("task"),
+            "known_poses": copy.deepcopy(current_state.get("known_poses", {})),
+            "held_object": current_state.get("held_object"),
+            "robot_pose": current_state.get("robot_pose"),
+            "step_index": current_state.get("step_index", 0),
+            "harness": {
+                "mode": harness.get("mode"),
+                "active_context": {
+                    "stage": stage,
+                    "compact_rules": compact_rules,
+                    "recent_memory": recent_history,
+                    "last_execution_result": last_execution_result,
+                    "last_failure": feedback.get("last_failure"),
+                    "replans_used": feedback.get("replans_used", 0),
+                    "max_replans": feedback.get("max_replans", self.max_replans_per_task),
+                },
+            },
         }
-        return decision_state
 
     def build_verification_context(
         self,
@@ -225,7 +222,11 @@ class LightweightPlanningHarness:
     ) -> Dict[str, Any]:
         return {
             "stage": "verification",
-            "rule_documents": self._select_rule_documents(["VERIFICATION.md"]),
+            "compact_rules": [
+                "Schema fields must match capability requirements.",
+                "Place/handover only after holding the target object and navigating to destination.",
+                "After failed grasp, do not navigate to destination until grasp succeeds.",
+            ],
             "candidate_call": capability_call,
             "current_state_summary": {
                 "held_object": current_state.get("held_object"),
