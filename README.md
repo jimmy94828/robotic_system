@@ -1427,6 +1427,52 @@ ros2 topic pub --once /manual_command std_msgs/msg/String \
   "{data: 'bring pringles on table to sofa'}"
 ```
 
+#### Avatar Object-Query Image Choice
+
+When `object_query_server` finds multiple instances of the same object or place,
+it publishes a JSON string on `/object_query_choice`. The payload includes both
+the numeric options and a BEV preview image generated under `data/tmp`, for
+example `data/tmp/table_instances_bev.png`. The image has candidate indexes
+drawn on top of the map, so the Avatar UI can show the image and ask the user
+which index they mean.
+
+Example payload fields:
+
+```json
+{
+  "event": "active",
+  "name": "table",
+  "request_id": "table-1",
+  "reply_topic": "/object_query_reply",
+  "preview_image": {
+    "kind": "bev_instances",
+    "path": "/home/acm/robotic_agent/robotic_system/robot_ws/data/tmp/table_instances_bev.png",
+    "file_uri": "file:///home/acm/robotic_agent/robotic_system/robot_ws/data/tmp/table_instances_bev.png",
+    "description": "BEV preview image with candidate object indexes overlaid."
+  },
+  "options": [
+    {"index": 0, "instance_id": "...", "map_x": 1.0, "map_y": 2.0, "map_z": 0.0}
+  ]
+}
+```
+
+Avatar should display `preview_image.file_uri` or `preview_image.path`, then
+publish the selected index back to `/object_query_reply`:
+
+```bash
+ros2 topic pub --once /object_query_reply std_msgs/msg/String \
+  "{data: '{\"request_id\":\"table-1\",\"index\":0}'}"
+```
+
+When the choice is resolved, `/object_query_choice` publishes:
+
+```json
+{"event": "clear"}
+```
+
+Avatar can use that event to hide or reset the selection UI. Terminal input is
+still supported, so this does not break the original object-query workflow.
+
 Useful troubleshooting notes:
 
 - `Connection refused` on `localhost:8001` means the decision vLLM server is not

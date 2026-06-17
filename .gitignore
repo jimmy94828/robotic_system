@@ -1,1 +1,7 @@
 *.ply
+
+# Generated robot data / collected demo files
+robot_ws/collect_data/
+
+# Generated map alignment output files
+robot_ws/data/map_alignment/output/

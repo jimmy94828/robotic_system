@@ -265,7 +265,15 @@ class ObjectQueryServer(Node):
             'options': [],
         }
         if preview_paths:
+            image_path = preview_paths.get('instances_bev_path')
             payload['bev_preview'] = preview_paths
+            if image_path:
+                payload['preview_image'] = {
+                    'kind': 'bev_instances',
+                    'path': image_path,
+                    'file_uri': 'file://' + os.path.abspath(image_path),
+                    'description': 'BEV preview image with candidate object indexes overlaid.',
+                }
         for i, pos in enumerate(instances):
             map_x, map_y, map_z = self.transform_point_to_map(pos)
             payload['options'].append(
@@ -570,6 +578,8 @@ class ObjectQueryServer(Node):
         return {
             # 'rgb_bev_path': rgb_path,
             'instances_bev_path': overlay_path,
+            'instances_bev_file_uri': 'file://' + os.path.abspath(overlay_path),
+            'preview_kind': 'bev_instances',
             # 'metadata_path': metadata_path,
         }
 
