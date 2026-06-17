@@ -22,20 +22,19 @@ class ObjectQueryServer(Node):
         super().__init__('object_query_server')
 
         # === Declare parameters ===
-        # self.declare_parameter('3dmap_path', 'data/lab/accumulated_gaussians.npz') predemo
-        self.declare_parameter('3dmap_path', 'data/lab/test/robot_deploy_slam_example0_rgb_color.npz')
+        # self.declare_parameter('3dmap_path', 'data/lab/test/robot_deploy_slam_example0_rgb_color.npz') # previous version in ED305
+        self.declare_parameter('3dmap_path', 'data/lab/demo/robot_deploy_slam_demo_rgb_color.npz')
+        # self.declare_parameter('map_path', 'data/lab/test/robot_deploy_slam_example0_sem_color_fine.npz') # previous version in ED305
+        self.declare_parameter('map_path', 'data/lab/demo/robot_deploy_slam_demo_sem_color.npz')
 
-        # self.declare_parameter('map_path', 'data/lab/semantic_pcd_accumulated_gaussians.npz') predemo
-        self.declare_parameter('map_path', 'data/lab/test/robot_deploy_slam_example0_sem_color_fine.npz')
-
-        self.declare_parameter('semantic_path', 'data/lab/semantic_pcd_accumulated_gaussians_meta.json')
-        # self.declare_parameter('instance_path', 'data/lab/accumulated_gaussians_instance_semantic_info.json') predemo
-        self.declare_parameter('instance_path', 'data/lab/test/robot_deploy_slam_example0_instance_semantic_table_fine.json')
+        self.declare_parameter('semantic_path', 'data/lab/semantic_pcd_accumulated_gaussians_meta.json')        # not used now
+        # self.declare_parameter('instance_path', 'data/lab/test/robot_deploy_slam_example0_instance_semantic_table_fine.json') # previous version in ED305
+        self.declare_parameter('instance_path', 'data/lab/demo/robot_deploy_slam_demo_instance_semantic_table.json')
 
         self.declare_parameter('alignment_path', 'data/Util/alignment.yaml')
         self.declare_parameter('auto_align', False) 
         self.declare_parameter('bev_preview_enabled', True)
-        self.declare_parameter('bev_tmp_dir', '/home/weichen/robotic-project/robot_ws/data/tmp')
+        self.declare_parameter('bev_tmp_dir', './data/tmp')
         self.declare_parameter('bev_resolution', 0.015)
         self.declare_parameter('bev_margin_m', 0.5)
         self.declare_parameter('bev_max_size_px', 2200)
@@ -802,7 +801,6 @@ class ObjectQueryServer(Node):
                 self.clear_candidate_options()
             return True, Point(x=best_pt[0], y=best_pt[1], z=best_pt[2])
         else:
-            preview_paths = self.export_bev_preview_for_selection(name, instances, instance_ids)
             self.clear_candidate_options()
             return False, Point(x=0.0, y=0.0, z=0.0)
 
