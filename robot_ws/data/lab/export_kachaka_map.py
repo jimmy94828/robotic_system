@@ -20,8 +20,8 @@ def export_kachaka_map(robot_ip, output_dir='./'):
         # 確保輸出目錄存在
         os.makedirs(output_dir, exist_ok=True)
         
-        image_path = os.path.join(output_dir, 'kachaka_native_new.png')
-        yaml_path = os.path.join(output_dir, 'kachaka_native_new.yaml')
+        image_path = os.path.join(output_dir, 'kachaka_native.png')
+        yaml_path = os.path.join(output_dir, 'kachaka_native.yaml')
         
         print("正在下載地圖...")
         map_data = client.get_png_map()
@@ -33,7 +33,7 @@ def export_kachaka_map(robot_ip, output_dir='./'):
         
         # 保存元數據
         map_metadata = {
-            "image": "kachaka_native_new.png",  # 使用相對路徑
+            "image": "kachaka_native.png",  # 使用相對路徑
             "resolution": map_data.resolution,
             "origin": [map_data.origin.x, map_data.origin.y, 0.0],
             "negate": 0,

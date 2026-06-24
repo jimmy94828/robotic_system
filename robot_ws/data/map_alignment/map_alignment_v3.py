@@ -318,8 +318,6 @@ def main():
             T_m3_c = cam_row_to_T(r)
             T_m3_b = T_m3_c @ T_cam_base
             p = T_m3_b[:3, 3]
-            # p = T_m3_b[:, [0, 2], 3]
-
             P3_3d.append(p)
             P2_xy.append([r["x"], r["y"]])
 

@@ -25,20 +25,17 @@ plane_fit:
   - 0.9999935394081635
   uv_definition: u=dot(p-mu,e1), v=dot(p-mu,e2)
 sim2:
-  s: 1.2137348493969344
+  s: 1.0
   R:
-  - - -0.4551545701863504
-    - 0.8904124422078111
-  - - -0.8904124422078111
-    - -0.4551545701863504
+  - - -0.9566860404294422
+    - 0.2911216584993896
+  - - -0.29112165849938965
+    - -0.9566860404294427
   t:
-    x: 7.225370211009158
-    y: -2.7691698165137675
-  theta_rad: -2.043342127143352
-  theta_deg: -117.07487998659812
+    x: 2.675370211009174
+    y: -5.369169816513758
+  theta_rad: -2.846193583060775
+  theta_deg: -163.07487998659994
 counts:
   matched: 436
   inliers: 436
-manual_tuning:
-  tool: robot_ws/tools/tune_alignment_overlay.py
-  note: Only sim2 was adjusted; plane_fit was kept unchanged.
