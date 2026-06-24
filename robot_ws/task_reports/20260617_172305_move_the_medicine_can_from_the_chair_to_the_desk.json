@@ -1,0 +1,224 @@
+{
+  "task": "Move the medicine can from the chair to the desk.",
+  "started_at": "2026-06-17T17:21:46",
+  "success": false,
+  "status": "failed",
+  "message": "Subtask 1 failed: move medicine can from chair to desk",
+  "decomposition": {
+    "original_task": "Move the medicine can from the chair to the desk.",
+    "subtasks": [
+      {
+        "subtask_id": 1,
+        "text": "move medicine can from chair to desk",
+        "type": "move",
+        "object": "medicine can",
+        "source": "chair",
+        "destination": "desk"
+      }
+    ]
+  },
+  "reasoning_events": [
+    {
+      "stage": "task_decomposition",
+      "duration_sec": 7.05,
+      "success": true,
+      "attempt": 1
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 3.597,
+      "success": true,
+      "subtask": "move medicine can from chair to desk",
+      "step": 1
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 4.039,
+      "success": true,
+      "subtask": "move medicine can from chair to desk",
+      "step": 2
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 3.343,
+      "success": true,
+      "subtask": "move medicine can from chair to desk",
+      "step": 3
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 4.907,
+      "success": true,
+      "subtask": "move medicine can from chair to desk",
+      "step": 4
+    }
+  ],
+  "decisions": [
+    {
+      "subtask": "move medicine can from chair to desk",
+      "step": 1,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Query the medicine can to determine its current location before proceeding.",
+        "target": "medicine can"
+      },
+      "reasoning_duration_sec": 3.597,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "medicine can",
+        "success": false,
+        "message": "Object or place 'medicine can' was not found."
+      }
+    },
+    {
+      "subtask": "move medicine can from chair to desk",
+      "step": 2,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Query the chair to determine if the medicine can is located there since the previous query failed.",
+        "target": "chair"
+      },
+      "reasoning_duration_sec": 4.039,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "chair",
+        "success": true,
+        "result": {
+          "pose": {
+            "x": 2.6184756793376804,
+            "y": -1.9897717570953248,
+            "theta": -0.9806408126036409
+          }
+        }
+      }
+    },
+    {
+      "subtask": "move medicine can from chair to desk",
+      "step": 3,
+      "capability_call": {
+        "capability": "navigation",
+        "reason": "Navigate to the chair to pick up the medicine can.",
+        "target": "chair",
+        "pose": {
+          "x": 2.6184756793376804,
+          "y": -1.9897717570953248,
+          "theta": -0.9806408126036409
+        }
+      },
+      "reasoning_duration_sec": 3.343,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "navigation",
+        "pose": {
+          "x": 2.6184756793376804,
+          "y": -1.9897717570953248,
+          "theta": -0.9806408126036409
+        },
+        "success": true,
+        "message": "navigation completed",
+        "target": "chair"
+      }
+    },
+    {
+      "subtask": "move medicine can from chair to desk",
+      "step": 4,
+      "capability_call": {
+        "capability": "grasp_place",
+        "reason": "Grasp the medicine can from the chair to proceed with moving it to the desk.",
+        "action": "grasp",
+        "target": "medicine can"
+      },
+      "reasoning_duration_sec": 4.907,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "grasp_place",
+        "action": "grasp",
+        "target": "medicine can",
+        "success": false,
+        "message": "grasp failed"
+      }
+    },
+    {
+      "subtask": "move medicine can from chair to desk",
+      "step": 4,
+      "capability_call": {
+        "capability": "navigation",
+        "target": "chair",
+        "reason": "Recover from grasp failure by realigning the robot camera toward the last grasp source.",
+        "pose": {
+          "x": 2.6184756793376804,
+          "y": -1.9897717570953248,
+          "theta": -0.9806408126036409
+        }
+      },
+      "reasoning_duration_sec": 0.0,
+      "forced": true,
+      "verified": true,
+      "verification_message": "automatic grasp-failure realignment recovery",
+      "result": {
+        "last_action": "navigation",
+        "pose": {
+          "x": 2.6184756793376804,
+          "y": -1.9897717570953248,
+          "theta": -0.9806408126036409
+        },
+        "success": true,
+        "message": "navigation completed",
+        "target": "chair",
+        "recovery_for": "grasp_failure"
+      }
+    },
+    {
+      "subtask": "move medicine can from chair to desk",
+      "step": 5,
+      "capability_call": {
+        "capability": "grasp_place",
+        "reason": "Grasp the medicine can from the chair to proceed with moving it to the desk.",
+        "action": "grasp",
+        "target": "medicine can"
+      },
+      "reasoning_duration_sec": 0.0,
+      "forced": true,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "grasp_place",
+        "action": "grasp",
+        "target": "medicine can",
+        "success": false,
+        "message": "grasp failed"
+      }
+    }
+  ],
+  "subtasks": [
+    {
+      "subtask_id": 1,
+      "text": "move medicine can from chair to desk",
+      "original_text": "move medicine can from chair to desk",
+      "started_at": "2026-06-17T17:21:53",
+      "success": false,
+      "duration_sec": 71.86,
+      "decision_indexes": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "finished_at": "2026-06-17T17:23:05"
+    }
+  ],
+  "finished_at": "2026-06-17T17:23:05",
+  "total_duration_sec": 78.918
+}

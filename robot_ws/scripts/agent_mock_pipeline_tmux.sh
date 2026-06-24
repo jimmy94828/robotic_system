@@ -7,10 +7,16 @@ AUTO_PUBLISH="${AUTO_PUBLISH:-0}"
 PUBLISH_DELAY_SEC="${PUBLISH_DELAY_SEC:-8}"
 PLANNER_BACKEND="${PLANNER_BACKEND:-vllm}"
 VLLM_BASE_URL="${VLLM_BASE_URL:-http://localhost:8001}"
-VLLM_MODEL="${VLLM_MODEL:-decision-qwen}"
+VLLM_MODEL="${VLLM_MODEL:-qwen-vl}"
 QWEN_MAX_NEW_TOKENS="${QWEN_MAX_NEW_TOKENS:-256}"
 VLLM_TEMPERATURE="${VLLM_TEMPERATURE:-0}"
 VLLM_TIMEOUT_SEC="${VLLM_TIMEOUT_SEC:-60}"
+ENABLE_PRE_ACTION_VIEW_CHECK="${ENABLE_PRE_ACTION_VIEW_CHECK:-true}"
+VIEW_CHECK_MAX_ADJUSTMENTS="${VIEW_CHECK_MAX_ADJUSTMENTS:-5}"
+VIEW_CRITIC_BACKEND="${VIEW_CRITIC_BACKEND:-mock}"
+VIEW_CRITIC_VLLM_BASE_URL="${VIEW_CRITIC_VLLM_BASE_URL:-http://localhost:8001/v1}"
+VIEW_CRITIC_VLLM_MODEL="${VIEW_CRITIC_VLLM_MODEL:-qwen-vl}"
+VIEW_CRITIC_IMAGE_TOPIC="${VIEW_CRITIC_IMAGE_TOPIC:-/camera/color/image_raw}"
 
 if ! command -v tmux >/dev/null 2>&1; then
   echo "tmux is required for this helper. Install tmux or run the three commands manually."
@@ -32,7 +38,7 @@ if tmux has-session -t "${SESSION_NAME}" 2>/dev/null; then
   exit 1
 fi
 
-SETUP_CMD="cd /robot_ws && source /opt/ros/humble/setup.bash && source /opt/conda/etc/profile.d/conda.sh && conda activate robot_ros && source install/setup.bash && export LLM_BACKEND=${PLANNER_BACKEND} VLLM_BASE_URL=${VLLM_BASE_URL} VLLM_MODEL=${VLLM_MODEL} QWEN_MAX_NEW_TOKENS=${QWEN_MAX_NEW_TOKENS} VLLM_TEMPERATURE=${VLLM_TEMPERATURE} VLLM_TIMEOUT_SEC=${VLLM_TIMEOUT_SEC} && AGENT_EXE=\$(ros2 pkg prefix decision_maker)/lib/decision_maker/agent_decision_maker_node && if [ -f \"\$AGENT_EXE\" ]; then sed -i \"1s|.*|#!/opt/conda/envs/robot_ros/bin/python3|\" \"\$AGENT_EXE\"; fi"
+SETUP_CMD="cd /robot_ws && source /opt/ros/humble/setup.bash && source /opt/conda/etc/profile.d/conda.sh && conda activate robot_ros && source install/setup.bash && export LLM_BACKEND=${PLANNER_BACKEND} VLLM_BASE_URL=${VLLM_BASE_URL} VLLM_MODEL=${VLLM_MODEL} QWEN_MAX_NEW_TOKENS=${QWEN_MAX_NEW_TOKENS} VLLM_TEMPERATURE=${VLLM_TEMPERATURE} VLLM_TIMEOUT_SEC=${VLLM_TIMEOUT_SEC} ENABLE_PRE_ACTION_VIEW_CHECK=${ENABLE_PRE_ACTION_VIEW_CHECK} VIEW_CHECK_MAX_ADJUSTMENTS=${VIEW_CHECK_MAX_ADJUSTMENTS} VIEW_CRITIC_BACKEND=${VIEW_CRITIC_BACKEND} VIEW_CRITIC_VLLM_BASE_URL=${VIEW_CRITIC_VLLM_BASE_URL} VIEW_CRITIC_VLLM_MODEL=${VIEW_CRITIC_VLLM_MODEL} VIEW_CRITIC_IMAGE_TOPIC=${VIEW_CRITIC_IMAGE_TOPIC} && AGENT_EXE=\$(ros2 pkg prefix decision_maker)/lib/decision_maker/agent_decision_maker_node && if [ -f \"\$AGENT_EXE\" ]; then sed -i \"1s|.*|#!/opt/conda/envs/robot_ros/bin/python3|\" \"\$AGENT_EXE\"; fi"
 
 # Layout:
 #   top-left:  object_query
@@ -78,6 +84,12 @@ if [ "${PLANNER_BACKEND}" = "vllm" ]; then
   echo "Max new tokens:   ${QWEN_MAX_NEW_TOKENS}"
   echo "Temperature:      ${VLLM_TEMPERATURE}"
 fi
+echo "View check:       ${ENABLE_PRE_ACTION_VIEW_CHECK}"
+echo "View backend:     ${VIEW_CRITIC_BACKEND}"
+echo "View vLLM URL:    ${VIEW_CRITIC_VLLM_BASE_URL}"
+echo "View vLLM model:  ${VIEW_CRITIC_VLLM_MODEL}"
+echo "View image topic: ${VIEW_CRITIC_IMAGE_TOPIC}"
+echo "View max adjust:  ${VIEW_CHECK_MAX_ADJUSTMENTS}"
 echo "Mouse scroll:      enabled in ${TMUX_CONF}"
 if [ "${AUTO_PUBLISH}" = "1" ]; then
   echo "Publisher pane:    will publish after ${PUBLISH_DELAY_SEC}s:"

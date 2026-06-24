@@ -1,8 +1,11 @@
+import base64
 import json
 import math
 import random
 import threading
 import time
+import urllib.error
+import urllib.request
 from datetime import datetime
 from pathlib import Path
 
@@ -102,6 +105,79 @@ class AgentDecisionMakingNode(DecisionMakingNode):
         self.robot_pose_timeout_sec = (
             self.get_parameter("robot_pose_timeout_sec").get_parameter_value().double_value
         )
+        self.declare_parameter("enable_pre_action_view_check", True)
+        self.enable_pre_action_view_check = (
+            self.get_parameter("enable_pre_action_view_check").get_parameter_value().bool_value
+        )
+        # Backward-compatible alias for older launch files/params.
+        self.declare_parameter("enable_pre_grasp_view_check", self.enable_pre_action_view_check)
+        self.enable_pre_action_view_check = (
+            self.enable_pre_action_view_check
+            and self.get_parameter("enable_pre_grasp_view_check").get_parameter_value().bool_value
+        )
+        self.declare_parameter("view_check_max_adjustments", 5)
+        self.view_check_max_adjustments = max(
+            0,
+            self.get_parameter("view_check_max_adjustments")
+            .get_parameter_value()
+            .integer_value,
+        )
+        self.declare_parameter("view_critic_backend", "auto")
+        self.view_critic_backend = (
+            self.get_parameter("view_critic_backend").get_parameter_value().string_value
+        ).strip().lower()
+        if self.view_critic_backend == "auto":
+            self.view_critic_backend = "mock" if self.mock_execution else "vllm"
+        self.declare_parameter("view_critic_url", "http://localhost:8002/view_critic")
+        self.view_critic_url = (
+            self.get_parameter("view_critic_url").get_parameter_value().string_value
+        )
+        self.declare_parameter("view_critic_vllm_base_url", "http://localhost:8001/v1")
+        self.view_critic_vllm_base_url = (
+            self.get_parameter("view_critic_vllm_base_url")
+            .get_parameter_value()
+            .string_value
+        ).rstrip("/")
+        self.declare_parameter("view_critic_vllm_model", "qwen-vl")
+        self.view_critic_vllm_model = (
+            self.get_parameter("view_critic_vllm_model")
+            .get_parameter_value()
+            .string_value
+        )
+        self.declare_parameter("view_critic_max_tokens", 256)
+        self.view_critic_max_tokens = (
+            self.get_parameter("view_critic_max_tokens").get_parameter_value().integer_value
+        )
+        self.declare_parameter("view_critic_temperature", 0.0)
+        self.view_critic_temperature = (
+            self.get_parameter("view_critic_temperature").get_parameter_value().double_value
+        )
+        self.declare_parameter("view_critic_timeout_sec", 20.0)
+        self.view_critic_timeout_sec = (
+            self.get_parameter("view_critic_timeout_sec").get_parameter_value().double_value
+        )
+        self.declare_parameter("view_critic_image_topic", "/camera/color/image_raw")
+        self.view_critic_image_topic = (
+            self.get_parameter("view_critic_image_topic").get_parameter_value().string_value
+        )
+        self.declare_parameter("view_adjust_max_yaw_deg", 45.0)
+        self.view_adjust_max_yaw_deg = (
+            self.get_parameter("view_adjust_max_yaw_deg").get_parameter_value().double_value
+        )
+        self.declare_parameter("mock_view_critic_visible_after_attempts", 1)
+        self.mock_view_critic_visible_after_attempts = max(
+            1,
+            self.get_parameter("mock_view_critic_visible_after_attempts")
+            .get_parameter_value()
+            .integer_value,
+        )
+        self._mock_view_critic_counts = {}
+        self._latest_rgb = None
+        self._latest_rgb_stamp = None
+        self._latest_rgb_lock = threading.Lock()
+        self._cv_bridge = None
+        self._rgb_sub = None
+        self._setup_view_critic_rgb_subscription()
         self.tf_buffer = None
         self.tf_listener = None
         if not self.mock_execution:
@@ -119,6 +195,50 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             f"🧠 AgentDecisionMakingNode ready with closed-loop planner "
             f"({mode}, object_query={object_query_mode}, harness replans={self.agent_max_replans})."
         )
+
+    def _setup_view_critic_rgb_subscription(self) -> None:
+        if not self.enable_pre_action_view_check:
+            return
+        if self.view_critic_backend == "mock":
+            self.get_logger().info("👁️ Pre-grasp view critic enabled with mock backend.")
+            return
+        try:
+            from cv_bridge import CvBridge
+            from sensor_msgs.msg import Image
+
+            self._cv_bridge = CvBridge()
+            self._rgb_sub = self.create_subscription(
+                Image,
+                self.view_critic_image_topic,
+                self._view_critic_rgb_cb,
+                10,
+            )
+            self.get_logger().info(
+                f"👁️ Pre-grasp view critic subscribed to RGB topic: "
+                f"{self.view_critic_image_topic}"
+            )
+        except Exception as exc:
+            self.get_logger().warn(
+                f"⚠️ Failed to set up RGB subscription for pre-grasp view critic: {exc}"
+            )
+
+    def _view_critic_rgb_cb(self, msg) -> None:
+        if self._cv_bridge is None:
+            return
+        try:
+            rgb = self._cv_bridge.imgmsg_to_cv2(msg, desired_encoding="rgb8")
+        except Exception as exc:
+            self.get_logger().warn(f"⚠️ Failed to decode RGB image for view critic: {exc}")
+            return
+        with self._latest_rgb_lock:
+            self._latest_rgb = rgb
+            self._latest_rgb_stamp = self.get_clock().now().to_msg()
+
+    def _latest_rgb_snapshot(self):
+        with self._latest_rgb_lock:
+            if self._latest_rgb is None:
+                return None
+            return self._latest_rgb.copy()
 
     def publish_task_reply(
         self,
@@ -978,6 +1098,23 @@ class AgentDecisionMakingNode(DecisionMakingNode):
         destination: str | None = None,
         current_state: dict | None = None,
     ) -> dict:
+        if action in {"grasp", "place", "handover"} and self.enable_pre_action_view_check:
+            view_task = self._view_task_for_grasp_place(action, target, destination)
+            view_result = self.ensure_view_sufficient_for_action(view_task, current_state or {})
+            if not view_result.get("success"):
+                return {
+                    "last_action": "grasp_place",
+                    "action": action,
+                    "target": target,
+                    "destination": destination,
+                    "success": False,
+                    "message": view_result.get(
+                        "message",
+                        f"view is not sufficient before {action} for {target}",
+                    ),
+                    "view_check": view_result,
+                }
+
         if self.mock_execution:
             failure = self._maybe_mock_failure("grasp_place", target, action)
             if failure:
@@ -1058,6 +1195,578 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             "success": False,
             "message": f"Unsupported grasp_place action: {action}",
         }
+
+    def _view_task_for_grasp_place(
+        self,
+        action: str,
+        target: str,
+        destination: str | None,
+    ) -> dict:
+        action = str(action).strip().lower()
+        if action == "grasp":
+            return {
+                "action": "grasp",
+                "target": target,
+                "destination": destination,
+                "view_target": target,
+                "requirement": "target_object_visible",
+                "success_condition": (
+                    f"The target object '{target}' is visible and sufficiently centered/clear "
+                    "for grasping."
+                ),
+            }
+        if action == "place":
+            view_target = destination or "placement surface"
+            return {
+                "action": "place",
+                "target": target,
+                "destination": destination,
+                "view_target": view_target,
+                "requirement": "empty_flat_place_surface_visible",
+                "success_condition": (
+                    f"An empty, reachable, flat placement area on or near '{view_target}' "
+                    f"is visible for placing '{target}'."
+                ),
+            }
+        if action == "handover":
+            view_target = destination or "human hand"
+            return {
+                "action": "handover",
+                "target": target,
+                "destination": destination,
+                "view_target": view_target,
+                "requirement": "human_hand_visible",
+                "success_condition": (
+                    "A human hand is visible and positioned for receiving the object."
+                ),
+            }
+        return {
+            "action": action,
+            "target": target,
+            "destination": destination,
+            "view_target": target,
+            "requirement": "unknown",
+            "success_condition": "The required view is sufficient for the action.",
+        }
+
+    def ensure_view_sufficient_for_action(self, view_task: dict, current_state: dict) -> dict:
+        max_adjustments = int(self.view_check_max_adjustments)
+        observations = []
+        adjustments_used = 0
+        action = view_task.get("action", "action")
+        view_target = view_task.get("view_target") or view_task.get("target") or "target"
+
+        for check_index in range(1, max_adjustments + 2):
+            rgb = self._latest_rgb_snapshot()
+            view = self.call_view_critic(view_task, rgb, check_index, current_state)
+            image_path = self._write_view_check_debug_image(
+                view_task,
+                check_index,
+                rgb,
+                view,
+            )
+            if image_path:
+                view["debug_image_path"] = image_path
+
+            observations.append(view)
+            self.get_logger().info(
+                "👁️ View check "
+                + json.dumps(
+                    {
+                        "action": action,
+                        "view_target": view_target,
+                        "requirement": view_task.get("requirement"),
+                        "check": check_index,
+                        "visible": view.get("target_visible"),
+                        "sufficient": view.get("sufficient_view"),
+                        "adjustment": view.get("adjustment"),
+                        "debug_image_path": image_path,
+                        "reason": view.get("reason", ""),
+                    },
+                    ensure_ascii=False,
+                )
+            )
+
+            if view.get("target_visible") and view.get("sufficient_view"):
+                return {
+                    "last_action": "view_critic",
+                    "action": action,
+                    "target": view_task.get("target"),
+                    "destination": view_task.get("destination"),
+                    "view_target": view_target,
+                    "requirement": view_task.get("requirement"),
+                    "success": True,
+                    "message": f"view is sufficient before {action}: {view_target}",
+                    "adjustments_used": adjustments_used,
+                    "observations": observations,
+                }
+
+            if adjustments_used >= max_adjustments:
+                return {
+                    "last_action": "view_critic",
+                    "action": action,
+                    "target": view_task.get("target"),
+                    "destination": view_task.get("destination"),
+                    "view_target": view_target,
+                    "requirement": view_task.get("requirement"),
+                    "success": False,
+                    "message": (
+                        f"required view for {action} did not become sufficient after "
+                        f"{max_adjustments} view adjustments: {view_target}"
+                    ),
+                    "adjustments_used": adjustments_used,
+                    "observations": observations,
+                }
+
+            adjustment = view.get("adjustment")
+            if not adjustment:
+                return {
+                    "last_action": "view_critic",
+                    "action": action,
+                    "target": view_task.get("target"),
+                    "destination": view_task.get("destination"),
+                    "view_target": view_target,
+                    "requirement": view_task.get("requirement"),
+                    "success": False,
+                    "message": "view critic did not provide an adjustment",
+                    "adjustments_used": adjustments_used,
+                    "observations": observations,
+                }
+
+            nav_result = self.apply_view_adjustment_with_navigation(
+                adjustment,
+                current_state,
+            )
+            adjustments_used += 1
+            view["navigation_adjustment_result"] = nav_result
+            if not nav_result.get("success"):
+                return {
+                    "last_action": "view_adjustment",
+                    "action": action,
+                    "target": view_task.get("target"),
+                    "destination": view_task.get("destination"),
+                    "view_target": view_target,
+                    "requirement": view_task.get("requirement"),
+                    "success": False,
+                    "message": nav_result.get("message", "view adjustment navigation failed"),
+                    "adjustments_used": adjustments_used,
+                    "observations": observations,
+                }
+
+        return {
+            "last_action": "view_critic",
+            "action": action,
+            "target": view_task.get("target"),
+            "destination": view_task.get("destination"),
+            "view_target": view_target,
+            "requirement": view_task.get("requirement"),
+            "success": False,
+            "message": f"required view for {action} did not become sufficient: {view_target}",
+            "adjustments_used": adjustments_used,
+            "observations": observations,
+        }
+
+    def call_view_critic(
+        self,
+        view_task: dict,
+        rgb_image,
+        check_index: int,
+        current_state: dict,
+    ) -> dict:
+        if self.view_critic_backend == "mock":
+            return self._mock_view_critic(view_task)
+        if self.view_critic_backend == "http":
+            return self._http_view_critic(view_task, rgb_image, check_index, current_state)
+        if self.view_critic_backend == "vllm":
+            return self._vllm_view_critic(view_task, rgb_image, check_index, current_state)
+        return {
+            "target_visible": False,
+            "sufficient_view": False,
+            "confidence": 0.0,
+            "reason": f"unsupported view critic backend: {self.view_critic_backend}",
+            "adjustment": None,
+        }
+
+    def _mock_view_critic(self, view_task: dict) -> dict:
+        key = ":".join(
+            str(part)
+            for part in (
+                view_task.get("action"),
+                view_task.get("view_target"),
+                view_task.get("requirement"),
+            )
+        )
+        count = self._mock_view_critic_counts.get(key, 0) + 1
+        self._mock_view_critic_counts[key] = count
+        visible = count >= self.mock_view_critic_visible_after_attempts
+        if visible:
+            return {
+                "target_visible": True,
+                "sufficient_view": True,
+                "confidence": 1.0,
+                "reason": f"mock view critic reports sufficient view for {view_task.get('action')}",
+                "adjustment": None,
+            }
+        yaw = -25.0 if count % 2 == 1 else 25.0
+        return {
+            "target_visible": False,
+            "sufficient_view": False,
+            "confidence": 0.5,
+            "reason": f"mock view critic requests rotation for {view_task.get('action')}",
+            "adjustment": {"type": "rotate", "yaw_deg": yaw},
+        }
+
+    def _http_view_critic(
+        self,
+        view_task: dict,
+        rgb_image,
+        check_index: int,
+        current_state: dict,
+    ) -> dict:
+        if rgb_image is None:
+            return {
+                "target_visible": False,
+                "sufficient_view": False,
+                "confidence": 0.0,
+                "reason": "no RGB image has been received for view critic",
+                "adjustment": None,
+            }
+
+        encoded = self._encode_rgb_image_base64(rgb_image)
+        if encoded is None:
+            return {
+                "target_visible": False,
+                "sufficient_view": False,
+                "confidence": 0.0,
+                "reason": "failed to encode RGB image for view critic",
+                "adjustment": None,
+            }
+
+        payload = {
+            "action": view_task.get("action"),
+            "target": view_task.get("target"),
+            "destination": view_task.get("destination"),
+            "view_target": view_task.get("view_target"),
+            "requirement": view_task.get("requirement"),
+            "success_condition": view_task.get("success_condition"),
+            "image_format": "jpeg_base64",
+            "image_base64": encoded,
+            "check_index": check_index,
+            "instruction": (
+                "You are a robot pre-action view critic. Decide whether the RGB image "
+                "satisfies the success_condition for the requested action. For grasp, "
+                "the target object must be visible. For place, an empty reachable flat "
+                "surface at the destination must be visible. For handover, a human hand "
+                "must be visible. If not sufficient, return a robot-relative adjustment. "
+                "Use yaw_deg > 0 for left turn and yaw_deg < 0 for right turn."
+            ),
+            "schema": {
+                "target_visible": "bool; true when the requested visual target/condition is visible",
+                "sufficient_view": "bool; true when the view is sufficient for the action",
+                "confidence": "float 0..1",
+                "reason": "string",
+                "adjustment": {"type": "rotate", "yaw_deg": "float degrees"},
+            },
+        }
+        try:
+            request = urllib.request.Request(
+                self.view_critic_url,
+                data=json.dumps(payload).encode("utf-8"),
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            with urllib.request.urlopen(
+                request,
+                timeout=float(self.view_critic_timeout_sec),
+            ) as response:
+                response_text = response.read().decode("utf-8")
+            return self._normalize_view_critic_response(json.loads(response_text))
+        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as exc:
+            return {
+                "target_visible": False,
+                "sufficient_view": False,
+                "confidence": 0.0,
+                "reason": f"view critic HTTP request failed: {exc}",
+                "adjustment": None,
+            }
+
+    def _vllm_view_critic(
+        self,
+        view_task: dict,
+        rgb_image,
+        check_index: int,
+        current_state: dict,
+    ) -> dict:
+        if rgb_image is None:
+            return {
+                "target_visible": False,
+                "sufficient_view": False,
+                "confidence": 0.0,
+                "reason": "no RGB image has been received for view critic",
+                "adjustment": None,
+            }
+
+        encoded = self._encode_rgb_image_base64(rgb_image)
+        if encoded is None:
+            return {
+                "target_visible": False,
+                "sufficient_view": False,
+                "confidence": 0.0,
+                "reason": "failed to encode RGB image for view critic",
+                "adjustment": None,
+            }
+
+        payload = {
+            "model": self.view_critic_vllm_model,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": self._view_critic_prompt(view_task)},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{encoded}",
+                            },
+                        },
+                    ],
+                }
+            ],
+            "temperature": float(self.view_critic_temperature),
+            "max_tokens": int(self.view_critic_max_tokens),
+        }
+        try:
+            request = urllib.request.Request(
+                f"{self.view_critic_vllm_base_url}/chat/completions",
+                data=json.dumps(payload).encode("utf-8"),
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            with urllib.request.urlopen(
+                request,
+                timeout=float(self.view_critic_timeout_sec),
+            ) as response:
+                response_payload = json.loads(response.read().decode("utf-8"))
+            content = response_payload["choices"][0]["message"]["content"]
+            if isinstance(content, list):
+                content = "".join(
+                    item.get("text", "") if isinstance(item, dict) else str(item)
+                    for item in content
+                )
+            return self._normalize_view_critic_response(
+                self._parse_view_critic_json(str(content))
+            )
+        except Exception as exc:
+            return {
+                "target_visible": False,
+                "sufficient_view": False,
+                "confidence": 0.0,
+                "reason": f"view critic vLLM request failed: {exc}",
+                "adjustment": None,
+            }
+
+    def _view_critic_prompt(self, view_task: dict) -> str:
+        action = view_task.get("action")
+        target = view_task.get("target")
+        destination = view_task.get("destination")
+        view_target = view_task.get("view_target")
+        requirement = view_task.get("requirement")
+        success_condition = view_task.get("success_condition")
+        return (
+            "You are a robot pre-action view critic.\n\n"
+            f"Action: {action}\n"
+            f"Object being manipulated: {target}\n"
+            f"Destination: {destination}\n"
+            f"Visual target/condition to check: {view_target}\n"
+            f"Requirement: {requirement}\n"
+            f"Success condition: {success_condition}\n\n"
+            "Decide whether the current RGB image satisfies the success condition.\n\n"
+            "Rules:\n"
+            "- For grasp: the target object must be visible and sufficiently clear/centered for grasping.\n"
+            "- For place: an empty, reachable, flat placement area at or near the destination must be visible.\n"
+            "- For handover: a human hand must be visible and positioned to receive the object.\n"
+            "- If the view is not sufficient, suggest a robot-relative rotation.\n"
+            "- Use yaw_deg > 0 for turning left and yaw_deg < 0 for turning right.\n"
+            "- Keep yaw_deg within [-45, 45].\n"
+            "- If no useful adjustment is possible, set adjustment to null.\n\n"
+            "Return only valid JSON with this schema:\n"
+            "{\n"
+            '  "target_visible": true or false,\n'
+            '  "sufficient_view": true or false,\n'
+            '  "confidence": 0.0,\n'
+            '  "reason": "short explanation",\n'
+            '  "adjustment": null or {"type": "rotate", "yaw_deg": -25.0}\n'
+            "}\n"
+        )
+
+    def _parse_view_critic_json(self, text: str) -> dict:
+        text = text.strip()
+        if text.startswith("```"):
+            text = text.strip("`").strip()
+            if text.lower().startswith("json"):
+                text = text[4:].strip()
+        try:
+            parsed = json.loads(text)
+            return parsed if isinstance(parsed, dict) else {}
+        except json.JSONDecodeError:
+            start = text.find("{")
+            end = text.rfind("}")
+            if start >= 0 and end > start:
+                parsed = json.loads(text[start : end + 1])
+                return parsed if isinstance(parsed, dict) else {}
+            raise
+
+    def _normalize_view_critic_response(self, response: dict) -> dict:
+        if not isinstance(response, dict):
+            response = {}
+        adjustment = response.get("adjustment")
+        if not isinstance(adjustment, dict):
+            adjustment = None
+        target_visible = response.get("target_visible")
+        if target_visible is None:
+            target_visible = response.get("view_target_visible")
+        if target_visible is None:
+            target_visible = response.get("condition_visible")
+        return {
+            "target_visible": bool(target_visible),
+            "sufficient_view": bool(response.get("sufficient_view", False)),
+            "confidence": float(response.get("confidence", 0.0) or 0.0),
+            "reason": str(response.get("reason", "")),
+            "adjustment": adjustment,
+        }
+
+    def _encode_rgb_image_base64(self, rgb_image) -> str | None:
+        try:
+            import cv2
+
+            bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
+            ok, buffer = cv2.imencode(".jpg", bgr_image)
+            if not ok:
+                return None
+            return base64.b64encode(buffer.tobytes()).decode("ascii")
+        except Exception as exc:
+            self.get_logger().warn(f"⚠️ Failed to encode view critic image: {exc}")
+            return None
+
+    def _write_view_check_debug_image(
+        self,
+        view_task: dict,
+        check_index: int,
+        rgb_image,
+        view: dict,
+    ) -> str | None:
+        if rgb_image is None:
+            return None
+        try:
+            import cv2
+
+            view_dir = Path(self.task_report_dir) / "view_checks"
+            view_dir.mkdir(parents=True, exist_ok=True)
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+            action = str(view_task.get("action", "action"))
+            view_target = str(view_task.get("view_target") or view_task.get("target") or "target")
+            safe_target = "".join(
+                char if char.isalnum() else "_" for char in f"{action}_{view_target}".lower()
+            ).strip("_") or "target"
+            path = view_dir / f"{timestamp}_{safe_target}_check{check_index}.jpg"
+            bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
+            reason = str(view.get("reason", ""))[:80]
+            adjustment = view.get("adjustment")
+            overlay = (
+                f"action={action} view={view_target} visible={view.get('target_visible')} "
+                f"sufficient={view.get('sufficient_view')} adj={adjustment}"
+            )
+            cv2.putText(
+                bgr_image,
+                overlay,
+                (12, 28),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.55,
+                (0, 255, 255),
+                2,
+                cv2.LINE_AA,
+            )
+            if reason:
+                cv2.putText(
+                    bgr_image,
+                    reason,
+                    (12, 56),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5,
+                    (0, 255, 255),
+                    1,
+                    cv2.LINE_AA,
+                )
+            if cv2.imwrite(str(path), bgr_image):
+                return str(path)
+        except Exception as exc:
+            self.get_logger().warn(f"⚠️ Failed to write view check debug image: {exc}")
+        return None
+
+    def apply_view_adjustment_with_navigation(
+        self,
+        adjustment: dict,
+        current_state: dict,
+    ) -> dict:
+        if not isinstance(adjustment, dict):
+            return {
+                "last_action": "view_adjustment",
+                "success": False,
+                "message": "view adjustment is not a dictionary",
+            }
+
+        adjustment_type = str(adjustment.get("type", "")).strip().lower()
+        if adjustment_type != "rotate":
+            return {
+                "last_action": "view_adjustment",
+                "success": False,
+                "message": f"unsupported view adjustment type: {adjustment_type}",
+                "adjustment": adjustment,
+            }
+
+        try:
+            yaw_deg = float(adjustment.get("yaw_deg", 0.0))
+        except (TypeError, ValueError):
+            yaw_deg = 0.0
+        max_yaw = abs(float(self.view_adjust_max_yaw_deg))
+        yaw_deg = max(-max_yaw, min(max_yaw, yaw_deg))
+
+        pose_result = self.execute_robot_pose(current_state)
+        if not pose_result.get("success"):
+            pose_result["last_action"] = "view_adjustment"
+            return pose_result
+
+        robot_pose = pose_result.get("result", {}).get("pose", {})
+        if "x" not in robot_pose or "y" not in robot_pose or "theta" not in robot_pose:
+            return {
+                "last_action": "view_adjustment",
+                "success": False,
+                "message": "robot pose is missing x, y, or theta",
+                "pose_result": pose_result,
+            }
+
+        adjusted_pose = {
+            "x": float(robot_pose["x"]),
+            "y": float(robot_pose["y"]),
+            "target_theta": self._normalize_angle(
+                float(robot_pose["theta"]) + math.radians(yaw_deg)
+            ),
+        }
+        self.get_logger().info(
+            "👁️ Applying view adjustment with navigation: "
+            + json.dumps(
+                {"adjustment": adjustment, "adjusted_pose": adjusted_pose},
+                ensure_ascii=False,
+            )
+        )
+        result = self.execute_navigation(pose=adjusted_pose, current_state=current_state)
+        result["last_action"] = "view_adjustment"
+        result["adjustment"] = {"type": "rotate", "yaw_deg": yaw_deg}
+        result["adjusted_pose"] = adjusted_pose
+        return result
+
+    def _normalize_angle(self, angle: float) -> float:
+        return math.atan2(math.sin(angle), math.cos(angle))
 
 
     def _maybe_mock_failure(

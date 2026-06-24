@@ -1339,15 +1339,16 @@ Use this for development without driving the real robot. The script opens three 
 The mock helper now defaults to the decision-only vLLM backend. This is separate
 from the Avatar LLM stack; do not change Avatar code for this flow.
 
-#### Start The Decision vLLM Server
+#### Start The Shared Qwen3-VL vLLM Server
 
-Start the vLLM server from a host terminal, not from inside the `robot_ros`
-container. In other words, run this from a prompt like `acm@...`, not
-`(robot_ros) root@acm:/robot_ws#`.
+Start one vLLM server from a host terminal, not from inside the `robot_ros`
+container. This single `Qwen3-VL-8B-Instruct` server is used for both text/task
+planning and pre-action view sufficient checks. In other words, run this from a
+prompt like `acm@...`, not `(robot_ros) root@acm:/robot_ws#`.
 
 ```bash
 docker run --rm --runtime=nvidia \
-  --name decision-vllm \
+  --name qwen-vl-vllm \
   -e HF_HUB_OFFLINE=1 \
   -e HF_HOME=/data/models/huggingface \
   -v /home/acm/robotic_agent/models:/models \
@@ -1355,27 +1356,73 @@ docker run --rm --runtime=nvidia \
   -p 8001:8000 \
   ghcr.io/nvidia-ai-iot/vllm:latest-jetson-thor \
   python -m vllm.entrypoints.openai.api_server \
-    --model /models/Qwen3-8B \
-    --served-model-name decision-qwen \
+    --model /models/Qwen3-VL-8B-Instruct \
+    --served-model-name qwen-vl \
     --host 0.0.0.0 \
     --port 8000 \
     --dtype bfloat16 \
-    --gpu-memory-utilization 0.45 \
+    --gpu-memory-utilization 0.5 \
     --max-model-len 8192 \
     --max-num-seqs 1 \
-    --trust-remote-code
+    --trust-remote-code \
+    --limit-mm-per-prompt '{"image": 1}'
 ```
 
 Use `--max-model-len 8192` when keeping task decomposition enabled. A 4096-token
 server can reject decomposition prompts because the prompt is already around
-4000 tokens before output tokens are reserved. If 8192 causes OOM, lower
-`--gpu-memory-utilization`, use a smaller context, or reduce prompt/output size.
+4000 tokens before output tokens are reserved. If 8192 still causes OOM, lower
+`--gpu-memory-utilization` further, use a smaller context, or reduce prompt/output size.
 
-Stop the decision vLLM server from the host with:
+The shared server settings are:
+
+| Purpose | Host URL | Served model name |
+|---|---|---|
+| Text planning | `http://localhost:8001/v1` | `qwen-vl` |
+| View checking | `http://localhost:8001/v1` | `qwen-vl` |
+
+Stop the shared vLLM server from the host with:
 
 ```bash
-docker stop decision-vllm
+docker stop qwen-vl-vllm
 ```
+
+#### Agent Parameters For The Shared Qwen3-VL Server
+
+The scripts default to these settings:
+
+```bash
+PLANNER_BACKEND=vllm
+VLLM_BASE_URL=http://localhost:8001
+VLLM_MODEL=qwen-vl
+VIEW_CRITIC_BACKEND=vllm
+VIEW_CRITIC_VLLM_BASE_URL=http://localhost:8001/v1
+VIEW_CRITIC_VLLM_MODEL=qwen-vl
+```
+
+The pre-action view checker is enabled by default for `grasp`, `place`, and
+`handover`. It uses:
+
+```bash
+VIEW_CHECK_MAX_ADJUSTMENTS=5
+VIEW_CRITIC_IMAGE_TOPIC=/camera/color/image_raw
+```
+
+If the ROS container cannot reach the host through `localhost`, replace both
+base URLs with the reachable host IP, for example:
+
+```bash
+VLLM_BASE_URL=http://<reachable-host-ip>:8001
+VIEW_CRITIC_VLLM_BASE_URL=http://<reachable-host-ip>:8001/v1
+```
+
+The view checker stores debug images for each check under:
+
+```text
+/robot_ws/task_reports/view_checks/
+```
+
+Each image includes an overlay showing the action, visual target, sufficient-view
+result, and the adjustment selected by the VLM.
 
 #### Check The Server
 
@@ -1386,7 +1433,7 @@ is reachable:
 curl http://localhost:8001/v1/models
 ```
 
-A healthy response includes `decision-qwen`. If this fails from inside the ROS
+A healthy response includes `qwen-vl`. If this fails from inside the ROS
 container, set `VLLM_BASE_URL` to a host/container address reachable from that
 container instead of `localhost`.
 
@@ -1405,7 +1452,7 @@ The script defaults are:
 ```bash
 PLANNER_BACKEND=vllm
 VLLM_BASE_URL=http://localhost:8001
-VLLM_MODEL=decision-qwen
+VLLM_MODEL=qwen-vl
 QWEN_MAX_NEW_TOKENS=96
 VLLM_TEMPERATURE=0
 VLLM_TIMEOUT_SEC=60
@@ -1415,7 +1462,7 @@ Override them when needed:
 
 ```bash
 VLLM_BASE_URL=http://<reachable-host-ip>:8001 \
-VLLM_MODEL=decision-qwen \
+VLLM_MODEL=qwen-vl \
 QWEN_MAX_NEW_TOKENS=96 \
 ./scripts/agent_mock_pipeline_tmux.sh
 ```
@@ -1506,13 +1553,13 @@ tmux attach -t agent_live
 ```
 
 The live helper also defaults to the decision-only vLLM backend. Start and check
-the `decision-vllm` server as described in section 10.1 before launching this
+the `qwen-vl-vllm` server as described in section 10.1 before launching this
 pipeline. The default live backend settings are:
 
 ```bash
 PLANNER_BACKEND=vllm
 VLLM_BASE_URL=http://localhost:8001
-VLLM_MODEL=decision-qwen
+VLLM_MODEL=qwen-vl
 QWEN_MAX_NEW_TOKENS=96
 VLLM_TEMPERATURE=0
 VLLM_TIMEOUT_SEC=60
