@@ -109,13 +109,13 @@ def main():
     parser.add_argument(
         "input_ply",
         nargs="?",
-        default="/home/weichen/robotic-project/robot_ws/data/lab/test/robot_deploy_slam_example0_sem_color_fine.ply",
+        default="/home/weichen/robotic-project/robot_ws/data/lab/demo/robot_deploy_demo_260629_filter_sem_color.ply",
         help="Input PLY file path",
     )
     parser.add_argument(
         "output_npz",
         nargs="?",
-        default="/home/weichen/robotic-project/robot_ws/data/lab/test/robot_deploy_slam_example0_sem_color_fine.npz",
+        default="/home/weichen/robotic-project/robot_ws/data/lab/demo/robot_deploy_demo_260629_filter_sem_color.npz",
         help="Output NPZ file path. Defaults to input path with .npz suffix.",
     )
     args = parser.parse_args()

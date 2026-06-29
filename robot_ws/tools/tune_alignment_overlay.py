@@ -430,7 +430,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--pointcloud",
-        default=str(workspace_root / "data/lab/demo/robot_deploy_slam_demo_rgb_color.npz"),
+        default=str(workspace_root / "data/lab/demo/robot_deploy_demo_260629_filter_rgb_color.npz"),
         help="Source 3D point cloud NPZ",
     )
     parser.add_argument(
