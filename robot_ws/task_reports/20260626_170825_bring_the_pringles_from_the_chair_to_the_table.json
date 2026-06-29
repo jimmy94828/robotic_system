@@ -1,0 +1,335 @@
+{
+  "task": "bring the pringles from the chair to the table",
+  "started_at": "2026-06-26T17:07:26",
+  "success": true,
+  "status": "success",
+  "message": "all subtasks completed",
+  "decomposition": {
+    "original_task": "bring the pringles from the chair to the table",
+    "subtasks": [
+      {
+        "subtask_id": 1,
+        "text": "bring pringles from chair to table",
+        "type": "bring",
+        "object": "pringles",
+        "source": "chair",
+        "destination": "table"
+      }
+    ]
+  },
+  "reasoning_events": [
+    {
+      "stage": "task_decomposition",
+      "duration_sec": 7.31,
+      "success": true,
+      "attempt": 1
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 3.576,
+      "success": true,
+      "subtask": "bring pringles on chair to table",
+      "step": 1
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 3.708,
+      "success": true,
+      "subtask": "bring pringles on chair to table",
+      "step": 2
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 3.195,
+      "success": true,
+      "subtask": "bring pringles on chair to table",
+      "step": 3
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 5.692,
+      "success": true,
+      "subtask": "bring pringles on chair to table",
+      "step": 4
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 5.235,
+      "success": true,
+      "subtask": "bring pringles on chair to table",
+      "step": 5
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 7.455,
+      "success": true,
+      "subtask": "bring pringles on chair to table",
+      "step": 6
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 3.649,
+      "success": true,
+      "subtask": "bring pringles on chair to table",
+      "step": 7
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 3.325,
+      "success": true,
+      "subtask": "bring pringles on chair to table",
+      "step": 8
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.186,
+      "success": true,
+      "subtask": "bring pringles on chair to table",
+      "step": 9
+    }
+  ],
+  "decisions": [
+    {
+      "subtask": "bring pringles on chair to table",
+      "step": 1,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Query the location of pringles to determine the source for transfer.",
+        "target": "pringles"
+      },
+      "reasoning_duration_sec": 3.576,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "pringles",
+        "success": false,
+        "message": "Object or place 'pringles' was not found."
+      }
+    },
+    {
+      "subtask": "bring pringles on chair to table",
+      "step": 2,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Query the location of pringles on the chair to determine the source for transfer.",
+        "target": "chair"
+      },
+      "reasoning_duration_sec": 3.708,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "chair",
+        "success": true,
+        "result": {
+          "pose": {
+            "x": 2.4196506239351656,
+            "y": -7.521509526418248,
+            "theta": -0.6018151028355068
+          }
+        }
+      }
+    },
+    {
+      "subtask": "bring pringles on chair to table",
+      "step": 3,
+      "capability_call": {
+        "capability": "navigation",
+        "reason": "Navigate to the chair to grasp the pringles.",
+        "target": "chair",
+        "pose": {
+          "x": 2.4196506239351656,
+          "y": -7.521509526418248,
+          "theta": -0.6018151028355068
+        }
+      },
+      "reasoning_duration_sec": 3.195,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "navigation",
+        "success": false,
+        "message": "mock injected navigation failure",
+        "mock_failure": true,
+        "target": "chair",
+        "pose": {
+          "x": 2.4196506239351656,
+          "y": -7.521509526418248,
+          "theta": -0.6018151028355068
+        }
+      }
+    },
+    {
+      "subtask": "bring pringles on chair to table",
+      "step": 4,
+      "capability_call": {
+        "capability": "navigation",
+        "reason": "Navigate to the source for pringles.",
+        "target": "chair",
+        "pose": {
+          "x": 2.4196506239351656,
+          "y": -7.521509526418248,
+          "theta": -0.6018151028355068
+        }
+      },
+      "reasoning_duration_sec": 5.692,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "navigation",
+        "success": true,
+        "message": "mock navigation completed",
+        "target": "chair",
+        "pose": {
+          "x": 2.4196506239351656,
+          "y": -7.521509526418248,
+          "theta": -0.6018151028355068
+        }
+      }
+    },
+    {
+      "subtask": "bring pringles on chair to table",
+      "step": 5,
+      "capability_call": {
+        "capability": "grasp_place",
+        "reason": "Grasp the pringles from the chair as the next step in transferring them to the table.",
+        "action": "grasp",
+        "target": "pringles"
+      },
+      "reasoning_duration_sec": 5.235,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "grasp_place",
+        "action": "grasp",
+        "target": "pringles",
+        "success": true,
+        "message": "mock grasp completed"
+      }
+    },
+    {
+      "subtask": "bring pringles on chair to table",
+      "step": 6,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Need to locate the destination before placing pringles.",
+        "target": "table"
+      },
+      "reasoning_duration_sec": 7.455,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "table",
+        "success": true,
+        "result": {
+          "pose": {
+            "x": 4.533570937851583,
+            "y": -5.850160646942811,
+            "theta": -0.6365643458294784
+          }
+        }
+      }
+    },
+    {
+      "subtask": "bring pringles on chair to table",
+      "step": 7,
+      "capability_call": {
+        "capability": "navigation",
+        "reason": "Navigate to the destination for pringles.",
+        "target": "table",
+        "pose": {
+          "x": 4.533570937851583,
+          "y": -5.850160646942811,
+          "theta": -0.6365643458294784
+        }
+      },
+      "reasoning_duration_sec": 3.649,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "navigation",
+        "success": true,
+        "message": "mock navigation completed",
+        "target": "table",
+        "pose": {
+          "x": 4.533570937851583,
+          "y": -5.850160646942811,
+          "theta": -0.6365643458294784
+        }
+      }
+    },
+    {
+      "subtask": "bring pringles on chair to table",
+      "step": 8,
+      "capability_call": {
+        "capability": "grasp_place",
+        "reason": "Place the pringles on the table to complete the task.",
+        "action": "place",
+        "target": "pringles",
+        "destination": "table"
+      },
+      "reasoning_duration_sec": 3.325,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "grasp_place",
+        "action": "place",
+        "target": "pringles",
+        "success": true,
+        "message": "mock place completed",
+        "destination": "table"
+      }
+    },
+    {
+      "subtask": "bring pringles on chair to table",
+      "step": 9,
+      "capability_call": {
+        "capability": "finish",
+        "reason": "Task completed: pringles placed on table.",
+        "task_done": true
+      },
+      "reasoning_duration_sec": 2.186,
+      "forced": false,
+      "verified": true,
+      "verification_message": "finish verified",
+      "result": {
+        "success": true,
+        "message": "Task completed: pringles placed on table."
+      }
+    }
+  ],
+  "subtasks": [
+    {
+      "subtask_id": 1,
+      "text": "bring pringles on chair to table",
+      "original_text": "bring pringles from chair to table",
+      "started_at": "2026-06-26T17:07:34",
+      "success": true,
+      "duration_sec": 51.255,
+      "decision_indexes": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "finished_at": "2026-06-26T17:08:25"
+    }
+  ],
+  "finished_at": "2026-06-26T17:08:25",
+  "total_duration_sec": 58.571
+}

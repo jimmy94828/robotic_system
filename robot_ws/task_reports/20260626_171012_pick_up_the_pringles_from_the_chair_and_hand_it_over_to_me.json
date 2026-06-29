@@ -1,0 +1,225 @@
+{
+  "task": "pick up the pringles from the chair and hand it over to me",
+  "started_at": "2026-06-26T17:09:47",
+  "success": false,
+  "status": "failed",
+  "message": "Subtask 1 failed: handover pringles on chair to me",
+  "decomposition": {
+    "original_task": "pick up the pringles from the chair and hand it over to me",
+    "subtasks": [
+      {
+        "subtask_id": 1,
+        "text": "handover pringles on chair to me",
+        "type": "handover",
+        "object": "pringles",
+        "source": "chair",
+        "destination": "me"
+      }
+    ]
+  },
+  "reasoning_events": [
+    {
+      "stage": "task_decomposition",
+      "duration_sec": 4.88,
+      "success": true,
+      "attempt": 1
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.224,
+      "success": true,
+      "subtask": "handover pringles on chair to me",
+      "step": 1
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.307,
+      "success": true,
+      "subtask": "handover pringles on chair to me",
+      "step": 2
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.27,
+      "success": true,
+      "subtask": "handover pringles on chair to me",
+      "step": 3
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.893,
+      "success": true,
+      "subtask": "handover pringles on chair to me",
+      "step": 4
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.931,
+      "success": true,
+      "subtask": "handover pringles on chair to me",
+      "step": 5
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.521,
+      "success": true,
+      "subtask": "handover pringles on chair to me",
+      "step": 6
+    }
+  ],
+  "decisions": [
+    {
+      "subtask": "handover pringles on chair to me",
+      "step": 1,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Query the location of the pringles before proceeding with the task.",
+        "target": "pringles"
+      },
+      "reasoning_duration_sec": 2.224,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "pringles",
+        "success": false,
+        "message": "Object or place 'pringles' was not found."
+      }
+    },
+    {
+      "subtask": "handover pringles on chair to me",
+      "step": 2,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Query the location of the pringles on the chair before proceeding with the task.",
+        "target": "chair"
+      },
+      "reasoning_duration_sec": 2.307,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "chair",
+        "success": true,
+        "result": {
+          "pose": {
+            "x": 2.4196506239351656,
+            "y": -7.521509526418248,
+            "theta": -0.6018151028355068
+          }
+        }
+      }
+    },
+    {
+      "subtask": "handover pringles on chair to me",
+      "step": 3,
+      "capability_call": {
+        "capability": "navigation",
+        "reason": "Navigate to the chair to access the pringles for handover.",
+        "target": "chair",
+        "pose": {
+          "x": 2.4196506239351656,
+          "y": -7.521509526418248,
+          "theta": -0.6018151028355068
+        }
+      },
+      "reasoning_duration_sec": 2.27,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "navigation",
+        "success": true,
+        "message": "mock navigation completed",
+        "target": "chair",
+        "pose": {
+          "x": 2.4196506239351656,
+          "y": -7.521509526418248,
+          "theta": -0.6018151028355068
+        }
+      }
+    },
+    {
+      "subtask": "handover pringles on chair to me",
+      "step": 4,
+      "capability_call": {
+        "capability": "grasp_place",
+        "reason": "Grasp the pringles from the chair to prepare for handover.",
+        "action": "grasp",
+        "target": "pringles"
+      },
+      "reasoning_duration_sec": 2.893,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "grasp_place",
+        "action": "grasp",
+        "target": "pringles",
+        "success": true,
+        "message": "mock grasp completed"
+      }
+    },
+    {
+      "subtask": "handover pringles on chair to me",
+      "step": 5,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Need to locate the destination before placing pringles.",
+        "target": "me"
+      },
+      "reasoning_duration_sec": 2.931,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "me",
+        "success": false,
+        "message": "Object or place 'me' was not found."
+      }
+    },
+    {
+      "subtask": "handover pringles on chair to me",
+      "step": 6,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Query the location of 'me' to proceed with handover of pringles.",
+        "target": "me"
+      },
+      "reasoning_duration_sec": 2.521,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "me",
+        "success": false,
+        "message": "Object or place 'me' was not found."
+      }
+    }
+  ],
+  "subtasks": [
+    {
+      "subtask_id": 1,
+      "text": "handover pringles on chair to me",
+      "original_text": "handover pringles on chair to me",
+      "started_at": "2026-06-26T17:09:52",
+      "success": false,
+      "duration_sec": 20.487,
+      "decision_indexes": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "finished_at": "2026-06-26T17:10:12"
+    }
+  ],
+  "finished_at": "2026-06-26T17:10:12",
+  "total_duration_sec": 25.371
+}

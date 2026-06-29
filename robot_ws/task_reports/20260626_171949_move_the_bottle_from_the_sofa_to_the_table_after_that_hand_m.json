@@ -1,0 +1,469 @@
+{
+  "task": "move the bottle from the sofa to the table, after that hand me the pringles from the chair",
+  "started_at": "2026-06-26T17:18:57",
+  "success": false,
+  "status": "failed",
+  "message": "Subtask 2 failed: handover pringles on chair to me",
+  "decomposition": {
+    "original_task": "move the bottle from the sofa to the table, after that hand me the pringles from the chair",
+    "subtasks": [
+      {
+        "subtask_id": 1,
+        "text": "move bottle from sofa to table",
+        "type": "move",
+        "object": "bottle",
+        "source": "sofa",
+        "destination": "table"
+      },
+      {
+        "subtask_id": 2,
+        "text": "handover pringles on chair to me",
+        "type": "handover",
+        "object": "pringles",
+        "source": "chair",
+        "destination": "me"
+      }
+    ]
+  },
+  "reasoning_events": [
+    {
+      "stage": "task_decomposition",
+      "duration_sec": 8.05,
+      "success": true,
+      "attempt": 1
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.087,
+      "success": true,
+      "subtask": "move bottle from sofa to table",
+      "step": 1
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 1.98,
+      "success": true,
+      "subtask": "move bottle from sofa to table",
+      "step": 2
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.911,
+      "success": true,
+      "subtask": "move bottle from sofa to table",
+      "step": 3
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 6.342,
+      "success": true,
+      "subtask": "move bottle from sofa to table",
+      "step": 4
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 3.095,
+      "success": true,
+      "subtask": "move bottle from sofa to table",
+      "step": 5
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.876,
+      "success": true,
+      "subtask": "move bottle from sofa to table",
+      "step": 6
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 1.847,
+      "success": true,
+      "subtask": "move bottle from sofa to table",
+      "step": 7
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.138,
+      "success": true,
+      "subtask": "handover pringles on chair to me",
+      "step": 1
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.234,
+      "success": true,
+      "subtask": "handover pringles on chair to me",
+      "step": 2
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.12,
+      "success": true,
+      "subtask": "handover pringles on chair to me",
+      "step": 3
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.732,
+      "success": true,
+      "subtask": "handover pringles on chair to me",
+      "step": 4
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.732,
+      "success": true,
+      "subtask": "handover pringles on chair to me",
+      "step": 5
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.065,
+      "success": true,
+      "subtask": "handover pringles on chair to me",
+      "step": 6
+    }
+  ],
+  "decisions": [
+    {
+      "subtask": "move bottle from sofa to table",
+      "step": 1,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Query the location of the bottle before proceeding with the task.",
+        "target": "bottle"
+      },
+      "reasoning_duration_sec": 2.087,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "bottle",
+        "success": true,
+        "result": {
+          "pose": {
+            "x": 6.725125363680666,
+            "y": -8.431139571775168,
+            "theta": -1.0036721480312898
+          }
+        }
+      }
+    },
+    {
+      "subtask": "move bottle from sofa to table",
+      "step": 2,
+      "capability_call": {
+        "capability": "navigation",
+        "reason": "Navigate to the bottle's location to prepare for grasping.",
+        "target": "bottle",
+        "pose": {
+          "x": 6.725125363680666,
+          "y": -8.431139571775168,
+          "theta": -1.0036721480312898
+        }
+      },
+      "reasoning_duration_sec": 1.98,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "navigation",
+        "success": true,
+        "message": "mock navigation completed",
+        "target": "bottle",
+        "pose": {
+          "x": 6.725125363680666,
+          "y": -8.431139571775168,
+          "theta": -1.0036721480312898
+        }
+      }
+    },
+    {
+      "subtask": "move bottle from sofa to table",
+      "step": 3,
+      "capability_call": {
+        "capability": "grasp_place",
+        "reason": "Grasp the bottle at its current location to prepare for moving it to the table.",
+        "action": "grasp",
+        "target": "bottle"
+      },
+      "reasoning_duration_sec": 2.911,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "grasp_place",
+        "action": "grasp",
+        "target": "bottle",
+        "success": true,
+        "message": "mock grasp completed"
+      }
+    },
+    {
+      "subtask": "move bottle from sofa to table",
+      "step": 4,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Need to locate the destination before placing bottle.",
+        "target": "table"
+      },
+      "reasoning_duration_sec": 6.342,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "table",
+        "success": true,
+        "result": {
+          "pose": {
+            "x": 4.533570937851583,
+            "y": -5.850160646942811,
+            "theta": -0.6365643458294784
+          }
+        }
+      }
+    },
+    {
+      "subtask": "move bottle from sofa to table",
+      "step": 5,
+      "capability_call": {
+        "capability": "navigation",
+        "reason": "Navigate to the destination for bottle.",
+        "target": "table",
+        "pose": {
+          "x": 4.533570937851583,
+          "y": -5.850160646942811,
+          "theta": -0.6365643458294784
+        }
+      },
+      "reasoning_duration_sec": 3.095,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "navigation",
+        "success": true,
+        "message": "mock navigation completed",
+        "target": "table",
+        "pose": {
+          "x": 4.533570937851583,
+          "y": -5.850160646942811,
+          "theta": -0.6365643458294784
+        }
+      }
+    },
+    {
+      "subtask": "move bottle from sofa to table",
+      "step": 6,
+      "capability_call": {
+        "capability": "grasp_place",
+        "reason": "Place the bottle on the table to complete the task.",
+        "action": "place",
+        "target": "bottle",
+        "destination": "table"
+      },
+      "reasoning_duration_sec": 2.876,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "grasp_place",
+        "action": "place",
+        "target": "bottle",
+        "success": true,
+        "message": "mock place completed",
+        "destination": "table"
+      }
+    },
+    {
+      "subtask": "move bottle from sofa to table",
+      "step": 7,
+      "capability_call": {
+        "capability": "finish",
+        "reason": "Task completed: bottle moved from sofa to table.",
+        "task_done": true
+      },
+      "reasoning_duration_sec": 1.847,
+      "forced": false,
+      "verified": true,
+      "verification_message": "finish verified",
+      "result": {
+        "success": true,
+        "message": "Task completed: bottle moved from sofa to table."
+      }
+    },
+    {
+      "subtask": "handover pringles on chair to me",
+      "step": 1,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Query the location of the pringles before proceeding with the task.",
+        "target": "pringles"
+      },
+      "reasoning_duration_sec": 2.138,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "pringles",
+        "success": false,
+        "message": "Object or place 'pringles' was not found."
+      }
+    },
+    {
+      "subtask": "handover pringles on chair to me",
+      "step": 2,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Query the location of the pringles on the chair before proceeding with the task.",
+        "target": "chair"
+      },
+      "reasoning_duration_sec": 2.234,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "chair",
+        "success": true,
+        "result": {
+          "pose": {
+            "x": 2.4196506239351656,
+            "y": -7.521509526418248,
+            "theta": -0.6018151028355068
+          }
+        }
+      }
+    },
+    {
+      "subtask": "handover pringles on chair to me",
+      "step": 3,
+      "capability_call": {
+        "capability": "navigation",
+        "reason": "Navigate to the chair to access the pringles for handover.",
+        "target": "chair",
+        "pose": {
+          "x": 2.4196506239351656,
+          "y": -7.521509526418248,
+          "theta": -0.6018151028355068
+        }
+      },
+      "reasoning_duration_sec": 2.12,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "navigation",
+        "success": true,
+        "message": "mock navigation completed",
+        "target": "chair",
+        "pose": {
+          "x": 2.4196506239351656,
+          "y": -7.521509526418248,
+          "theta": -0.6018151028355068
+        }
+      }
+    },
+    {
+      "subtask": "handover pringles on chair to me",
+      "step": 4,
+      "capability_call": {
+        "capability": "grasp_place",
+        "reason": "Grasp the pringles from the chair to prepare for handover.",
+        "action": "grasp",
+        "target": "pringles"
+      },
+      "reasoning_duration_sec": 2.732,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "grasp_place",
+        "action": "grasp",
+        "target": "pringles",
+        "success": true,
+        "message": "mock grasp completed"
+      }
+    },
+    {
+      "subtask": "handover pringles on chair to me",
+      "step": 5,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Need to locate the destination before placing pringles.",
+        "target": "me"
+      },
+      "reasoning_duration_sec": 2.732,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "me",
+        "success": false,
+        "message": "Object or place 'me' was not found."
+      }
+    },
+    {
+      "subtask": "handover pringles on chair to me",
+      "step": 6,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Query the location of 'me' to proceed with handover.",
+        "target": "me"
+      },
+      "reasoning_duration_sec": 2.065,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "me",
+        "success": false,
+        "message": "Object or place 'me' was not found."
+      }
+    }
+  ],
+  "subtasks": [
+    {
+      "subtask_id": 1,
+      "text": "move bottle from sofa to table",
+      "original_text": "move bottle from sofa to table",
+      "started_at": "2026-06-26T17:19:05",
+      "success": true,
+      "duration_sec": 25.116,
+      "decision_indexes": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "finished_at": "2026-06-26T17:19:30"
+    },
+    {
+      "subtask_id": 2,
+      "text": "handover pringles on chair to me",
+      "original_text": "handover pringles on chair to me",
+      "started_at": "2026-06-26T17:19:30",
+      "success": false,
+      "duration_sec": 18.909,
+      "decision_indexes": [
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "finished_at": "2026-06-26T17:19:49"
+    }
+  ],
+  "finished_at": "2026-06-26T17:19:49",
+  "total_duration_sec": 52.082
+}

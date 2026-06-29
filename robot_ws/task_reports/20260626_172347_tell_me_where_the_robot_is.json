@@ -1,0 +1,35 @@
+{
+  "task": "tell me where the robot is",
+  "started_at": "2026-06-26T17:23:43",
+  "success": false,
+  "status": "failed",
+  "message": "Decomposition must include a non-empty subtasks list.",
+  "decomposition": null,
+  "reasoning_events": [
+    {
+      "stage": "task_decomposition",
+      "duration_sec": 1.457,
+      "success": false,
+      "attempt": 1,
+      "error": "Decomposition must include a non-empty subtasks list."
+    },
+    {
+      "stage": "task_decomposition",
+      "duration_sec": 1.272,
+      "success": false,
+      "attempt": 2,
+      "error": "Decomposition must include a non-empty subtasks list."
+    },
+    {
+      "stage": "task_decomposition",
+      "duration_sec": 1.262,
+      "success": false,
+      "attempt": 3,
+      "error": "Decomposition must include a non-empty subtasks list."
+    }
+  ],
+  "decisions": [],
+  "subtasks": [],
+  "finished_at": "2026-06-26T17:23:47",
+  "total_duration_sec": 3.996
+}

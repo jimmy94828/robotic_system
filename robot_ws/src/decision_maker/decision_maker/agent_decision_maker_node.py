@@ -4,7 +4,6 @@ import math
 import random
 import threading
 import time
-import urllib.error
 import urllib.request
 from datetime import datetime
 from pathlib import Path
@@ -48,7 +47,7 @@ class AgentDecisionMakingNode(DecisionMakingNode):
         self.agent_max_replans = (
             self.get_parameter("agent_max_replans").get_parameter_value().integer_value
         )
-        self.declare_parameter("recover_grasp_failure_with_realign", True)
+        self.declare_parameter("recover_grasp_failure_with_realign", False)
         self.recover_grasp_failure_with_realign = (
             self.get_parameter("recover_grasp_failure_with_realign")
             .get_parameter_value()
@@ -115,7 +114,7 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             self.enable_pre_action_view_check
             and self.get_parameter("enable_pre_grasp_view_check").get_parameter_value().bool_value
         )
-        self.declare_parameter("view_check_max_adjustments", 5)
+        self.declare_parameter("view_check_max_adjustments", 3)
         self.view_check_max_adjustments = max(
             0,
             self.get_parameter("view_check_max_adjustments")
@@ -128,10 +127,6 @@ class AgentDecisionMakingNode(DecisionMakingNode):
         ).strip().lower()
         if self.view_critic_backend == "auto":
             self.view_critic_backend = "mock" if self.mock_execution else "vllm"
-        self.declare_parameter("view_critic_url", "http://localhost:8002/view_critic")
-        self.view_critic_url = (
-            self.get_parameter("view_critic_url").get_parameter_value().string_value
-        )
         self.declare_parameter("view_critic_vllm_base_url", "http://localhost:8001/v1")
         self.view_critic_vllm_base_url = (
             self.get_parameter("view_critic_vllm_base_url")
@@ -160,9 +155,13 @@ class AgentDecisionMakingNode(DecisionMakingNode):
         self.view_critic_image_topic = (
             self.get_parameter("view_critic_image_topic").get_parameter_value().string_value
         )
-        self.declare_parameter("view_adjust_max_yaw_deg", 45.0)
+        self.declare_parameter("view_adjust_max_yaw_deg", 240.0)
         self.view_adjust_max_yaw_deg = (
             self.get_parameter("view_adjust_max_yaw_deg").get_parameter_value().double_value
+        )
+        self.declare_parameter("view_adjust_max_forward_m", 0.25)
+        self.view_adjust_max_forward_m = (
+            self.get_parameter("view_adjust_max_forward_m").get_parameter_value().double_value
         )
         self.declare_parameter("mock_view_critic_visible_after_attempts", 1)
         self.mock_view_critic_visible_after_attempts = max(
@@ -175,7 +174,6 @@ class AgentDecisionMakingNode(DecisionMakingNode):
         self._latest_rgb = None
         self._latest_rgb_stamp = None
         self._latest_rgb_lock = threading.Lock()
-        self._cv_bridge = None
         self._rgb_sub = None
         self._setup_view_critic_rgb_subscription()
         self.tf_buffer = None
@@ -203,10 +201,8 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             self.get_logger().info("👁️ Pre-grasp view critic enabled with mock backend.")
             return
         try:
-            from cv_bridge import CvBridge
             from sensor_msgs.msg import Image
 
-            self._cv_bridge = CvBridge()
             self._rgb_sub = self.create_subscription(
                 Image,
                 self.view_critic_image_topic,
@@ -214,25 +210,56 @@ class AgentDecisionMakingNode(DecisionMakingNode):
                 10,
             )
             self.get_logger().info(
-                f"👁️ Pre-grasp view critic subscribed to RGB topic: "
+                f"👁️ Pre-action view critic subscribed to RGB topic: "
                 f"{self.view_critic_image_topic}"
             )
         except Exception as exc:
             self.get_logger().warn(
-                f"⚠️ Failed to set up RGB subscription for pre-grasp view critic: {exc}"
+                f"⚠️ Failed to set up RGB subscription for pre-action view critic: {exc}"
             )
 
     def _view_critic_rgb_cb(self, msg) -> None:
-        if self._cv_bridge is None:
-            return
         try:
-            rgb = self._cv_bridge.imgmsg_to_cv2(msg, desired_encoding="rgb8")
+            rgb = self._ros_image_to_rgb_array(msg)
         except Exception as exc:
             self.get_logger().warn(f"⚠️ Failed to decode RGB image for view critic: {exc}")
             return
         with self._latest_rgb_lock:
             self._latest_rgb = rgb
             self._latest_rgb_stamp = self.get_clock().now().to_msg()
+
+    def _ros_image_to_rgb_array(self, msg):
+        import numpy as np
+
+        encoding = str(msg.encoding).lower()
+        height = int(msg.height)
+        width = int(msg.width)
+        step = int(msg.step)
+        if height <= 0 or width <= 0 or step <= 0:
+            raise ValueError("invalid ROS image dimensions")
+
+        data = np.frombuffer(msg.data, dtype=np.uint8)
+        rows = data.reshape((height, step))
+
+        if encoding in {"rgb8", "bgr8"}:
+            channels = 3
+            image = rows[:, : width * channels].reshape((height, width, channels))
+            if encoding == "bgr8":
+                image = image[:, :, ::-1]
+            return image.copy()
+
+        if encoding in {"rgba8", "bgra8"}:
+            channels = 4
+            image = rows[:, : width * channels].reshape((height, width, channels))[:, :, :3]
+            if encoding == "bgra8":
+                image = image[:, :, ::-1]
+            return image.copy()
+
+        if encoding in {"mono8", "8uc1"}:
+            image = rows[:, :width].reshape((height, width))
+            return np.repeat(image[:, :, None], 3, axis=2).copy()
+
+        raise ValueError(f"unsupported RGB image encoding: {msg.encoding}")
 
     def _latest_rgb_snapshot(self):
         with self._latest_rgb_lock:
@@ -784,9 +811,9 @@ class AgentDecisionMakingNode(DecisionMakingNode):
                 ):
                     history.append({"step": step_index, "call": capability_call, "result": result})
                     self.get_logger().error(
-                        f"🛑 Grasp failed after recovery/retry; object "
+                        f"🛑 Grasp failed; object "
                         f"'{capability_call.get('target')}' is not held. "
-                        f"Stopping subtask instead of navigating to a destination. "
+                        f"Stopping subtask immediately. "
                         f"Reason: {result.get('message', 'unknown error')}"
                     )
                     return False
@@ -826,6 +853,12 @@ class AgentDecisionMakingNode(DecisionMakingNode):
         if failed_call.get("capability") != "grasp_place":
             return None
         if failed_call.get("action") != "grasp":
+            return None
+        if isinstance(failed_result.get("view_check"), dict):
+            self.get_logger().warn(
+                "🔁 Pre-grasp view check failed; not running grasp realignment recovery "
+                "because view adjustment already used its configured budget."
+            )
             return None
 
         message = str(failed_result.get("message", "")).lower()
@@ -1211,8 +1244,9 @@ class AgentDecisionMakingNode(DecisionMakingNode):
                 "view_target": target,
                 "requirement": "target_object_visible",
                 "success_condition": (
-                    f"The target object '{target}' is visible and sufficiently centered/clear "
-                    "for grasping."
+                    f"Most of the target object '{target}' is visible in the camera view "
+                    "and clear enough to localize. It does not need to be perfectly centered "
+                    "or optimally close."
                 ),
             }
         if action == "place":
@@ -1277,7 +1311,6 @@ class AgentDecisionMakingNode(DecisionMakingNode):
                         "view_target": view_target,
                         "requirement": view_task.get("requirement"),
                         "check": check_index,
-                        "visible": view.get("target_visible"),
                         "sufficient": view.get("sufficient_view"),
                         "adjustment": view.get("adjustment"),
                         "debug_image_path": image_path,
@@ -1287,7 +1320,9 @@ class AgentDecisionMakingNode(DecisionMakingNode):
                 )
             )
 
-            if view.get("target_visible") and view.get("sufficient_view"):
+            view_is_sufficient = bool(view.get("sufficient_view"))
+
+            if view_is_sufficient:
                 return {
                     "last_action": "view_critic",
                     "action": action,
@@ -1309,16 +1344,39 @@ class AgentDecisionMakingNode(DecisionMakingNode):
                     "destination": view_task.get("destination"),
                     "view_target": view_target,
                     "requirement": view_task.get("requirement"),
-                    "success": False,
+                    "success": True,
                     "message": (
-                        f"required view for {action} did not become sufficient after "
-                        f"{max_adjustments} view adjustments: {view_target}"
+                        f"view was still not sufficient after {max_adjustments} "
+                        f"adjustments, but proceeding to {action}: {view_target}"
                     ),
+                    "view_check_soft_failed": True,
                     "adjustments_used": adjustments_used,
                     "observations": observations,
                 }
 
             adjustment = view.get("adjustment")
+            if not adjustment:
+                adjustment = self._fallback_view_adjustment(
+                    view_task,
+                    view,
+                    check_index=check_index,
+                    adjustments_used=adjustments_used,
+                )
+                if adjustment:
+                    view["adjustment"] = adjustment
+                    self.get_logger().warn(
+                        "👁️ View critic returned no adjustment; using fallback adjustment: "
+                        + json.dumps(adjustment, ensure_ascii=False)
+                    )
+            if adjustment:
+                adjustment = self._shape_view_adjustment_scan(
+                    view_task,
+                    view,
+                    adjustment,
+                    adjustments_used=adjustments_used,
+                )
+                view["adjustment"] = adjustment
+
             if not adjustment:
                 return {
                     "last_action": "view_critic",
@@ -1327,8 +1385,12 @@ class AgentDecisionMakingNode(DecisionMakingNode):
                     "destination": view_task.get("destination"),
                     "view_target": view_target,
                     "requirement": view_task.get("requirement"),
-                    "success": False,
-                    "message": "view critic did not provide an adjustment",
+                    "success": True,
+                    "message": (
+                        "view critic did not provide an adjustment; "
+                        f"proceeding to {action}: {view_target}"
+                    ),
+                    "view_check_soft_failed": True,
                     "adjustments_used": adjustments_used,
                     "observations": observations,
                 }
@@ -1366,6 +1428,96 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             "observations": observations,
         }
 
+    def _fallback_view_adjustment(
+        self,
+        view_task: dict,
+        view: dict,
+        check_index: int,
+        adjustments_used: int,
+    ) -> dict | None:
+        action = str(view_task.get("action", "")).strip().lower()
+        reason = str(view.get("reason", "")).lower()
+        sufficient = bool(view.get("sufficient_view"))
+
+        if sufficient:
+            return None
+
+        if action == "grasp":
+            if any(token in reason for token in ("far", "small", "distant", "too far")):
+                return {"type": "move_forward", "distance_m": 0.15, "fallback": True}
+            if any(
+                token in reason
+                for token in ("close", "too close", "crop", "cropped", "cut off", "partial", "partially")
+            ):
+                return {"type": "move_backward", "distance_m": 0.15, "fallback": True}
+
+        yaw_scan = [60.0, -120.0, 180.0, -240.0]
+        yaw = yaw_scan[adjustments_used % len(yaw_scan)]
+        return {"type": "rotate", "yaw_deg": yaw, "fallback": True}
+
+    def _shape_view_adjustment_scan(
+        self,
+        view_task: dict,
+        view: dict,
+        adjustment: dict,
+        *,
+        adjustments_used: int,
+    ) -> dict:
+        if not isinstance(adjustment, dict):
+            return adjustment
+
+        adjustment_type = str(adjustment.get("type", "")).strip().lower()
+        if adjustment_type != "rotate":
+            return adjustment
+
+        action = str(view_task.get("action", "")).strip().lower()
+        reason = str(view.get("reason", "")).strip().lower()
+        if action != "grasp":
+            return adjustment
+
+        # If the object is partially visible, let the VLM choose a local
+        # correction. If it is not clearly partially visible, use an expanding
+        # scan pattern even when the VLM repeatedly suggests the same yaw.
+        partial_or_local_view = any(
+            token in reason
+            for token in (
+                "partially visible",
+                "partial",
+                "partly visible",
+                "cropped",
+                "cut off",
+                "edge",
+                "too close",
+                "too far",
+                "small",
+                "distant",
+            )
+        )
+        if partial_or_local_view:
+            return adjustment
+
+        yaw_scan = [60.0, -120.0, 180.0, -240.0]
+        yaw = yaw_scan[adjustments_used % len(yaw_scan)]
+        original_yaw = adjustment.get("yaw_deg")
+        shaped = dict(adjustment)
+        shaped["type"] = "rotate"
+        shaped["yaw_deg"] = yaw
+        shaped["scan_override"] = True
+        shaped["original_yaw_deg"] = original_yaw
+        self.get_logger().warn(
+            "👁️ Overriding repeated/missing-target rotate with scan pattern: "
+            + json.dumps(
+                {
+                    "original_yaw_deg": original_yaw,
+                    "scan_yaw_deg": yaw,
+                    "adjustments_used": adjustments_used,
+                    "reason": view.get("reason", ""),
+                },
+                ensure_ascii=False,
+            )
+        )
+        return shaped
+
     def call_view_critic(
         self,
         view_task: dict,
@@ -1375,15 +1527,12 @@ class AgentDecisionMakingNode(DecisionMakingNode):
     ) -> dict:
         if self.view_critic_backend == "mock":
             return self._mock_view_critic(view_task)
-        if self.view_critic_backend == "http":
-            return self._http_view_critic(view_task, rgb_image, check_index, current_state)
         if self.view_critic_backend == "vllm":
             return self._vllm_view_critic(view_task, rgb_image, check_index, current_state)
         return {
-            "target_visible": False,
             "sufficient_view": False,
             "confidence": 0.0,
-            "reason": f"unsupported view critic backend: {self.view_critic_backend}",
+            "reason": f"unsupported view critic backend: {self.view_critic_backend}; use vllm or mock",
             "adjustment": None,
         }
 
@@ -1401,7 +1550,6 @@ class AgentDecisionMakingNode(DecisionMakingNode):
         visible = count >= self.mock_view_critic_visible_after_attempts
         if visible:
             return {
-                "target_visible": True,
                 "sufficient_view": True,
                 "confidence": 1.0,
                 "reason": f"mock view critic reports sufficient view for {view_task.get('action')}",
@@ -1409,86 +1557,11 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             }
         yaw = -25.0 if count % 2 == 1 else 25.0
         return {
-            "target_visible": False,
             "sufficient_view": False,
             "confidence": 0.5,
             "reason": f"mock view critic requests rotation for {view_task.get('action')}",
             "adjustment": {"type": "rotate", "yaw_deg": yaw},
         }
-
-    def _http_view_critic(
-        self,
-        view_task: dict,
-        rgb_image,
-        check_index: int,
-        current_state: dict,
-    ) -> dict:
-        if rgb_image is None:
-            return {
-                "target_visible": False,
-                "sufficient_view": False,
-                "confidence": 0.0,
-                "reason": "no RGB image has been received for view critic",
-                "adjustment": None,
-            }
-
-        encoded = self._encode_rgb_image_base64(rgb_image)
-        if encoded is None:
-            return {
-                "target_visible": False,
-                "sufficient_view": False,
-                "confidence": 0.0,
-                "reason": "failed to encode RGB image for view critic",
-                "adjustment": None,
-            }
-
-        payload = {
-            "action": view_task.get("action"),
-            "target": view_task.get("target"),
-            "destination": view_task.get("destination"),
-            "view_target": view_task.get("view_target"),
-            "requirement": view_task.get("requirement"),
-            "success_condition": view_task.get("success_condition"),
-            "image_format": "jpeg_base64",
-            "image_base64": encoded,
-            "check_index": check_index,
-            "instruction": (
-                "You are a robot pre-action view critic. Decide whether the RGB image "
-                "satisfies the success_condition for the requested action. For grasp, "
-                "the target object must be visible. For place, an empty reachable flat "
-                "surface at the destination must be visible. For handover, a human hand "
-                "must be visible. If not sufficient, return a robot-relative adjustment. "
-                "Use yaw_deg > 0 for left turn and yaw_deg < 0 for right turn."
-            ),
-            "schema": {
-                "target_visible": "bool; true when the requested visual target/condition is visible",
-                "sufficient_view": "bool; true when the view is sufficient for the action",
-                "confidence": "float 0..1",
-                "reason": "string",
-                "adjustment": {"type": "rotate", "yaw_deg": "float degrees"},
-            },
-        }
-        try:
-            request = urllib.request.Request(
-                self.view_critic_url,
-                data=json.dumps(payload).encode("utf-8"),
-                headers={"Content-Type": "application/json"},
-                method="POST",
-            )
-            with urllib.request.urlopen(
-                request,
-                timeout=float(self.view_critic_timeout_sec),
-            ) as response:
-                response_text = response.read().decode("utf-8")
-            return self._normalize_view_critic_response(json.loads(response_text))
-        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as exc:
-            return {
-                "target_visible": False,
-                "sufficient_view": False,
-                "confidence": 0.0,
-                "reason": f"view critic HTTP request failed: {exc}",
-                "adjustment": None,
-            }
 
     def _vllm_view_critic(
         self,
@@ -1499,7 +1572,6 @@ class AgentDecisionMakingNode(DecisionMakingNode):
     ) -> dict:
         if rgb_image is None:
             return {
-                "target_visible": False,
                 "sufficient_view": False,
                 "confidence": 0.0,
                 "reason": "no RGB image has been received for view critic",
@@ -1509,7 +1581,6 @@ class AgentDecisionMakingNode(DecisionMakingNode):
         encoded = self._encode_rgb_image_base64(rgb_image)
         if encoded is None:
             return {
-                "target_visible": False,
                 "sufficient_view": False,
                 "confidence": 0.0,
                 "reason": "failed to encode RGB image for view critic",
@@ -1558,7 +1629,6 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             )
         except Exception as exc:
             return {
-                "target_visible": False,
                 "sufficient_view": False,
                 "confidence": 0.0,
                 "reason": f"view critic vLLM request failed: {exc}",
@@ -1580,22 +1650,24 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             f"Visual target/condition to check: {view_target}\n"
             f"Requirement: {requirement}\n"
             f"Success condition: {success_condition}\n\n"
-            "Decide whether the current RGB image satisfies the success condition.\n\n"
+            "Decide whether the current RGB image is good enough to execute the action.\n\n"
             "Rules:\n"
-            "- For grasp: the target object must be visible and sufficiently clear/centered for grasping.\n"
-            "- For place: an empty, reachable, flat placement area at or near the destination must be visible.\n"
-            "- For handover: a human hand must be visible and positioned to receive the object.\n"
-            "- If the view is not sufficient, suggest a robot-relative rotation.\n"
-            "- Use yaw_deg > 0 for turning left and yaw_deg < 0 for turning right.\n"
-            "- Keep yaw_deg within [-45, 45].\n"
-            "- If no useful adjustment is possible, set adjustment to null.\n\n"
+            "- Match the target flexibly using visual appearance, aliases, and category; do not require exact OCR or brand text.\n"
+            "- For Pringles/pringles, count a likely chips can, snack tube, or cylindrical can of chips as the target even if the logo text is not readable.\n"
+            "- For grasp: pass when most of the target-like object is visible and clear enough to localize. It does not need to be perfectly centered or optimally close.\n"
+            "- Fail grasp view check only when no plausible target-like object is visible, it is mostly outside the image, or it is too occluded/blurred to localize.\n"
+            "- For place: pass when a reasonable empty placement surface is visible.\n"
+            "- For handover: pass when a receiving human hand is visible.\n"
+            "- If not sufficient, return one simple adjustment: rotate, move_forward, or move_backward. Use large rotate adjustments because small turns may be ignored by Kachaka. Keep rotate within [-240, 240] degrees and movement within [0.05, 0.20] m.\n"
+            "- If the target is not visible at all, prefer rotate over move_forward/move_backward. First try a large turn such as +60 or -60 degrees. If the next view still does not show the target, use a large opposite sweep such as -120 degrees, then +180 degrees, then -240 degrees to alternate and expand the search.\n"
+            "- Avoid tiny rotate adjustments. If rotation is needed, use at least 45 degrees unless only a very small correction is clearly sufficient.\n"
+            "- Return adjustment=null when sufficient_view=true.\n\n"
             "Return only valid JSON with this schema:\n"
             "{\n"
-            '  "target_visible": true or false,\n'
             '  "sufficient_view": true or false,\n'
             '  "confidence": 0.0,\n'
             '  "reason": "short explanation",\n'
-            '  "adjustment": null or {"type": "rotate", "yaw_deg": -25.0}\n'
+            '  "adjustment": null or {"type": "rotate", "yaw_deg": 60.0} or {"type": "move_forward", "distance_m": 0.10} or {"type": "move_backward", "distance_m": 0.10}\n'
             "}\n"
         )
 
@@ -1622,14 +1694,12 @@ class AgentDecisionMakingNode(DecisionMakingNode):
         adjustment = response.get("adjustment")
         if not isinstance(adjustment, dict):
             adjustment = None
-        target_visible = response.get("target_visible")
-        if target_visible is None:
-            target_visible = response.get("view_target_visible")
-        if target_visible is None:
-            target_visible = response.get("condition_visible")
+        sufficient_view = response.get("sufficient_view")
+        if sufficient_view is None:
+            sufficient_view = response.get("action_ready")
+
         return {
-            "target_visible": bool(target_visible),
-            "sufficient_view": bool(response.get("sufficient_view", False)),
+            "sufficient_view": bool(sufficient_view),
             "confidence": float(response.get("confidence", 0.0) or 0.0),
             "reason": str(response.get("reason", "")),
             "adjustment": adjustment,
@@ -1637,13 +1707,13 @@ class AgentDecisionMakingNode(DecisionMakingNode):
 
     def _encode_rgb_image_base64(self, rgb_image) -> str | None:
         try:
-            import cv2
+            from io import BytesIO
+            from PIL import Image
 
-            bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
-            ok, buffer = cv2.imencode(".jpg", bgr_image)
-            if not ok:
-                return None
-            return base64.b64encode(buffer.tobytes()).decode("ascii")
+            image = Image.fromarray(rgb_image, mode="RGB")
+            buffer = BytesIO()
+            image.save(buffer, format="JPEG", quality=90)
+            return base64.b64encode(buffer.getvalue()).decode("ascii")
         except Exception as exc:
             self.get_logger().warn(f"⚠️ Failed to encode view critic image: {exc}")
             return None
@@ -1658,7 +1728,7 @@ class AgentDecisionMakingNode(DecisionMakingNode):
         if rgb_image is None:
             return None
         try:
-            import cv2
+            from PIL import Image, ImageDraw
 
             view_dir = Path(self.task_report_dir) / "view_checks"
             view_dir.mkdir(parents=True, exist_ok=True)
@@ -1669,36 +1739,21 @@ class AgentDecisionMakingNode(DecisionMakingNode):
                 char if char.isalnum() else "_" for char in f"{action}_{view_target}".lower()
             ).strip("_") or "target"
             path = view_dir / f"{timestamp}_{safe_target}_check{check_index}.jpg"
-            bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
-            reason = str(view.get("reason", ""))[:80]
+
+            image = Image.fromarray(rgb_image, mode="RGB")
+            draw = ImageDraw.Draw(image)
+            reason = str(view.get("reason", ""))[:100]
             adjustment = view.get("adjustment")
             overlay = (
-                f"action={action} view={view_target} visible={view.get('target_visible')} "
+                f"action={action} view={view_target} "
                 f"sufficient={view.get('sufficient_view')} adj={adjustment}"
             )
-            cv2.putText(
-                bgr_image,
-                overlay,
-                (12, 28),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.55,
-                (0, 255, 255),
-                2,
-                cv2.LINE_AA,
-            )
+            draw.rectangle((8, 8, min(image.width - 1, 8 + 12 * len(overlay)), 62), fill=(0, 0, 0))
+            draw.text((12, 14), overlay, fill=(255, 255, 0))
             if reason:
-                cv2.putText(
-                    bgr_image,
-                    reason,
-                    (12, 56),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5,
-                    (0, 255, 255),
-                    1,
-                    cv2.LINE_AA,
-                )
-            if cv2.imwrite(str(path), bgr_image):
-                return str(path)
+                draw.text((12, 38), reason, fill=(255, 255, 0))
+            image.save(path, format="JPEG", quality=90)
+            return str(path)
         except Exception as exc:
             self.get_logger().warn(f"⚠️ Failed to write view check debug image: {exc}")
         return None
@@ -1716,20 +1771,17 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             }
 
         adjustment_type = str(adjustment.get("type", "")).strip().lower()
-        if adjustment_type != "rotate":
+        if adjustment_type in {"forward", "move_closer", "approach"}:
+            adjustment_type = "move_forward"
+        if adjustment_type in {"backward", "move_back", "back_up"}:
+            adjustment_type = "move_backward"
+        if adjustment_type not in {"rotate", "move_forward", "move_backward"}:
             return {
                 "last_action": "view_adjustment",
                 "success": False,
                 "message": f"unsupported view adjustment type: {adjustment_type}",
                 "adjustment": adjustment,
             }
-
-        try:
-            yaw_deg = float(adjustment.get("yaw_deg", 0.0))
-        except (TypeError, ValueError):
-            yaw_deg = 0.0
-        max_yaw = abs(float(self.view_adjust_max_yaw_deg))
-        yaw_deg = max(-max_yaw, min(max_yaw, yaw_deg))
 
         pose_result = self.execute_robot_pose(current_state)
         if not pose_result.get("success"):
@@ -1745,23 +1797,56 @@ class AgentDecisionMakingNode(DecisionMakingNode):
                 "pose_result": pose_result,
             }
 
-        adjusted_pose = {
-            "x": float(robot_pose["x"]),
-            "y": float(robot_pose["y"]),
-            "target_theta": self._normalize_angle(
-                float(robot_pose["theta"]) + math.radians(yaw_deg)
-            ),
-        }
+        theta = float(robot_pose["theta"])
+        normalized_adjustment = {"type": adjustment_type}
+
+        if adjustment_type == "rotate":
+            try:
+                yaw_deg = float(adjustment.get("yaw_deg", 0.0))
+            except (TypeError, ValueError):
+                yaw_deg = 0.0
+            max_yaw = abs(float(self.view_adjust_max_yaw_deg))
+            if 1e-3 < abs(yaw_deg) < 45.0:
+                yaw_deg = math.copysign(45.0, yaw_deg)
+            yaw_deg = max(-max_yaw, min(max_yaw, yaw_deg))
+            adjusted_pose = {
+                "x": float(robot_pose["x"]),
+                "y": float(robot_pose["y"]),
+                "target_theta": self._normalize_angle(theta + math.radians(yaw_deg)),
+            }
+            normalized_adjustment["yaw_deg"] = yaw_deg
+        else:
+            try:
+                distance_m = float(adjustment.get("distance_m", 0.15))
+            except (TypeError, ValueError):
+                distance_m = 0.15
+            max_forward = abs(float(self.view_adjust_max_forward_m))
+            if max_forward <= 0.0:
+                return {
+                    "last_action": "view_adjustment",
+                    "success": False,
+                    "message": f"{adjustment_type} adjustment is disabled because view_adjust_max_forward_m <= 0",
+                    "adjustment": adjustment,
+                }
+            distance_m = max(0.05, min(max_forward, abs(distance_m)))
+            direction = -1.0 if adjustment_type == "move_backward" else 1.0
+            adjusted_pose = {
+                "x": float(robot_pose["x"]) + direction * distance_m * math.cos(theta),
+                "y": float(robot_pose["y"]) + direction * distance_m * math.sin(theta),
+                "target_theta": self._normalize_angle(theta),
+            }
+            normalized_adjustment["distance_m"] = distance_m
+
         self.get_logger().info(
             "👁️ Applying view adjustment with navigation: "
             + json.dumps(
-                {"adjustment": adjustment, "adjusted_pose": adjusted_pose},
+                {"adjustment": normalized_adjustment, "adjusted_pose": adjusted_pose},
                 ensure_ascii=False,
             )
         )
         result = self.execute_navigation(pose=adjusted_pose, current_state=current_state)
         result["last_action"] = "view_adjustment"
-        result["adjustment"] = {"type": "rotate", "yaw_deg": yaw_deg}
+        result["adjustment"] = normalized_adjustment
         result["adjusted_pose"] = adjusted_pose
         return result
 

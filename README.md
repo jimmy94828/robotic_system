@@ -1471,6 +1471,10 @@ The top-right pane is an initialized shell. Publish a command manually from ther
 
 ```bash
 ros2 topic pub --once /manual_command std_msgs/msg/String \
+  "{data: 'Move the Pringles from the chair to the table.'}"
+```
+```bash
+ros2 topic pub --once /manual_command std_msgs/msg/String \
   "{data: 'bring pringles on table to sofa'}"
 ```
 

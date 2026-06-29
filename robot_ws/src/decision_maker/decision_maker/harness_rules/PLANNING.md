@@ -9,6 +9,15 @@ This document describes high-level task decomposition rules for the agent-based 
 - Use the latest execution observation before choosing the next capability.
 - Prefer symbolic targets such as `table`, `cabinet`, or `pringles`; do not invent low-level robot controls.
 
+
+## Direct Grasp Tasks
+
+For tasks like `grasp the bottle`, `grab bottle`, or `pick up bottle` with no source or destination:
+
+1. Call `grasp_place` with `action=grasp` and the object target.
+2. Do not run `object_query` or `navigation` first; the object is expected to be in the current camera view.
+3. Finish after the grasp action succeeds.
+
 ## Transfer Tasks
 
 For tasks like `bring <object> on <source> to <destination>`:

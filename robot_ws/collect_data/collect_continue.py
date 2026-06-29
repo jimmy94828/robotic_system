@@ -89,7 +89,6 @@ class KachakaPoseClient:
         pose = fut.result(timeout=timeout_s)
         return float(pose.x), float(pose.y), float(pose.theta)
 
-
 class RealSenseCollector:
     def __init__(self, serial: Optional[str] = None):
         if rs is None:
@@ -100,6 +99,160 @@ class RealSenseCollector:
         self.align_to_color = rs.align(rs.stream.color)
         self.profile = None
         self.depth_scale = 0.001
+
+        # depth range config
+        self.min_depth_m = 0.2
+        self.max_depth_m = 5.0
+
+        # filter config
+        self.enable_decimation = False
+        self.enable_spatial = True
+        self.enable_temporal = True
+        self.enable_hole_filling = False
+
+        # filter objects
+        self.decimation = None
+        self.spatial = None
+        self.temporal = None
+        self.hole_filling = None
+
+        self._init_depth_filters()
+
+    def _print_feature(self, enabled: bool, name: str, extra: str = ""):
+        flag = "true" if enabled else "false"
+        msg = f"[{flag}] {name}"
+        if extra:
+            msg += f" {extra}"
+        print(msg)
+
+    def _init_depth_filters(self):
+        # Decimation: disabled
+        if self.enable_decimation:
+            try:
+                self.decimation = rs.decimation_filter()
+                self._print_feature(True, "decimation filter")
+            except Exception as e:
+                self.decimation = None
+                self._print_feature(False, "decimation filter", f"error={e}")
+        else:
+            self._print_feature(False, "decimation filter", "disabled by config")
+
+        # Spatial: mild
+        if self.enable_spatial:
+            try:
+                self.spatial = rs.spatial_filter()
+                self.spatial.set_option(rs.option.filter_magnitude, 1)
+                self.spatial.set_option(rs.option.filter_smooth_alpha, 0.5)
+                self.spatial.set_option(rs.option.filter_smooth_delta, 20)
+                self._print_feature(
+                    True,
+                    "spatial filter",
+                    "magnitude=1 alpha=0.5 delta=20",
+                )
+            except Exception as e:
+                self.spatial = None
+                self._print_feature(False, "spatial filter", f"error={e}")
+        else:
+            self._print_feature(False, "spatial filter", "disabled by config")
+
+        # Temporal: mild, safer for moving robot
+        if self.enable_temporal:
+            try:
+                self.temporal = rs.temporal_filter()
+                self.temporal.set_option(rs.option.filter_smooth_alpha, 0.6)
+                self.temporal.set_option(rs.option.filter_smooth_delta, 20)
+                self._print_feature(
+                    True,
+                    "temporal filter",
+                    "alpha=0.6 delta=20",
+                )
+            except Exception as e:
+                self.temporal = None
+                self._print_feature(False, "temporal filter", f"error={e}")
+        else:
+            self._print_feature(False, "temporal filter", "disabled by config")
+
+        # Hole filling: disabled
+        if self.enable_hole_filling:
+            try:
+                self.hole_filling = rs.hole_filling_filter()
+                self._print_feature(True, "hole filling filter")
+            except Exception as e:
+                self.hole_filling = None
+                self._print_feature(False, "hole filling filter", f"error={e}")
+        else:
+            self._print_feature(False, "hole filling filter", "disabled by config")
+
+        self._print_feature(
+            True,
+            "range filter",
+            f"min={self.min_depth_m}m max={self.max_depth_m}m",
+        )
+
+    def _configure_depth_sensor(self, depth_sensor):
+        self.depth_scale = float(depth_sensor.get_depth_scale())
+        print(f"[RealSense] depth_scale = {self.depth_scale}")
+
+        # Enable IR emitter
+        try:
+            if depth_sensor.supports(rs.option.emitter_enabled):
+                depth_sensor.set_option(rs.option.emitter_enabled, 1)
+                self._print_feature(True, "emitter_enabled", "value=1")
+            else:
+                self._print_feature(False, "emitter_enabled", "not supported")
+        except Exception as e:
+            self._print_feature(False, "emitter_enabled", f"error={e}")
+
+        # Set laser power
+        try:
+            if depth_sensor.supports(rs.option.laser_power):
+                laser_range = depth_sensor.get_option_range(rs.option.laser_power)
+                laser_power = min(150.0, float(laser_range.max))
+                laser_power = max(float(laser_range.min), laser_power)
+
+                depth_sensor.set_option(rs.option.laser_power, laser_power)
+                self._print_feature(
+                    True,
+                    "laser_power",
+                    f"value={laser_power} range=({laser_range.min}, {laser_range.max})",
+                )
+            else:
+                self._print_feature(False, "laser_power", "not supported")
+        except Exception as e:
+            self._print_feature(False, "laser_power", f"error={e}")
+
+        # Optional preset
+        try:
+            if depth_sensor.supports(rs.option.visual_preset):
+                depth_sensor.set_option(rs.option.visual_preset, 3)
+                self._print_feature(True, "visual_preset", "value=3")
+            else:
+                self._print_feature(False, "visual_preset", "not supported")
+        except Exception as e:
+            self._print_feature(False, "visual_preset", f"error={e}")
+
+    def _apply_depth_filters(self, depth_frame):
+        if self.decimation is not None:
+            depth_frame = self.decimation.process(depth_frame)
+
+        if self.spatial is not None:
+            depth_frame = self.spatial.process(depth_frame)
+
+        if self.temporal is not None:
+            depth_frame = self.temporal.process(depth_frame)
+
+        if self.hole_filling is not None:
+            depth_frame = self.hole_filling.process(depth_frame)
+
+        return depth_frame
+
+    def _filter_depth_range(self, depth_z16: np.ndarray) -> np.ndarray:
+        depth_m = depth_z16.astype(np.float32) * float(self.depth_scale)
+        valid = (depth_m >= self.min_depth_m) & (depth_m <= self.max_depth_m)
+
+        out = depth_z16.copy()
+        out[~valid] = 0
+        return out
 
     def start(self, width: int, height: int, fps: int, warmup_frames: int = 15):
         candidates = [
@@ -125,7 +278,7 @@ class RealSenseCollector:
                 self.profile = profile
 
                 depth_sensor = profile.get_device().first_depth_sensor()
-                self.depth_scale = float(depth_sensor.get_depth_scale())
+                self._configure_depth_sensor(depth_sensor)
 
                 for _ in range(max(0, int(warmup_frames))):
                     self.pipeline.wait_for_frames()
@@ -152,8 +305,12 @@ class RealSenseCollector:
         if not color_frame or not depth_frame:
             raise RuntimeError("Missing color/depth frame")
 
+        depth_frame = self._apply_depth_filters(depth_frame)
+
         color_bgr = np.asanyarray(color_frame.get_data())
         depth_z16 = np.asanyarray(depth_frame.get_data()).astype(np.uint16)
+
+        depth_z16 = self._filter_depth_range(depth_z16)
 
         return {
             "color_bgr": color_bgr,
@@ -171,6 +328,88 @@ class RealSenseCollector:
                 },
             },
         }
+
+# class RealSenseCollector:
+#     def __init__(self, serial: Optional[str] = None):
+#         if rs is None:
+#             raise RuntimeError("pyrealsense2 not available. Install librealsense + python bindings")
+
+#         self.serial = serial
+#         self.pipeline = rs.pipeline()
+#         self.align_to_color = rs.align(rs.stream.color)
+#         self.profile = None
+#         self.depth_scale = 0.001
+
+#     def start(self, width: int, height: int, fps: int, warmup_frames: int = 15):
+#         candidates = [
+#             (width, height, fps),
+#             (640, 480, fps),
+#             (848, 480, fps),
+#             (640, 480, 15),
+#             (848, 480, 15),
+#         ]
+
+#         last_err = None
+#         for cw, ch, cfps in candidates:
+#             try:
+#                 self.pipeline = rs.pipeline()
+#                 cfg = rs.config()
+#                 if self.serial:
+#                     cfg.enable_device(self.serial)
+
+#                 cfg.enable_stream(rs.stream.color, cw, ch, rs.format.bgr8, cfps)
+#                 cfg.enable_stream(rs.stream.depth, cw, ch, rs.format.z16, cfps)
+
+#                 profile = self.pipeline.start(cfg)
+#                 self.profile = profile
+
+#                 depth_sensor = profile.get_device().first_depth_sensor()
+#                 self.depth_scale = float(depth_sensor.get_depth_scale())
+
+#                 for _ in range(max(0, int(warmup_frames))):
+#                     self.pipeline.wait_for_frames()
+
+#                 print(f"[RealSense] started: color={cw}x{ch}@{cfps}, depth={cw}x{ch}@{cfps}")
+#                 return cw, ch, cfps
+#             except (RuntimeError, TypeError, ValueError, OSError) as e:
+#                 last_err = e
+#                 print(f"[RealSense] start failed: color={cw}x{ch}@{cfps} -> {e}")
+
+#         raise RuntimeError(f"RealSense start failed for all candidates. Last error: {last_err}")
+
+#     def stop(self):
+#         with contextlib.suppress(Exception):
+#             self.pipeline.stop()
+
+#     def grab_aligned(self, timeout_ms: int = 2000) -> Dict[str, Any]:
+#         frames = self.pipeline.wait_for_frames(timeout_ms)
+#         aligned_frames = self.align_to_color.process(frames)
+
+#         color_frame = aligned_frames.get_color_frame()
+#         depth_frame = aligned_frames.get_depth_frame()
+
+#         if not color_frame or not depth_frame:
+#             raise RuntimeError("Missing color/depth frame")
+
+#         color_bgr = np.asanyarray(color_frame.get_data())
+#         depth_z16 = np.asanyarray(depth_frame.get_data()).astype(np.uint16)
+
+#         return {
+#             "color_bgr": color_bgr,
+#             "depth_aligned_z16": depth_z16,
+#             "meta": {
+#                 "t_system": time.time(),
+#                 "depth_scale_m": self.depth_scale,
+#                 "rs_timestamp_ms": {
+#                     "color": float(color_frame.get_timestamp()),
+#                     "depth_aligned": float(depth_frame.get_timestamp()),
+#                 },
+#                 "rs_frame_number": {
+#                     "color": int(color_frame.get_frame_number()),
+#                     "depth_aligned": int(depth_frame.get_frame_number()),
+#                 },
+#             },
+#         }
 
 
 def mkdirs(out_dir: Path) -> Dict[str, Path]:

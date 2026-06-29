@@ -40,7 +40,6 @@ setup(
             "cancel_command_node = decision_maker.cancel_command_node:main",
             'nl_command_node = decision_maker.nl_command_node:main',
             'audio_command_node = decision_maker.audio_command_node:main',
-            "view_critic_server = decision_maker.view_critic_server:main",
             "decision_maker_test = decision_maker.decision_maker_test:main",
         ],
     },

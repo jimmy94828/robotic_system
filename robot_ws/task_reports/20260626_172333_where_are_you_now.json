@@ -1,0 +1,35 @@
+{
+  "task": "where are you now?",
+  "started_at": "2026-06-26T17:23:29",
+  "success": false,
+  "status": "failed",
+  "message": "Decomposition must include a non-empty subtasks list.",
+  "decomposition": null,
+  "reasoning_events": [
+    {
+      "stage": "task_decomposition",
+      "duration_sec": 1.349,
+      "success": false,
+      "attempt": 1,
+      "error": "Decomposition must include a non-empty subtasks list."
+    },
+    {
+      "stage": "task_decomposition",
+      "duration_sec": 1.128,
+      "success": false,
+      "attempt": 2,
+      "error": "Decomposition must include a non-empty subtasks list."
+    },
+    {
+      "stage": "task_decomposition",
+      "duration_sec": 1.136,
+      "success": false,
+      "attempt": 3,
+      "error": "Decomposition must include a non-empty subtasks list."
+    }
+  ],
+  "decisions": [],
+  "subtasks": [],
+  "finished_at": "2026-06-26T17:23:33",
+  "total_duration_sec": 3.618
+}

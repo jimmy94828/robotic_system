@@ -14,6 +14,7 @@ The harness checks high-level consistency before or after capability execution.
 
 ## Order Constraints
 
+- Direct grasp-only tasks may call `grasp_place` immediately without prior `object_query` or `navigation`.
 - For transfer tasks, querying and navigating to the source should happen before grasp.
 - Placing or handing over should happen after a successful grasp.
 - Destination lookup/navigation should happen before placing or handing over.

@@ -1,0 +1,35 @@
+{
+  "task": "go to the table",
+  "started_at": "2026-06-26T17:22:46",
+  "success": false,
+  "status": "failed",
+  "message": "Decomposition must include a non-empty subtasks list.",
+  "decomposition": null,
+  "reasoning_events": [
+    {
+      "stage": "task_decomposition",
+      "duration_sec": 1.333,
+      "success": false,
+      "attempt": 1,
+      "error": "Decomposition must include a non-empty subtasks list."
+    },
+    {
+      "stage": "task_decomposition",
+      "duration_sec": 1.135,
+      "success": false,
+      "attempt": 2,
+      "error": "Decomposition must include a non-empty subtasks list."
+    },
+    {
+      "stage": "task_decomposition",
+      "duration_sec": 1.143,
+      "success": false,
+      "attempt": 3,
+      "error": "Decomposition must include a non-empty subtasks list."
+    }
+  ],
+  "decisions": [],
+  "subtasks": [],
+  "finished_at": "2026-06-26T17:22:50",
+  "total_duration_sec": 3.62
+}

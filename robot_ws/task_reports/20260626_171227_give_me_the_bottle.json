@@ -1,0 +1,225 @@
+{
+  "task": "give me the bottle",
+  "started_at": "2026-06-26T17:12:02",
+  "success": false,
+  "status": "failed",
+  "message": "Subtask 1 failed: handover bottle to me",
+  "decomposition": {
+    "original_task": "give me the bottle",
+    "subtasks": [
+      {
+        "subtask_id": 1,
+        "text": "handover bottle to me",
+        "type": "handover",
+        "object": "bottle",
+        "source": null,
+        "destination": "me"
+      }
+    ]
+  },
+  "reasoning_events": [
+    {
+      "stage": "task_decomposition",
+      "duration_sec": 3.964,
+      "success": true,
+      "attempt": 1
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.268,
+      "success": true,
+      "subtask": "handover bottle to me",
+      "step": 1
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 6.537,
+      "success": true,
+      "subtask": "handover bottle to me",
+      "step": 2
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.83,
+      "success": true,
+      "subtask": "handover bottle to me",
+      "step": 3
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.416,
+      "success": true,
+      "subtask": "handover bottle to me",
+      "step": 4
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.429,
+      "success": true,
+      "subtask": "handover bottle to me",
+      "step": 5
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.421,
+      "success": true,
+      "subtask": "handover bottle to me",
+      "step": 6
+    }
+  ],
+  "decisions": [
+    {
+      "subtask": "handover bottle to me",
+      "step": 1,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Query the location of the bottle before proceeding with the handover task.",
+        "target": "bottle"
+      },
+      "reasoning_duration_sec": 2.268,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "bottle",
+        "success": true,
+        "result": {
+          "pose": {
+            "x": 6.725125363680666,
+            "y": -8.431139571775168,
+            "theta": -1.0036721480312898
+          }
+        }
+      }
+    },
+    {
+      "subtask": "handover bottle to me",
+      "step": 2,
+      "capability_call": {
+        "capability": "navigation",
+        "reason": "Navigate to the bottle's location to prepare for handover.",
+        "target": "bottle",
+        "pose": {
+          "x": 6.725125363680666,
+          "y": -8.431139571775168,
+          "theta": -1.0036721480312898
+        }
+      },
+      "reasoning_duration_sec": 6.537,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "navigation",
+        "success": true,
+        "message": "mock navigation completed",
+        "target": "bottle",
+        "pose": {
+          "x": 6.725125363680666,
+          "y": -8.431139571775168,
+          "theta": -1.0036721480312898
+        }
+      }
+    },
+    {
+      "subtask": "handover bottle to me",
+      "step": 3,
+      "capability_call": {
+        "capability": "grasp_place",
+        "reason": "Hand over the bottle to the user as the task goal requires.",
+        "action": "grasp",
+        "target": "bottle"
+      },
+      "reasoning_duration_sec": 2.83,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "grasp_place",
+        "action": "grasp",
+        "target": "bottle",
+        "success": true,
+        "message": "mock grasp completed"
+      }
+    },
+    {
+      "subtask": "handover bottle to me",
+      "step": 4,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Need to locate the destination before placing bottle.",
+        "target": "me"
+      },
+      "reasoning_duration_sec": 2.416,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "me",
+        "success": false,
+        "message": "Object or place 'me' was not found."
+      }
+    },
+    {
+      "subtask": "handover bottle to me",
+      "step": 5,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Query the location of 'me' to proceed with the handover task.",
+        "target": "me"
+      },
+      "reasoning_duration_sec": 2.429,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "me",
+        "success": false,
+        "message": "Object or place 'me' was not found."
+      }
+    },
+    {
+      "subtask": "handover bottle to me",
+      "step": 6,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Query the location of 'me' to proceed with the handover task.",
+        "target": "me"
+      },
+      "reasoning_duration_sec": 2.421,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "me",
+        "success": false,
+        "message": "Object or place 'me' was not found."
+      }
+    }
+  ],
+  "subtasks": [
+    {
+      "subtask_id": 1,
+      "text": "handover bottle to me",
+      "original_text": "handover bottle to me",
+      "started_at": "2026-06-26T17:12:06",
+      "success": false,
+      "duration_sec": 20.173,
+      "decision_indexes": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "finished_at": "2026-06-26T17:12:27"
+    }
+  ],
+  "finished_at": "2026-06-26T17:12:27",
+  "total_duration_sec": 24.139
+}

@@ -1,0 +1,225 @@
+{
+  "task": "bring me the bottle from the table",
+  "started_at": "2026-06-26T17:09:15",
+  "success": false,
+  "status": "failed",
+  "message": "Subtask 1 failed: bring bottle on table to me",
+  "decomposition": {
+    "original_task": "bring me the bottle from the table",
+    "subtasks": [
+      {
+        "subtask_id": 1,
+        "text": "bring bottle from table to me",
+        "type": "bring",
+        "object": "bottle",
+        "source": "table",
+        "destination": "me"
+      }
+    ]
+  },
+  "reasoning_events": [
+    {
+      "stage": "task_decomposition",
+      "duration_sec": 4.328,
+      "success": true,
+      "attempt": 1
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.154,
+      "success": true,
+      "subtask": "bring bottle on table to me",
+      "step": 1
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 6.479,
+      "success": true,
+      "subtask": "bring bottle on table to me",
+      "step": 2
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.817,
+      "success": true,
+      "subtask": "bring bottle on table to me",
+      "step": 3
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 6.575,
+      "success": true,
+      "subtask": "bring bottle on table to me",
+      "step": 4
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.497,
+      "success": true,
+      "subtask": "bring bottle on table to me",
+      "step": 5
+    },
+    {
+      "stage": "capability_decision",
+      "duration_sec": 2.496,
+      "success": true,
+      "subtask": "bring bottle on table to me",
+      "step": 6
+    }
+  ],
+  "decisions": [
+    {
+      "subtask": "bring bottle on table to me",
+      "step": 1,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Query the location of the bottle on the table before proceeding.",
+        "target": "bottle"
+      },
+      "reasoning_duration_sec": 2.154,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "bottle",
+        "success": true,
+        "result": {
+          "pose": {
+            "x": 6.725125363680666,
+            "y": -8.431139571775168,
+            "theta": -1.0036721480312898
+          }
+        }
+      }
+    },
+    {
+      "subtask": "bring bottle on table to me",
+      "step": 2,
+      "capability_call": {
+        "capability": "navigation",
+        "reason": "Navigate to the bottle's location to pick it up.",
+        "target": "bottle",
+        "pose": {
+          "x": 6.725125363680666,
+          "y": -8.431139571775168,
+          "theta": -1.0036721480312898
+        }
+      },
+      "reasoning_duration_sec": 6.479,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "navigation",
+        "success": true,
+        "message": "mock navigation completed",
+        "target": "bottle",
+        "pose": {
+          "x": 6.725125363680666,
+          "y": -8.431139571775168,
+          "theta": -1.0036721480312898
+        }
+      }
+    },
+    {
+      "subtask": "bring bottle on table to me",
+      "step": 3,
+      "capability_call": {
+        "capability": "grasp_place",
+        "reason": "Grasp the bottle at its current location to begin the transfer.",
+        "action": "grasp",
+        "target": "bottle"
+      },
+      "reasoning_duration_sec": 2.817,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "grasp_place",
+        "action": "grasp",
+        "target": "bottle",
+        "success": true,
+        "message": "mock grasp completed"
+      }
+    },
+    {
+      "subtask": "bring bottle on table to me",
+      "step": 4,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Need to locate the destination before placing bottle.",
+        "target": "me"
+      },
+      "reasoning_duration_sec": 6.575,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "me",
+        "success": false,
+        "message": "Object or place 'me' was not found."
+      }
+    },
+    {
+      "subtask": "bring bottle on table to me",
+      "step": 5,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Query the location of 'me' to determine the destination for placing the bottle.",
+        "target": "me"
+      },
+      "reasoning_duration_sec": 2.497,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "me",
+        "success": false,
+        "message": "Object or place 'me' was not found."
+      }
+    },
+    {
+      "subtask": "bring bottle on table to me",
+      "step": 6,
+      "capability_call": {
+        "capability": "object_query",
+        "reason": "Query the location of 'me' to determine the destination for placing the bottle.",
+        "target": "me"
+      },
+      "reasoning_duration_sec": 2.496,
+      "forced": false,
+      "verified": true,
+      "verification_message": "capability call verified",
+      "result": {
+        "last_action": "object_query",
+        "target": "me",
+        "success": false,
+        "message": "Object or place 'me' was not found."
+      }
+    }
+  ],
+  "subtasks": [
+    {
+      "subtask_id": 1,
+      "text": "bring bottle on table to me",
+      "original_text": "bring bottle from table to me",
+      "started_at": "2026-06-26T17:09:20",
+      "success": false,
+      "duration_sec": 23.804,
+      "decision_indexes": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "finished_at": "2026-06-26T17:09:44"
+    }
+  ],
+  "finished_at": "2026-06-26T17:09:44",
+  "total_duration_sec": 28.137
+}

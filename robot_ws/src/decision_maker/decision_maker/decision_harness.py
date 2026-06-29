@@ -85,8 +85,9 @@ class LightweightPlanningHarness:
             "compact_rules": [
                 "Emit exactly one next capability call, never a full plan.",
                 "Use observations/history before choosing the next call.",
+                "For direct grasp-only commands, call grasp_place(action=grasp) from the current view; no destination is required.",
                 "For source-aware transfers, query object first; if not found, query/navigate source.",
-                "After grasp, query/navigate destination before place or handover.",
+                "After grasp in transfer tasks, query/navigate destination before place or handover.",
                 "Use handover, not place, for hand over/give/pass-to-person tasks.",
                 "Use finish only after the task goal is achieved.",
             ],

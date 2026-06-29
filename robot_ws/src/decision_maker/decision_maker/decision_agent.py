@@ -103,6 +103,10 @@ class QwenClient:
         if text in {"go home", "park"}:
             return [{"action": "goto", "target": "home"}]
 
+        direct_grasp_target = _try_parse_direct_grasp_command(text)
+        if direct_grasp_target:
+            return [{"action": "grasp", "target": direct_grasp_target}]
+
         if text.startswith("give me "):
             item = _clean_phrase(text[len("give me ") :])
             return [
@@ -200,6 +204,23 @@ class QwenClient:
                 current_state,
                 last_execution_result,
             )
+
+        direct_grasp_target = _try_parse_direct_grasp_command(text)
+        if direct_grasp_target:
+            script = [
+                {
+                    "capability": "grasp_place",
+                    "action": "grasp",
+                    "target": direct_grasp_target,
+                    "reason": "Direct grasp command; attempt grasp from the current view without navigation.",
+                },
+                {
+                    "capability": "finish",
+                    "task_done": True,
+                    "reason": "The direct grasp task is complete.",
+                },
+            ]
+            return script[min(len(history), len(script) - 1)]
 
         if text in {"go home", "park"}:
             script = [
@@ -552,8 +573,9 @@ class QwenClient:
                 "navigation: target or pose required.",
                 "grasp_place: action must be grasp/place/handover; grasp/handover need target; place needs target+destination.",
                 "finish: task_done=true only after task completion.",
+                "For direct commands like 'grasp the bottle', 'grab bottle', or 'pick up bottle' with no source/destination, call grasp_place action=grasp immediately from the current view; do not object_query or navigate first.",
                 "For source-aware transfers, first try object_query(object); if it fails, query/navigate source.",
-                "After grasp, query/navigate destination before final action.",
+                "After grasp in a transfer task, query/navigate destination before final action. For direct grasp-only tasks, finish after grasp succeeds.",
                 "If task says hand over/give/pass/pick up and hand over, final grasp_place action must be handover, not place.",
                 "Do not navigate to destination after failed grasp unless the object is held.",
             ],
@@ -743,6 +765,26 @@ def normalize_capability_call(
     call: Dict[str, Any],
 ) -> Dict[str, Any]:
     """Ground next capability calls for common transfer commands."""
+    direct_grasp_target = _try_parse_direct_grasp_command(original_task)
+    if direct_grasp_target:
+        script = [
+            {
+                "capability": "grasp_place",
+                "action": "grasp",
+                "target": direct_grasp_target,
+                "reason": "Direct grasp command; attempt grasp from the current view without navigation.",
+            },
+            {
+                "capability": "finish",
+                "task_done": True,
+                "reason": "The direct grasp task is complete.",
+            },
+        ]
+        expected = dict(script[min(len(history), len(script) - 1)])
+        if call.get("capability") == expected.get("capability") and call.get("reason"):
+            expected["reason"] = call["reason"]
+        return expected
+
     transfer_sequence = _try_parse_transfer_sequence(original_task)
     if transfer_sequence is None:
         return call
@@ -976,6 +1018,22 @@ def _required_string(step: Dict[str, Any], key: str, index: int) -> str:
 
 
 _PREPOSITIONS = r"(?:on|in|at|near|by|inside|from|above|below|under|beside|next\s+to)"
+
+
+def _try_parse_direct_grasp_command(task_instruction: str) -> str | None:
+    text = task_instruction.strip().lower()
+    text = re.sub(r"[.!?]+$", "", text).strip()
+    match = re.match(r"^(?:please\s+)?(?:grasp|grab|pick\s+up|pickup|take|hold)\s+(.+)$", text)
+    if not match:
+        return None
+    target = _clean_phrase(match.group(1))
+    if not target:
+        return None
+    # Source/destination phrases imply a larger navigation or transfer task, not
+    # a pure current-view grasp. Let the transfer planner handle those.
+    if re.search(r"\b(?:from|on|in|at|to|onto|into|near|by|inside)\b", target):
+        return None
+    return target
 
 
 def _is_robot_pose_query(text: str) -> bool:
