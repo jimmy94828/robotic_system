@@ -1,8 +1,8 @@
 *.ply
 
 # Generated robot data / collected demo files
-robot_ws/collect_data/
-!robot_ws/collect_data/*.py
+robot_ws/data/collect_data/
+!robot_ws/data/collect_data/*.py
 
 # Generated map alignment output files
 robot_ws/data/map_alignment/output/
