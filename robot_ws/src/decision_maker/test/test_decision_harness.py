@@ -56,6 +56,91 @@ def test_harness_rejects_finish_after_failed_history():
     assert "finish" in message
 
 
+def test_harness_rejects_handover_action_for_place_task():
+    harness = LightweightPlanningHarness()
+    ok, message = harness.verify_capability_call(
+        {
+            "capability": "grasp_place",
+            "action": "handover",
+            "target": "pringles",
+        },
+        {
+            "task": "bring pringles on table to chair",
+            "held_object": "pringles",
+        },
+        [],
+    )
+
+    assert ok is False
+    assert "does not explicitly request" in message
+
+
+def test_harness_rejects_place_action_for_handover_task():
+    harness = LightweightPlanningHarness()
+    ok, message = harness.verify_capability_call(
+        {
+            "capability": "grasp_place",
+            "action": "place",
+            "target": "pringles",
+            "destination": "chair",
+        },
+        {
+            "task": "hand over pringles to me at chair",
+            "held_object": "pringles",
+        },
+        [],
+    )
+
+    assert ok is False
+    assert "explicitly requests a handover" in message
+
+
+def test_harness_requires_destination_navigation_for_direct_grasp_place():
+    harness = LightweightPlanningHarness()
+    call = {
+        "capability": "grasp_place",
+        "action": "place",
+        "target": "pringle",
+        "destination": "chair",
+    }
+    state = {
+        "task": "grasp pringle and place it on chair",
+        "held_object": "pringle",
+    }
+
+    ok, message = harness.verify_capability_call(call, state, [])
+    assert ok is False
+    assert "before navigating to destination chair" in message
+
+    history = [{
+        "call": {"capability": "navigation", "target": "chair"},
+        "result": {"success": True, "target": "chair"},
+    }]
+    ok, message = harness.verify_capability_call(call, state, history)
+    assert ok is True
+    assert message == "capability call verified"
+
+
+def test_harness_rejects_object_query_for_person():
+    harness = LightweightPlanningHarness()
+    ok, message = harness.verify_capability_call(
+        {"capability": "object_query", "target": "person"},
+        {"task": "handover can on desk to chair"},
+        [],
+    )
+
+    assert ok is False
+    assert "cannot target a person" in message
+
+    ok, message = harness.verify_capability_call(
+        {"capability": "object_query", "target": "chair"},
+        {"task": "handover can on desk to chair"},
+        [],
+    )
+    assert ok is True
+    assert message == "capability call verified"
+
+
 def test_harness_loads_rule_documents():
     harness = LightweightPlanningHarness()
 
@@ -160,6 +245,48 @@ def test_harness_verifies_valid_decomposition():
     assert message == "decomposition verified"
 
 
+def test_harness_rejects_handover_inferred_for_place_transfer():
+    harness = LightweightPlanningHarness()
+    ok, message = harness.verify_decomposition(
+        "bring pringles on table to chair",
+        {
+            "original_task": "bring pringles on table to chair",
+            "subtasks": [
+                {
+                    "subtask_id": 1,
+                    "text": "handover pringles on table to chair",
+                    "type": "handover",
+                    "object": "pringles",
+                    "source": "table",
+                    "destination": "chair",
+                }
+            ],
+        },
+    )
+
+    assert ok is False
+    assert "handover is not allowed" in message
+
+
+def test_harness_accepts_explicit_handover_transfer():
+    harness = LightweightPlanningHarness()
+    ok, message = harness.verify_decomposition(
+        "hand over pringles on table to me at chair",
+        {
+            "subtasks": [
+                {
+                    "subtask_id": 1,
+                    "text": "handover pringles on table to chair",
+                    "type": "handover",
+                }
+            ],
+        },
+    )
+
+    assert ok is True
+    assert message == "decomposition verified"
+
+
 def test_harness_rejects_undecomposed_multi_object_subtask():
     harness = LightweightPlanningHarness()
     ok, message = harness.verify_decomposition(
@@ -174,6 +301,49 @@ def test_harness_rejects_undecomposed_multi_object_subtask():
 
     assert ok is False
     assert "multi-object" in message
+
+
+def test_harness_does_not_treat_grasp_and_place_as_multi_object():
+    harness = LightweightPlanningHarness()
+    ok, message = harness.verify_decomposition(
+        "grasp the pringles on the table and place it on the chair",
+        {
+            "subtasks": [
+                {
+                    "subtask_id": 1,
+                    "text": "bring pringles on table to chair",
+                    "type": "bring",
+                    "object": "pringles",
+                }
+            ]
+        },
+    )
+
+    assert ok is True
+    assert message == "decomposition verified"
+
+
+def test_harness_accepts_verbose_grasp_and_place_prefix_with_comma():
+    harness = LightweightPlanningHarness()
+    task = "It is a grasp and place task, please grasp the pringle and place it on the chair."
+    ok, message = harness.verify_decomposition(
+        task,
+        {
+            "subtasks": [
+                {
+                    "subtask_id": 1,
+                    "text": "grasp pringle and place it on chair",
+                    "type": "direct_grasp_place",
+                    "object": "pringle",
+                    "source": None,
+                    "destination": "chair",
+                }
+            ]
+        },
+    )
+
+    assert ok is True
+    assert message == "decomposition verified"
 
 
 def test_harness_loads_decomposition_rule_documents():

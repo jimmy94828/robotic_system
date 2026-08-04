@@ -11,10 +11,18 @@ import json
 import re
 from typing import Any, Dict, List
 
-from .decision_agent import PlanValidationError, QwenClient
+from .decision_agent import (
+    PlanValidationError,
+    QwenClient,
+    parse_direct_grasp_place_command,
+    parse_pickup_handover_command,
+    parse_source_grasp_place_command,
+)
 
 
-SUPPORTED_SUBTASK_TYPES = {"bring", "move", "handover", "conditional", "query", "other"}
+SUPPORTED_SUBTASK_TYPES = {
+    "bring", "move", "handover", "direct_grasp_place", "conditional", "query", "other"
+}
 
 
 class TaskDecompositionError(ValueError):
@@ -73,11 +81,11 @@ class DecomposerClient:
                 "subtasks": [
                     {
                         "subtask_id": 1,
-                        "text": "handover pringles on table to sofa",
-                        "type": "handover",
+                        "text": "bring pringles on table to chair",
+                        "type": "bring",
                         "object": "pringles",
                         "source": "table",
-                        "destination": "sofa",
+                        "destination": "chair",
                     }
                 ],
             },
@@ -87,8 +95,13 @@ class DecomposerClient:
                 "Do not output object_query/navigation/grasp_place/finish here.",
                 "Multiple objects joined by and/commas become separate ordered subtasks.",
                 "Preserve source and destination for from/on/in/at-source transfers.",
-                "If task says hand over/give/pass/deliver to a person, type must be handover and text must start with handover.",
+                "A transfer to a place, surface, or furniture is type=bring/move and ends with place; never change it to handover.",
+                "Use type=handover only when the command explicitly says handover/hand over/give/pass, or explicitly identifies a human receiver.",
+                "Words such as bring/take/carry followed only by a destination mean grasp-and-place, not handover.",
+                "For 'grasp X and place it on Y' with no source, use type=direct_grasp_place; the robot is already in front of X.",
+                "For 'grasp X on/from S and place it on Y', preserve S and use type=bring; the robot must navigate to S before grasping.",
                 "For 'pick up X from/on S and hand it over to me at D', output one handover subtask: handover X on S to D.",
+                "For 'grasp X from S and hand it to the person sitting on D', output handover X on S to D; never use person as destination.",
                 "For then/and then/after that, preserve order.",
                 "Resolve it/them to the mentioned object when clear.",
             ],
@@ -184,6 +197,57 @@ def validate_decomposition(original_task: str, decomposition: Dict[str, Any]) ->
     if not isinstance(subtasks, list) or not subtasks:
         raise TaskDecompositionError("Decomposition must include a non-empty subtasks list.")
 
+    pickup_handover = parse_pickup_handover_command(original_task)
+    if pickup_handover:
+        obj, source, destination = pickup_handover
+        return {
+            "original_task": task.strip(),
+            "subtasks": [
+                {
+                    "subtask_id": 1,
+                    "text": f"handover {obj} on {source} to {destination}",
+                    "type": "handover",
+                    "object": obj,
+                    "source": source,
+                    "destination": destination,
+                }
+            ],
+        }
+
+    source_grasp_place = parse_source_grasp_place_command(original_task)
+    if source_grasp_place:
+        obj, source, destination = source_grasp_place
+        return {
+            "original_task": task.strip(),
+            "subtasks": [
+                {
+                    "subtask_id": 1,
+                    "text": f"bring {obj} on {source} to {destination}",
+                    "type": "bring",
+                    "object": obj,
+                    "source": source,
+                    "destination": destination,
+                }
+            ],
+        }
+
+    direct_transfer = parse_direct_grasp_place_command(original_task)
+    if direct_transfer:
+        obj, destination = direct_transfer
+        return {
+            "original_task": task.strip(),
+            "subtasks": [
+                {
+                    "subtask_id": 1,
+                    "text": f"grasp {obj} and place it on {destination}",
+                    "type": "direct_grasp_place",
+                    "object": obj,
+                    "source": None,
+                    "destination": destination,
+                }
+            ],
+        }
+
     normalized = []
     for index, subtask in enumerate(subtasks, start=1):
         if not isinstance(subtask, dict):
@@ -199,19 +263,99 @@ def validate_decomposition(original_task: str, decomposition: Dict[str, Any]) ->
         if subtask_type not in SUPPORTED_SUBTASK_TYPES:
             subtask_type = "other"
 
-        normalized.append({
+        normalized_subtask = {
             "subtask_id": int(subtask.get("subtask_id") or index),
             "text": _clean_text(text),
             "type": subtask_type,
             "object": _optional_clean(subtask.get("object")),
             "source": _optional_clean(subtask.get("source")),
             "destination": _optional_clean(subtask.get("destination")),
-        })
+        }
+
+        # Handover changes the physical behavior, so do not trust an inferred
+        # handover unless the user's own instruction requested one.
+        if (
+            normalized_subtask["type"] == "handover"
+            or _starts_with_handover(normalized_subtask["text"])
+        ) and not requests_handover(original_task):
+            normalized_subtask = _normalize_as_place_transfer(
+                original_task, normalized_subtask
+            )
+
+        normalized.append(normalized_subtask)
 
     for index, subtask in enumerate(normalized, start=1):
         subtask["subtask_id"] = index
 
     return {"original_task": task.strip(), "subtasks": normalized}
+
+
+def requests_handover(task_instruction: str) -> bool:
+    """Return whether the user explicitly requested a human handover."""
+    text = _clean_text(task_instruction)
+    if re.search(
+        r"\b(?:handover|hand\s+(?:(?:it|them|the\s+\w+)\s+)?over|"
+        r"hand\s+(?:it|them|the\s+\w+)\s+to|give|pass)\b",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return True
+
+    return re.search(
+        r"\bto\s+(?:me|him|her|them|us|someone|somebody|"
+        r"(?:the\s+)?(?:person|human|user|operator|customer|guest|recipient|man|woman))"
+        r"(?=\s*(?:$|[,.!?]|\s+(?:at|on|in|near|by)\b))",
+        text,
+        flags=re.IGNORECASE,
+    ) is not None
+
+
+def is_human_query_target(target: str) -> bool:
+    """Return whether a semantic query target denotes a person, not a place."""
+    normalized = _clean_text(target)
+    return re.match(
+        r"^(?:me|him|her|them|us|someone|somebody|person|human|user|"
+        r"operator|customer|guest|recipient|man|woman)(?:\b|$)",
+        normalized,
+        flags=re.IGNORECASE,
+    ) is not None
+
+
+def _starts_with_handover(text: str) -> bool:
+    return re.match(
+        r"^(?:handover|hand\s+over|give|pass)\b", text, re.IGNORECASE
+    ) is not None
+
+
+def _normalize_as_place_transfer(
+    original_task: str,
+    subtask: Dict[str, Any],
+) -> Dict[str, Any]:
+    normalized = dict(subtask)
+    original = _clean_text(original_task)
+    transfer_type = "move" if re.match(r"^move\b", original, re.IGNORECASE) else "bring"
+    normalized["type"] = transfer_type
+
+    obj = normalized.get("object")
+    source = normalized.get("source")
+    destination = normalized.get("destination")
+    if obj and destination:
+        if transfer_type == "move" and source:
+            normalized["text"] = f"move {obj} from {source} to {destination}"
+        else:
+            text = f"bring {obj}"
+            if source:
+                text += f" on {source}"
+            normalized["text"] = f"{text} to {destination}"
+    else:
+        normalized["text"] = re.sub(
+            r"^(?:handover|hand\s+over|give|pass)\b",
+            "bring",
+            normalized["text"],
+            count=1,
+            flags=re.IGNORECASE,
+        )
+    return normalized
 
 
 def _with_ids(decomposition: Dict[str, Any]) -> Dict[str, Any]:
@@ -290,6 +434,9 @@ def _parse_transfer_clause(clause: str, last_object: str | None) -> List[dict] |
         else:
             object_phrase, destination = match.groups()
             source = None
+
+        if task_type == "bring" and requests_handover(text):
+            task_type = "handover"
 
         destination = _strip_handover_destination(destination) if task_type == "handover" else _strip_destination_modifiers(destination)
         objects = _split_object_list(object_phrase)

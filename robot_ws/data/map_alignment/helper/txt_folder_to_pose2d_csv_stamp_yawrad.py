@@ -18,11 +18,11 @@ Supported one-line content examples:
   x: 1.2, y: 3.4, yaw: 0.5
 
 Output columns by default:
-  idx,stamp,x,y,yaw_rag
+  idx,stamp,x,y,yaw_rad
 
-Note: map_alignment_v3.py accepts yaw or yaw_rad by default, not yaw_rag.
+Note: map_alignment_v3.py accepts yaw or yaw_rad by default.
 If you want to feed this CSV directly to the unmodified map_alignment_v3.py, use --output_yaw_col yaw_rad
-or modify map_alignment_v3.py to accept yaw_rag as an alias.
+or modify map_alignment_v3.py to accept yaw_rad as an alias.
 """
 
 from __future__ import annotations
@@ -305,9 +305,9 @@ def main() -> None:
     ap.add_argument("--yaw_unit", default="rad", choices=["rad", "deg"], help="Unit of yaw if line directly stores yaw.")
     ap.add_argument(
         "--output_yaw_col",
-        default="yaw_rag",
-        choices=["yaw_rag", "yaw_rad", "yaw"],
-        help="Yaw column name. Default: yaw_rag, as requested. Use yaw_rad for original map_alignment_v3.py.",
+        default="yaw_rad",
+        choices=["yaw_rad", "yaw_deg", "yaw"],
+        help="Yaw column name. Default: yaw_rad, as requested. Use yaw_rad for original map_alignment_v3.py.",
     )
     ap.add_argument(
         "--timestamp_col",

@@ -15,10 +15,12 @@ VIEW_CRITIC_BACKEND="${VIEW_CRITIC_BACKEND:-vllm}"
 VIEW_CRITIC_VLLM_BASE_URL="${VIEW_CRITIC_VLLM_BASE_URL:-http://localhost:8001/v1}"
 VIEW_CRITIC_VLLM_MODEL="${VIEW_CRITIC_VLLM_MODEL:-qwen-vl}"
 VIEW_CRITIC_IMAGE_TOPIC="${VIEW_CRITIC_IMAGE_TOPIC:-/camera/color/image_raw}"
-VIEW_ADJUST_MAX_YAW_DEG="${VIEW_ADJUST_MAX_YAW_DEG:-240.0}"
+VIEW_ADJUST_MIN_YAW_DEG="${VIEW_ADJUST_MIN_YAW_DEG:-10.0}"
+VIEW_ADJUST_SCAN_STEP_DEG="${VIEW_ADJUST_SCAN_STEP_DEG:-15.0}"
+VIEW_ADJUST_MAX_YAW_DEG="${VIEW_ADJUST_MAX_YAW_DEG:-60.0}"
 VIEW_ADJUST_MAX_FORWARD_M="${VIEW_ADJUST_MAX_FORWARD_M:-0.25}"
-KACHAKA_ENDPOINT="${KACHAKA_ENDPOINT:-192.168.1.5:26400}"
-AGENT_MAX_REPLANS="${AGENT_MAX_REPLANS:-2}"
+KACHAKA_ENDPOINT="${KACHAKA_ENDPOINT:-192.168.137.135:26400}"
+AGENT_MAX_REPLANS="${AGENT_MAX_REPLANS:-3}"
 
 if ! command -v tmux >/dev/null 2>&1; then
   echo "tmux is required for this helper. Install tmux or run the four commands manually."
@@ -48,7 +50,7 @@ if tmux has-session -t "${SESSION_NAME}" 2>/dev/null; then
   exit 1
 fi
 
-SETUP_CMD="cd /robot_ws && source /opt/ros/humble/setup.bash && source /opt/conda/etc/profile.d/conda.sh && conda activate robot_ros && source install/setup.bash && export LLM_BACKEND=${PLANNER_BACKEND} VLLM_BASE_URL=${VLLM_BASE_URL} VLLM_MODEL=${VLLM_MODEL} QWEN_MAX_NEW_TOKENS=${QWEN_MAX_NEW_TOKENS} VLLM_TEMPERATURE=${VLLM_TEMPERATURE} VLLM_TIMEOUT_SEC=${VLLM_TIMEOUT_SEC} ENABLE_PRE_ACTION_VIEW_CHECK=${ENABLE_PRE_ACTION_VIEW_CHECK} VIEW_CHECK_MAX_ADJUSTMENTS=${VIEW_CHECK_MAX_ADJUSTMENTS} VIEW_CRITIC_BACKEND=${VIEW_CRITIC_BACKEND} VIEW_CRITIC_VLLM_BASE_URL=${VIEW_CRITIC_VLLM_BASE_URL} VIEW_CRITIC_VLLM_MODEL=${VIEW_CRITIC_VLLM_MODEL} VIEW_CRITIC_IMAGE_TOPIC=${VIEW_CRITIC_IMAGE_TOPIC} VIEW_ADJUST_MAX_FORWARD_M=${VIEW_ADJUST_MAX_FORWARD_M} RECOVER_GRASP_FAILURE_WITH_REALIGN=${RECOVER_GRASP_FAILURE_WITH_REALIGN} && AGENT_EXE=\$(ros2 pkg prefix decision_maker)/lib/decision_maker/agent_decision_maker_node && if [ -f \"\$AGENT_EXE\" ]; then sed -i \"1s|.*|#!/opt/conda/envs/robot_ros/bin/python3|\" \"\$AGENT_EXE\"; fi"
+SETUP_CMD="cd /robot_ws && source /opt/ros/humble/setup.bash && source /opt/conda/etc/profile.d/conda.sh && conda activate robot_ros && source install/setup.bash && export LLM_BACKEND=${PLANNER_BACKEND} VLLM_BASE_URL=${VLLM_BASE_URL} VLLM_MODEL=${VLLM_MODEL} QWEN_MAX_NEW_TOKENS=${QWEN_MAX_NEW_TOKENS} VLLM_TEMPERATURE=${VLLM_TEMPERATURE} VLLM_TIMEOUT_SEC=${VLLM_TIMEOUT_SEC} ENABLE_PRE_ACTION_VIEW_CHECK=${ENABLE_PRE_ACTION_VIEW_CHECK} VIEW_CHECK_MAX_ADJUSTMENTS=${VIEW_CHECK_MAX_ADJUSTMENTS} VIEW_CRITIC_BACKEND=${VIEW_CRITIC_BACKEND} VIEW_CRITIC_VLLM_BASE_URL=${VIEW_CRITIC_VLLM_BASE_URL} VIEW_CRITIC_VLLM_MODEL=${VIEW_CRITIC_VLLM_MODEL} VIEW_CRITIC_IMAGE_TOPIC=${VIEW_CRITIC_IMAGE_TOPIC} VIEW_ADJUST_MIN_YAW_DEG=${VIEW_ADJUST_MIN_YAW_DEG} VIEW_ADJUST_SCAN_STEP_DEG=${VIEW_ADJUST_SCAN_STEP_DEG} VIEW_ADJUST_MAX_YAW_DEG=${VIEW_ADJUST_MAX_YAW_DEG} VIEW_ADJUST_MAX_FORWARD_M=${VIEW_ADJUST_MAX_FORWARD_M} RECOVER_GRASP_FAILURE_WITH_REALIGN=${RECOVER_GRASP_FAILURE_WITH_REALIGN} && AGENT_EXE=\$(ros2 pkg prefix decision_maker)/lib/decision_maker/agent_decision_maker_node && if [ -f \"\$AGENT_EXE\" ]; then sed -i \"1s|.*|#!/opt/conda/envs/robot_ros/bin/python3|\" \"\$AGENT_EXE\"; fi"
 
 # Layout:
 #   top-left:     object_query server
@@ -75,7 +77,7 @@ tmux send-keys -t "${NAV_PANE}" "clear; echo '[kachaka_nav] starting with KACHAK
 
 # Bottom-left: live agent decision node.
 tmux send-keys -t "${BOTTOM_LEFT_PANE}" "${SETUP_CMD}" C-m
-tmux send-keys -t "${BOTTOM_LEFT_PANE}" "clear; echo \"[agent] starting live pipeline with LLM_BACKEND=\$LLM_BACKEND VLLM_BASE_URL=\$VLLM_BASE_URL VLLM_MODEL=\$VLLM_MODEL max_tokens=\$QWEN_MAX_NEW_TOKENS, replans=${AGENT_MAX_REPLANS}\"; ros2 run decision_maker agent_decision_maker_node --ros-args -p enable_map_visualizer:=false -p mock_execution:=false -p agent_max_replans:=${AGENT_MAX_REPLANS} -p enable_pre_action_view_check:=${ENABLE_PRE_ACTION_VIEW_CHECK} -p view_check_max_adjustments:=${VIEW_CHECK_MAX_ADJUSTMENTS} -p view_critic_backend:=${VIEW_CRITIC_BACKEND} -p view_critic_vllm_base_url:=${VIEW_CRITIC_VLLM_BASE_URL} -p view_critic_vllm_model:=${VIEW_CRITIC_VLLM_MODEL} -p view_critic_image_topic:=${VIEW_CRITIC_IMAGE_TOPIC} -p view_adjust_max_yaw_deg:=${VIEW_ADJUST_MAX_YAW_DEG} -p view_adjust_max_forward_m:=${VIEW_ADJUST_MAX_FORWARD_M} -p recover_grasp_failure_with_realign:=${RECOVER_GRASP_FAILURE_WITH_REALIGN}" C-m
+tmux send-keys -t "${BOTTOM_LEFT_PANE}" "clear; echo \"[agent] starting live pipeline with LLM_BACKEND=\$LLM_BACKEND VLLM_BASE_URL=\$VLLM_BASE_URL VLLM_MODEL=\$VLLM_MODEL max_tokens=\$QWEN_MAX_NEW_TOKENS, replans=${AGENT_MAX_REPLANS}\"; ros2 run decision_maker agent_decision_maker_node --ros-args -p enable_map_visualizer:=false -p mock_execution:=false -p agent_max_replans:=${AGENT_MAX_REPLANS} -p enable_pre_action_view_check:=${ENABLE_PRE_ACTION_VIEW_CHECK} -p view_check_max_adjustments:=${VIEW_CHECK_MAX_ADJUSTMENTS} -p view_critic_backend:=${VIEW_CRITIC_BACKEND} -p view_critic_vllm_base_url:=${VIEW_CRITIC_VLLM_BASE_URL} -p view_critic_vllm_model:=${VIEW_CRITIC_VLLM_MODEL} -p view_critic_image_topic:=${VIEW_CRITIC_IMAGE_TOPIC} -p view_adjust_min_yaw_deg:=${VIEW_ADJUST_MIN_YAW_DEG} -p view_adjust_scan_step_deg:=${VIEW_ADJUST_SCAN_STEP_DEG} -p view_adjust_max_yaw_deg:=${VIEW_ADJUST_MAX_YAW_DEG} -p view_adjust_max_forward_m:=${VIEW_ADJUST_MAX_FORWARD_M} -p recover_grasp_failure_with_realign:=${RECOVER_GRASP_FAILURE_WITH_REALIGN}" C-m
 
 # Bottom-right: natural-language command input node.
 tmux send-keys -t "${NL_PANE}" "${SETUP_CMD}" C-m
@@ -100,6 +102,8 @@ if [ "${PLANNER_BACKEND}" = "vllm" ]; then
 fi
 echo "View check:       ${ENABLE_PRE_ACTION_VIEW_CHECK}"
 echo "View backend:     ${VIEW_CRITIC_BACKEND}"
+echo "View min yaw:     ${VIEW_ADJUST_MIN_YAW_DEG} deg"
+echo "View scan step:   ${VIEW_ADJUST_SCAN_STEP_DEG} deg"
 echo "View max yaw:     ${VIEW_ADJUST_MAX_YAW_DEG} deg"
 echo "Grasp recovery:   ${RECOVER_GRASP_FAILURE_WITH_REALIGN}"
 echo "View vLLM URL:    ${VIEW_CRITIC_VLLM_BASE_URL}"

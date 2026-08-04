@@ -90,15 +90,21 @@ class WorldModel:
 # =========================================================
 def fmt_goto(pose_tuple):
     """
-    Convert a (x, y, yaw) or (x, y) tuple to a 'goto:x,y,th' string.
+    Convert a semantic-map (x, y, z) or (x, y) tuple to a goto command.
+
+    The three-value form is ``goto:x,y,z``.  ``decision_maker_node`` derives
+    the final navigation heading automatically; callers that need to override
+    it may issue ``goto:x,y,z,yaw`` directly (yaw is in radians).
     """
     if isinstance(pose_tuple, (list, tuple)):
         if len(pose_tuple) == 2:
             x, y = pose_tuple
-            th = 0.0
+            z = 0.0
         elif len(pose_tuple) == 3:
-            x, y, th = pose_tuple
+            x, y, z = pose_tuple
         else:
             raise ValueError("Pose tuple must have 2 or 3 elements.")
-        return f"goto:{x:.2f},{y:.2f},{th:.2f}"
+        # Preserve enough precision for decision_maker_node to match this center
+        # back to the selected semantic-table instance and recover its bbox.
+        return f"goto:{x:.6f},{y:.6f},{z:.6f}"
     raise ValueError("fmt_goto expects a tuple or list of coordinates.")

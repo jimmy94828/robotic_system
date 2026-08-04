@@ -73,3 +73,170 @@ def test_validate_decomposition_normalizes_ids_and_fields():
             }
         ],
     }
+
+
+def test_validate_decomposition_corrects_handover_bias_for_place_destination():
+    plan = validate_decomposition(
+        "bring pringles on table to chair",
+        {
+            "original_task": "bring pringles on table to chair",
+            "subtasks": [
+                {
+                    "subtask_id": 1,
+                    "text": "handover pringles on table to chair",
+                    "type": "handover",
+                    "object": "pringles",
+                    "source": "table",
+                    "destination": "chair",
+                }
+            ],
+        },
+    )
+
+    assert plan["subtasks"][0] == {
+        "subtask_id": 1,
+        "text": "bring pringles on table to chair",
+        "type": "bring",
+        "object": "pringles",
+        "source": "table",
+        "destination": "chair",
+    }
+
+
+def test_explicit_handover_is_preserved():
+    plan = validate_decomposition(
+        "hand it over to me at the chair",
+        {
+            "subtasks": [
+                {
+                    "text": "handover pringles to chair",
+                    "type": "handover",
+                    "object": "pringles",
+                    "source": None,
+                    "destination": "chair",
+                }
+            ]
+        },
+    )
+
+    assert plan["subtasks"][0]["type"] == "handover"
+    assert plan["subtasks"][0]["text"] == "handover pringles to chair"
+
+
+def test_bring_to_explicit_human_receiver_becomes_handover():
+    plan = TaskDecomposer().decompose("bring pringles on table to me at chair")
+
+    assert plan["subtasks"][0] == {
+        "subtask_id": 1,
+        "text": "handover pringles on table to chair",
+        "type": "handover",
+        "object": "pringles",
+        "source": "table",
+        "destination": "chair",
+    }
+
+
+def test_direct_grasp_place_overrides_model_source_navigation_plan():
+    plan = validate_decomposition(
+        "grasp the pringle and place it on the chair.",
+        {
+            "subtasks": [
+                {
+                    "subtask_id": 1,
+                    "text": "bring pringle on table to chair",
+                    "type": "bring",
+                    "object": "pringle",
+                    "source": "table",
+                    "destination": "chair",
+                }
+            ]
+        },
+    )
+
+    assert plan["subtasks"] == [
+        {
+            "subtask_id": 1,
+            "text": "grasp pringle and place it on chair",
+            "type": "direct_grasp_place",
+            "object": "pringle",
+            "source": None,
+            "destination": "chair",
+        }
+    ]
+
+
+def test_grasp_place_with_explicit_source_preserves_source_navigation():
+    plan = validate_decomposition(
+        "grasp the pringles on the table and place it on the chair",
+        {
+            "subtasks": [
+                {
+                    "text": "grasp pringles and place it on chair",
+                    "type": "direct_grasp_place",
+                    "object": "pringles",
+                    "source": None,
+                    "destination": "chair",
+                }
+            ]
+        },
+    )
+
+    assert plan["subtasks"] == [
+        {
+            "subtask_id": 1,
+            "text": "bring pringles on table to chair",
+            "type": "bring",
+            "object": "pringles",
+            "source": "table",
+            "destination": "chair",
+        }
+    ]
+
+
+def test_verbose_direct_grasp_place_is_preserved():
+    plan = validate_decomposition(
+        "It is a grasp and place task, please grasp the pringle and place it on the chair.",
+        {
+            "subtasks": [
+                {
+                    "text": "bring pringle on table to chair",
+                    "type": "bring",
+                    "object": "pringle",
+                    "source": "table",
+                    "destination": "chair",
+                }
+            ]
+        },
+    )
+
+    assert plan["subtasks"][0]["type"] == "direct_grasp_place"
+    assert plan["subtasks"][0]["text"] == "grasp pringle and place it on chair"
+
+
+def test_hand_it_to_person_on_chair_becomes_handover_to_chair():
+    task = "Grasp the can from the desk and hand it to the person sitting on the chair"
+    plan = validate_decomposition(
+        task,
+        {
+            "subtasks": [
+                {
+                    "text": "bring can on desk to person on chair",
+                    "type": "bring",
+                    "object": "can",
+                    "source": "desk",
+                    "destination": "person on chair",
+                }
+            ]
+        },
+    )
+
+    assert plan["subtasks"] == [
+        {
+            "subtask_id": 1,
+            "text": "handover can on desk to chair",
+            "type": "handover",
+            "object": "can",
+            "source": "desk",
+            "destination": "chair",
+        }
+    ]

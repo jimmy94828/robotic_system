@@ -29,19 +29,22 @@ class ObjectQueryServer(Node):
 
         # === Declare parameters ===
         # self.declare_parameter('3dmap_path', 'data/lab/test/robot_deploy_slam_example0_rgb_color.npz') # previous version in ED305
-        self.declare_parameter('3dmap_path', 'data/lab/demo/robot_deploy_demo_260629_filter_rgb_color.npz')
+        self.declare_parameter('3dmap_path', 'data/lab/demo/robot_deploy_robot_run_rgb_color.npz')
         # self.declare_parameter('map_path', 'data/lab/test/robot_deploy_slam_example0_sem_color_fine.npz') # previous version in ED305
-        self.declare_parameter('map_path', 'data/lab/demo/robot_deploy_demo_260629_filter_sem_color.npz')
+        self.declare_parameter('map_path', 'data/lab/demo/robot_deploy_robot_run_sem_color.npz')
 
         self.declare_parameter('semantic_path', 'data/lab/semantic_pcd_accumulated_gaussians_meta.json')        # not used now
         # self.declare_parameter('instance_path', 'data/lab/test/robot_deploy_slam_example0_instance_semantic_table_fine.json') # previous version in ED305
-        self.declare_parameter('instance_path', 'data/lab/demo/robot_deploy_demo_260629_filter_instance_semantic_table.json')
+        self.declare_parameter('instance_path', 'data/lab/demo/robot_deploy_robot_run_instance_semantic_table_fine.json')
 
         self.declare_parameter('alignment_path', 'data/Util/alignment.yaml')
         self.declare_parameter('auto_align', False) 
         self.declare_parameter('choice_timeout_sec', 60.0)
         self.declare_parameter('bev_preview_enabled', True)
-        self.declare_parameter('bev_tmp_dir', './data/tmp')
+        self.declare_parameter(
+            'bev_tmp_dir',
+            '/robot_ws/data/tmp',
+        )
         self.declare_parameter('bev_resolution', 0.015)
         self.declare_parameter('bev_margin_m', 0.5)
         self.declare_parameter('bev_max_size_px', 2200)

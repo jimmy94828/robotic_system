@@ -51,6 +51,20 @@ Expected subtasks:
 
 For commands like `move <object> from <source> to <destination>`, keep the source and destination in the subtask fields.
 
+## Place Versus Handover
+
+- `bring`, `move`, `take`, or `carry` an object to a place, surface, or piece of furniture is a place task. Keep it as `type=bring` or `type=move`.
+- Use `type=handover` only when the user explicitly says `handover`, `hand over`, `give`, or `pass`, or explicitly identifies a human receiver.
+- Never infer handover merely because an object is transported to a destination.
+
+## Direct Grasp And Place
+
+For `grasp <object> and place it on <destination>` with no source, use `type=direct_grasp_place` and preserve the grasp-first wording. The robot is already in front of the object, so the planner must not query or navigate to the object before grasping.
+
+After grasp succeeds, query and navigate to the destination, then place the object.
+
+For `grasp <object> on/from <source> and place it on <destination>`, preserve the source and use a normal `type=bring` transfer. Query/navigate the object or its source before grasping, then query/navigate the destination and place the object.
+
 ## Conditional Commands
 
 For simple conditional commands, keep the condition in the subtask text and resolve simple pronouns when possible.

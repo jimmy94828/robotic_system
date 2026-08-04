@@ -1368,25 +1368,13 @@ docker run --rm --runtime=nvidia \
     --limit-mm-per-prompt '{"image": 1}'
 ```
 
-Use `--max-model-len 8192` when keeping task decomposition enabled. A 4096-token
-server can reject decomposition prompts because the prompt is already around
-4000 tokens before output tokens are reserved. If 8192 still causes OOM, lower
-`--gpu-memory-utilization` further, use a smaller context, or reduce prompt/output size.
-
-The shared server settings are:
-
-| Purpose | Host URL | Served model name |
-|---|---|---|
-| Text planning | `http://localhost:8001/v1` | `qwen-vl` |
-| View checking | `http://localhost:8001/v1` | `qwen-vl` |
-
 Stop the shared vLLM server from the host with:
 
 ```bash
 docker stop qwen-vl-vllm
 ```
 
-#### Agent Parameters For The Shared Qwen3-VL Server
+<!-- #### Agent Parameters For The Shared Qwen3-VL Server
 
 The scripts default to these settings:
 
@@ -1413,7 +1401,7 @@ base URLs with the reachable host IP, for example:
 ```bash
 VLLM_BASE_URL=http://<reachable-host-ip>:8001
 VIEW_CRITIC_VLLM_BASE_URL=http://<reachable-host-ip>:8001/v1
-```
+``` -->
 
 The view checker stores debug images for each check under:
 
@@ -1433,9 +1421,9 @@ is reachable:
 curl http://localhost:8001/v1/models
 ```
 
-A healthy response includes `qwen-vl`. If this fails from inside the ROS
+<!-- A healthy response includes `qwen-vl`. If this fails from inside the ROS
 container, set `VLLM_BASE_URL` to a host/container address reachable from that
-container instead of `localhost`.
+container instead of `localhost`. -->
 
 #### Start The Mock Pipeline
 
@@ -1478,7 +1466,7 @@ ros2 topic pub --once /manual_command std_msgs/msg/String \
   "{data: 'bring pringles on table to sofa'}"
 ```
 
-#### Avatar Object-Query Image Choice
+<!-- #### Avatar Object-Query Image Choice
 
 When `object_query_server` finds multiple instances of the same object or place,
 it publishes a JSON string on `/object_query_choice`. The payload includes both
@@ -1538,7 +1526,7 @@ Useful troubleshooting notes:
 
 ```bash
 PLANNER_BACKEND=placeholder ./scripts/agent_mock_pipeline_tmux.sh
-```
+``` -->
 
 ### 10.2 Real-Robot Pipeline
 
@@ -1584,7 +1572,7 @@ QWEN_MAX_NEW_TOKENS=96 \
 ./scripts/agent_live_pipeline_tmux.sh
 ```
 
-To run the old deterministic smoke path without vLLM, override the backend:
+<!-- To run the old deterministic smoke path without vLLM, override the backend:
 
 ```bash
 PLANNER_BACKEND=placeholder ./scripts/agent_live_pipeline_tmux.sh
@@ -1598,9 +1586,9 @@ ros2 run decision_maker agent_decision_maker_node \
   -p enable_map_visualizer:=false \
   -p mock_execution:=false \
   -p agent_max_replans:=2
-```
+``` -->
 
-### 10.3 Run Only The Agent-Based Decision Node
+<!-- ### 10.3 Run Only The Agent-Based Decision Node
 
 To run only the agent-based decision node manually, initialize the ROS environment first:
 
@@ -1638,5 +1626,65 @@ ros2 run decision_maker agent_decision_maker_node \
   -p mock_execution:=true \
   -p mock_object_query:=true \
   -p agent_max_replans:=2
-```
+``` -->
 </details>
+
+## 11. Run Digital Avatar With The Shared Decision vLLM
+
+The Digital Avatar can reuse the same `qwen-vl-vllm` server used by the
+agent-based decision node. This avoids loading a second large LLM on Jetson Thor.
+
+First start the shared Qwen3-VL vLLM server from the host as described in
+[Start The Shared Qwen3-VL vLLM Server](#start-the-shared-qwen3-vl-vllm-server).
+Verify that the served model is available:
+
+```bash
+curl http://localhost:8001/v1/models
+```
+
+A healthy response includes `qwen-vl`.
+
+Then start the avatar in decision-shared mode:
+
+```bash
+cd /home/acm/llm_teams/Digital-Avatar-TalkingHead
+./start.sh decision
+```
+
+In this mode, the avatar starts its RAG API and web server, but it does not
+start its own Gemma4 vLLM container. The avatar RAG API uses:
+
+```bash
+VLLM_BASE_URL=http://localhost:8001
+VLLM_MODEL=qwen-vl
+```
+
+Open the avatar from one of the URLs printed by `./start.sh decision`, for
+example:
+
+```text
+https://localhost:8010
+```
+
+Stop the avatar stack with:
+
+```bash
+cd /home/acm/llm_teams/Digital-Avatar-TalkingHead
+./stop.sh
+```
+
+`./stop.sh` stops the avatar tmux sessions and the avatar-owned `itri-vllm`
+container if one exists. It does not stop the shared decision vLLM server.
+Stop the shared server separately when it is no longer needed:
+
+```bash
+docker stop qwen-vl-vllm
+```
+
+To run the avatar with its original Gemma4 backend instead of the shared
+decision model, use the original command:
+
+```bash
+cd /home/acm/llm_teams/Digital-Avatar-TalkingHead
+./start.sh
+```

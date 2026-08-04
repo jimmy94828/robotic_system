@@ -29,21 +29,15 @@ class ModularNavNode(Node):
         # self.declare_parameter('kachaka_ip', '192.168.0.157:26400')
         self.declare_parameter('kachaka_ip', '192.168.1.34:26400')
         self.declare_parameter('user_map_yaml', '')
-        # distance tolerance (meters) to consider goal reached
-        self.declare_parameter('goal_xy_tolerance', 0.6)
-        # Align final heading after reaching xy tolerance. This keeps the robot
-        # at a safe standoff distance while turning the camera toward the target.
-        self.declare_parameter('align_final_yaw', True)
-        self.declare_parameter('final_yaw_tolerance', 0.25)
-        self.declare_parameter('final_yaw_timeout_sec', 8.0)
+        # Pose tolerances used before declaring a native navigation goal complete.
+        self.declare_parameter('goal_xy_tolerance', 0.15)
+        self.declare_parameter('goal_yaw_tolerance', 0.10)
 
         self.use_sim = self.get_parameter('use_sim').value
         robot_ip = self.get_parameter('kachaka_ip').value
         yaml_path = self.get_parameter('user_map_yaml').value
         self.goal_xy_tolerance = float(self.get_parameter('goal_xy_tolerance').value)
-        self.align_final_yaw = bool(self.get_parameter('align_final_yaw').value)
-        self.final_yaw_tolerance = float(self.get_parameter('final_yaw_tolerance').value)
-        self.final_yaw_timeout_sec = float(self.get_parameter('final_yaw_timeout_sec').value)
+        self.goal_yaw_tolerance = float(self.get_parameter('goal_yaw_tolerance').value)
 
         # --- MAP ALIGNMENT STATE ---
         self.map_offset_x = 0.0
@@ -114,59 +108,12 @@ class ModularNavNode(Node):
         u_y = (dx * sin_t) + (dy * cos_t)
         return u_x, u_y
 
+    @staticmethod
+    def normalize_angle(angle):
+        return math.atan2(math.sin(angle), math.cos(angle))
+
     def transform_user_yaw_to_kachaka(self, user_yaw):
-        return math.atan2(math.sin(user_yaw + self.map_yaw), math.cos(user_yaw + self.map_yaw))
-
-    def _angle_error(self, target_yaw, current_yaw):
-        return math.atan2(math.sin(target_yaw - current_yaw), math.cos(target_yaw - current_yaw))
-
-    def _align_final_yaw(self, target_yaw):
-        if not self.align_final_yaw:
-            return True
-
-        try:
-            curr_x, curr_y, curr_yaw = self.driver.get_pose()
-            initial_error = abs(self._angle_error(target_yaw, curr_yaw))
-            self.get_logger().info(
-                f"🧭 Final yaw alignment: current={curr_yaw:.2f}, "
-                f"target={target_yaw:.2f}, error={initial_error:.2f}"
-            )
-            if initial_error <= self.final_yaw_tolerance:
-                return True
-
-            # Rotate in place at the current standoff position rather than
-            # driving closer to the object/table center.
-            self.driver.move_native(curr_x, curr_y, yaw=target_yaw, wait_for_completion=False)
-            start_time = time.time()
-            while rclpy.ok():
-                curr_x, curr_y, curr_yaw = self.driver.get_pose()
-                yaw_error = abs(self._angle_error(target_yaw, curr_yaw))
-                if yaw_error <= self.final_yaw_tolerance:
-                    try:
-                        self.driver.cancel_current_command()
-                    except Exception:
-                        pass
-                    try:
-                        self.driver.stop()
-                    except Exception:
-                        pass
-                    self.get_logger().info(f"✅ Final yaw aligned: error={yaw_error:.2f}")
-                    return True
-                if time.time() - start_time > self.final_yaw_timeout_sec:
-                    try:
-                        self.driver.cancel_current_command()
-                    except Exception:
-                        pass
-                    try:
-                        self.driver.stop()
-                    except Exception:
-                        pass
-                    self.get_logger().warn(f"⏰ Final yaw alignment timeout: error={yaw_error:.2f}")
-                    return False
-                time.sleep(0.2)
-        except Exception as e:
-            self.get_logger().warn(f"⚠️ Final yaw alignment failed: {e}")
-            return False
+        return self.normalize_angle(user_yaw + self.map_yaw)
 
     # --- POSE LOOP ---
     def publish_pose_callback(self):
@@ -248,33 +195,54 @@ class ModularNavNode(Node):
         # Receive in User Frame -> Convert to Kachaka -> Move
         u_x = goal_handle.request.target_x
         u_y = goal_handle.request.target_y
-        u_yaw = goal_handle.request.target_theta
         k_x, k_y = self.transform_user_to_kachaka(u_x, u_y)
-        auto_face_target = not math.isfinite(u_yaw)
-        if not auto_face_target:
-            k_yaw = self.transform_user_yaw_to_kachaka(u_yaw)
-            yaw_source = "goal theta"
+
+        # A client can explicitly choose the final heading.  Legacy clients (or
+        # clients without a fresh pose) leave it unset, so derive a heading that
+        # faces the destination from the current native-map pose.
+        curr_k_x, curr_k_y, curr_k_yaw = self.driver.get_pose()
+        if goal_handle.request.has_target_theta:
+            k_target_yaw = self.transform_user_yaw_to_kachaka(
+                goal_handle.request.target_theta
+            )
+        elif math.hypot(k_x - curr_k_x, k_y - curr_k_y) > 1e-4:
+            k_target_yaw = math.atan2(k_y - curr_k_y, k_x - curr_k_x)
         else:
-            curr_k_x, curr_k_y, _ = self.driver.get_pose()
-            k_yaw = math.atan2(k_y - curr_k_y, k_x - curr_k_x)
-            yaw_source = "auto face target"
+            k_target_yaw = curr_k_yaw
 
         self.get_logger().info(
-            f"Navigating -> User({u_x:.2f}, {u_y:.2f}, {u_yaw:.2f}) | "
-            f"Kachaka({k_x:.2f}, {k_y:.2f}, {k_yaw:.2f}) [{yaw_source}]"
+            f"Navigating -> User({u_x:.2f}, {u_y:.2f}) | "
+            f"Kachaka({k_x:.2f}, {k_y:.2f}, yaw={k_target_yaw:.2f})"
         )
-        # Start non-blocking move so we can cancel when within threshold
+        # Start non-blocking move, then wait until both position and heading are reached.
         try:
-            self.driver.move_native(k_x, k_y, yaw=k_yaw, wait_for_completion=False)
+            self.driver.move_native(
+                k_x,
+                k_y,
+                yaw=k_target_yaw,
+                wait_for_completion=False,
+            )
         except TypeError:
             # older driver may not accept wait_for_completion; fallback to blocking
-            self.driver.move_native(k_x, k_y, yaw=k_yaw)
+            self.driver.move_native(k_x, k_y, yaw=k_target_yaw)
 
         start_time = time.time()
         success = False
         feedback = Navigate.Feedback()
 
         while rclpy.ok():
+            if goal_handle.is_cancel_requested:
+                try:
+                    self.driver.cancel_current_command()
+                except Exception:
+                    pass
+                try:
+                    self.driver.stop()
+                except Exception:
+                    pass
+                goal_handle.canceled()
+                return Navigate.Result(success=False, message='Navigation cancelled')
+
             if time.time() - start_time > 60.0:
                 # timeout: attempt to cancel and stop
                 try:
@@ -287,37 +255,28 @@ class ModularNavNode(Node):
                     pass
                 break
 
-            curr_k_x, curr_k_y, _ = self.driver.get_pose()
+            curr_k_x, curr_k_y, curr_k_yaw = self.driver.get_pose()
             dist = math.hypot(k_x - curr_k_x, k_y - curr_k_y)
+            yaw_error = abs(self.normalize_angle(k_target_yaw - curr_k_yaw))
             
             feedback.distance_remaining = dist
             goal_handle.publish_feedback(feedback)
 
-            if dist < self.goal_xy_tolerance:
-                # We're within desired tolerance. Stop translation first, then
-                # align yaw in place so the camera faces the target without
-                # moving closer to the table/object center.
-                try:
-                    self.driver.cancel_current_command()
-                except Exception:
-                    pass
+            if dist < self.goal_xy_tolerance and yaw_error < self.goal_yaw_tolerance:
                 try:
                     self.driver.stop()
                 except Exception:
                     pass
-
-                final_yaw = k_yaw
-                if auto_face_target:
-                    final_yaw = math.atan2(k_y - curr_k_y, k_x - curr_k_x)
-                success = self._align_final_yaw(final_yaw)
+                success = True
                 break
             time.sleep(0.5)
 
         if success:
             goal_handle.succeed()
+            return Navigate.Result(success=True, message='Reached target pose')
         else:
             goal_handle.abort()
-        return Navigate.Result(success=success)
+            return Navigate.Result(success=False, message='Navigation timed out')
 
 def main(args=None):
     rclpy.init(args=args)

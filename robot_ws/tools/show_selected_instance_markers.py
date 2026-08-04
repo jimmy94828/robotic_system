@@ -915,9 +915,9 @@ class SelectedInstanceMarkerPublisher(Node):
 
 def build_arg_parser() -> argparse.ArgumentParser:
     workspace_root = Path(__file__).resolve().parents[1]
-    default_instance_path = workspace_root / "data/lab/demo/demo_260629_filter_query_instance_table.json"
+    default_instance_path = workspace_root / "data/lab/demo/robot_deploy_robot_run_instance_semantic_table_fine.json"
     default_alignment_path = workspace_root / "data/Util/alignment.yaml"
-    default_pointcloud_path = workspace_root / "data/lab/demo/robot_deploy_demo_260629_filter_rgb_color.npz"
+    default_pointcloud_path = workspace_root / "data/lab/demo/robot_deploy_robot_run_rgb_color.npz"
 
     parser = argparse.ArgumentParser(
         description=(

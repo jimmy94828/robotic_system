@@ -15,6 +15,7 @@ from rclpy.executors import MultiThreadedExecutor
 from rclpy.action import ActionClient
 
 from std_msgs.msg import String
+from geometry_msgs.msg import PoseStamped
 from kachaka_interfaces.action import Navigate
 from mm_interface.action import TaskCommand
 from object_query_interfaces.srv import ObjectQuery
@@ -23,6 +24,11 @@ from object_query_interfaces.srv import ObjectQuery
 from .command_types import Command
 from .scenario_library import SCENARIO_REGISTRY
 from .nl_planner import WorldModel
+from .occupancy_grid import (
+    GoalSearchConfig,
+    OccupancyGrid,
+    select_goal_around_point,
+)
 
 
 class MapVisualizer:
@@ -173,25 +179,107 @@ class DecisionMakingNode(Node):
             self.get_logger().warn('⚠️ No map3d_to_map2d_yaml specified, 3D->2D transform disabled')
         # ==========================================================
 
+        # ====== Semantic instance bounding boxes ======
+        self.declare_parameter(
+            'instance_semantic_table_path',
+            'data/lab/demo/robot_deploy_robot_run_instance_semantic_table_fine.json',
+        )
+        self.declare_parameter('nav_bbox_clearance', 0.10)
+        self.declare_parameter('nav_bbox_match_tolerance', 0.05)
+        instance_table_path = self.get_parameter(
+            'instance_semantic_table_path'
+        ).get_parameter_value().string_value
+        self._nav_bbox_clearance = max(
+            0.0,
+            self.get_parameter('nav_bbox_clearance').get_parameter_value().double_value,
+        )
+        self._nav_bbox_match_tolerance = max(
+            0.0,
+            self.get_parameter('nav_bbox_match_tolerance').get_parameter_value().double_value,
+        )
+        self._semantic_instances = []
+        if instance_table_path:
+            if not os.path.isabs(instance_table_path):
+                instance_table_path = os.path.abspath(instance_table_path)
+            self._load_semantic_instances(instance_table_path)
+
+        # ====== Occupancy-map-aware goal selection ======
+        # Occupancy map built from the aligned 3D point cloud
+        # (tools/build_occupancy_map.py); goals are picked from its free space
+        # with a goal-to-obstacle distance inside [min, max] clearance.
+        self.declare_parameter('occupancy_map_yaml', 'data/lab/demo/occupancy_from_pcd.yaml')
+        self.declare_parameter('nav_min_obstacle_clearance', 0.30)
+        self.declare_parameter('nav_max_obstacle_clearance', 0.45)
+        self.declare_parameter('nav_max_standoff', 1.0)
+        occupancy_map_yaml = self.get_parameter(
+            'occupancy_map_yaml'
+        ).get_parameter_value().string_value
+        self._occupancy_grid = None
+        self._goal_search_cfg = None
+        if occupancy_map_yaml:
+            if not os.path.isabs(occupancy_map_yaml):
+                occupancy_map_yaml = os.path.abspath(occupancy_map_yaml)
+            if os.path.exists(occupancy_map_yaml):
+                try:
+                    self._occupancy_grid = OccupancyGrid.from_yaml(occupancy_map_yaml)
+                    self.get_logger().info(
+                        f'✅ Loaded occupancy map for goal selection: {occupancy_map_yaml} '
+                        f'({self._occupancy_grid.width}x{self._occupancy_grid.height})'
+                    )
+                except Exception as e:
+                    self._occupancy_grid = None
+                    self.get_logger().error(
+                        f'❌ Failed loading occupancy map {occupancy_map_yaml}: {e}; '
+                        'falling back to bbox-only goal selection.'
+                    )
+            else:
+                self.get_logger().warn(
+                    f'⚠️ Occupancy map not found: {occupancy_map_yaml}; '
+                    'falling back to bbox-only goal selection.'
+                )
+        if self._occupancy_grid is not None:
+            min_clearance = max(
+                0.0,
+                self.get_parameter(
+                    'nav_min_obstacle_clearance'
+                ).get_parameter_value().double_value,
+            )
+            self._goal_search_cfg = GoalSearchConfig(
+                min_clearance=min_clearance,
+                max_clearance=max(
+                    min_clearance,
+                    self.get_parameter(
+                        'nav_max_obstacle_clearance'
+                    ).get_parameter_value().double_value,
+                ),
+                max_standoff=max(
+                    0.1,
+                    self.get_parameter(
+                        'nav_max_standoff'
+                    ).get_parameter_value().double_value,
+                ),
+            )
+
         # ====== Map visualizer (direct OpenCV display) ======
-        # Optional parameter to point to map yaml (PNG must be next to it)
+        # Optional parameter to point to map yaml (PNG must be next to it).
+        # Keep the visualizer available, but allow headless deployments to skip
+        # creating an OpenCV/Qt window entirely.
         try:
             self.declare_parameter('enable_map_visualizer', True)
-            enable_map_visualizer = (
-                self.get_parameter('enable_map_visualizer')
-                .get_parameter_value()
-                .bool_value
-            )
             self.declare_parameter('map_yaml', 'data/lab/kachaka_native.yaml')
             self.declare_parameter('map_rotate_clockwise_90', True)
+            self.declare_parameter('map_nav_goal_marker_radius', 6)
+            enable_map_visualizer = self.get_parameter(
+                'enable_map_visualizer'
+            ).get_parameter_value().bool_value
             map_yaml = self.get_parameter('map_yaml').get_parameter_value().string_value
             rotate_map = self.get_parameter('map_rotate_clockwise_90').get_parameter_value().bool_value
-            if not enable_map_visualizer:
-                self.get_logger().info("MapVisualizer disabled by parameter.")
-                self.visualizer = None
-            elif map_yaml and not os.path.isabs(map_yaml):
+            self._nav_goal_marker_radius = max(
+                1,
+                self.get_parameter('map_nav_goal_marker_radius').get_parameter_value().integer_value,
+            )
+            if map_yaml and not os.path.isabs(map_yaml):
                 map_yaml = os.path.abspath(map_yaml)
-
             if enable_map_visualizer and map_yaml and os.path.exists(map_yaml):
                 try:
                     self.visualizer = MapVisualizer(
@@ -202,19 +290,43 @@ class DecisionMakingNode(Node):
                 except Exception as e:
                     self.get_logger().error(f"❌ Failed to init MapVisualizer: {e}")
                     self.visualizer = None
-            elif enable_map_visualizer:
+            else:
                 self.visualizer = None
         except Exception:
             self.visualizer = None
+            self._nav_goal_marker_radius = 6
         
         # ====== Grasp approach threshold ======
         self.declare_parameter('grasp_approach_dist', 0.3)   # set the arm to reach the object within 0.3 meters
         self._grasp_threshold = self.get_parameter('grasp_approach_dist').get_parameter_value().double_value
         self._nav_distance_remaining = float('inf')          # update by nav feedback to know how far we are from the target, used for grasp approach logic
 
+        # ====== Navigation heading / grasp approach ======
+        # /user_pose is published by modular_nav and shares the frame accepted by
+        # /Navigate_to_pose.  It lets us choose a goal heading that faces the target.
+        self.declare_parameter('robot_pose_topic', '/user_pose')
+        self.declare_parameter('nav_approach_standoff_distance', 0.65)
+        self.declare_parameter('nav_complete_grasp_goal', True)
+        self._robot_pose_topic = self.get_parameter('robot_pose_topic').get_parameter_value().string_value
+        self._nav_approach_standoff_distance = max(
+            0.0,
+            self.get_parameter('nav_approach_standoff_distance').get_parameter_value().double_value,
+        )
+        self._nav_complete_grasp_goal = self.get_parameter(
+            'nav_complete_grasp_goal'
+        ).get_parameter_value().bool_value
+        self._robot_pose_lock = threading.Lock()
+        self._robot_xy: Optional[tuple] = None
+
         # ====== ROS entities ======
         self.sub_manual = self.create_subscription(String, '/manual_command', self.on_text_event, 10)
         self.cancel_sub = self.create_subscription(String, '/cancel_command', self.on_cancel_event, 10)
+        self.robot_pose_sub = self.create_subscription(
+            PoseStamped,
+            self._robot_pose_topic,
+            self._on_robot_pose,
+            10,
+        )
         self.status_pub = self.create_publisher(String, '/task_status', 10)
         self.preview_goal_pub = self.create_publisher(String, '/semantic_preview/current_goal', 10)
 
@@ -249,6 +361,11 @@ class DecisionMakingNode(Node):
     # =============================================================
     # MANUAL COMMAND HANDLER
     # =============================================================
+    def _on_robot_pose(self, msg: PoseStamped) -> None:
+        """Keep the latest robot position in the navigation action's input frame."""
+        with self._robot_pose_lock:
+            self._robot_xy = (float(msg.pose.position.x), float(msg.pose.position.y))
+
     def on_text_event(self, msg: String):
         text = msg.data.strip().lower()
         self.get_logger().info(f"🗣 Received command: '{text}'")
@@ -377,6 +494,347 @@ class DecisionMakingNode(Node):
         x_map, y_map, z_map = map3d_point_to_map_frame((x_in, y_in, z_in), mu, e1, e2, normal_n, s, R, t)
         return (float(x_map), float(y_map), float(z_map))
 
+    def _load_semantic_instances(self, instance_table_path: str) -> None:
+        """Load centers and bounding boxes used to build object-specific nav goals."""
+        if not os.path.exists(instance_table_path):
+            self.get_logger().warn(
+                f'⚠️ Instance semantic table not found: {instance_table_path}; '
+                'bbox-aware navigation disabled.'
+            )
+            return
+
+        try:
+            with open(instance_table_path, 'r') as f:
+                data = json.load(f)
+
+            instances = data.get('instances', [])
+            if isinstance(instances, dict):
+                instance_iter = instances.items()
+            elif isinstance(instances, list):
+                instance_iter = (
+                    (str(inst.get('inst_id', i)), inst)
+                    for i, inst in enumerate(instances)
+                    if isinstance(inst, dict)
+                )
+            else:
+                raise ValueError(
+                    f'unsupported "instances" type: {type(instances).__name__}'
+                )
+
+            records = []
+            for fallback_id, inst in instance_iter:
+                if not isinstance(inst, dict) or inst.get('filtered', False):
+                    continue
+
+                center = inst.get('center') or inst.get('centroid')
+                bbox_min = inst.get('bbox_min')
+                bbox_max = inst.get('bbox_max')
+                try:
+                    center_xyz = tuple(float(v) for v in center[:3])
+                    bbox_min_xyz = tuple(float(v) for v in bbox_min[:3])
+                    bbox_max_xyz = tuple(float(v) for v in bbox_max[:3])
+                except (TypeError, ValueError):
+                    continue
+
+                values = np.asarray(
+                    center_xyz + bbox_min_xyz + bbox_max_xyz,
+                    dtype=float,
+                )
+                if not np.all(np.isfinite(values)):
+                    continue
+
+                records.append(
+                    {
+                        'instance_id': str(inst.get('inst_id', fallback_id)),
+                        'name': str(
+                            inst.get('semantic_name')
+                            or inst.get('class_name')
+                            or inst.get('category_name')
+                            or inst.get('label')
+                            or 'object'
+                        ).strip().lower(),
+                        'center': center_xyz,
+                        'bbox_min': bbox_min_xyz,
+                        'bbox_max': bbox_max_xyz,
+                    }
+                )
+
+            self._semantic_instances = records
+            self.get_logger().info(
+                f'✅ Loaded {len(records)} semantic instance bounding boxes from: '
+                f'{instance_table_path}'
+            )
+        except Exception as e:
+            self._semantic_instances = []
+            self.get_logger().error(
+                f'❌ Failed loading semantic instance bounding boxes: {e}'
+            )
+
+    def _find_semantic_instance(self, raw_target_xyz: tuple) -> Optional[dict]:
+        """Match a planner/query center back to its semantic-table instance."""
+        if not self._semantic_instances:
+            return None
+
+        target = np.asarray(raw_target_xyz, dtype=float)
+        if target.shape != (3,) or not np.all(np.isfinite(target)):
+            return None
+
+        best_record = None
+        best_distance = float('inf')
+        for record in self._semantic_instances:
+            distance = float(
+                np.linalg.norm(target - np.asarray(record['center'], dtype=float))
+            )
+            if distance < best_distance:
+                best_record = record
+                best_distance = distance
+
+        if best_distance > self._nav_bbox_match_tolerance:
+            return None
+        return best_record
+
+    def _bbox_to_nav_footprint(
+        self,
+        bbox_min: tuple,
+        bbox_max: tuple,
+    ) -> Optional[tuple]:
+        """Project a 3D AABB into an oriented rectangular 2D map footprint.
+
+        The eight AABB corners are projected into the fitted ground-plane basis.
+        Their 2D extents define the rectangle, which is then transformed by the
+        calibrated Sim(2) into the navigation frame.
+        """
+        bbox_min_np = np.asarray(bbox_min, dtype=float)
+        bbox_max_np = np.asarray(bbox_max, dtype=float)
+        if (
+            bbox_min_np.shape != (3,)
+            or bbox_max_np.shape != (3,)
+            or not np.all(np.isfinite(bbox_min_np))
+            or not np.all(np.isfinite(bbox_max_np))
+        ):
+            return None
+
+        low = np.minimum(bbox_min_np, bbox_max_np)
+        high = np.maximum(bbox_min_np, bbox_max_np)
+        corners_3d = np.asarray(
+            [
+                [x, y, z]
+                for x in (low[0], high[0])
+                for y in (low[1], high[1])
+                for z in (low[2], high[2])
+            ],
+            dtype=float,
+        )
+
+        if self.map2d_params is None:
+            projected = corners_3d[:, :2]
+            projected_min = np.min(projected, axis=0)
+            projected_max = np.max(projected, axis=0)
+            footprint = np.asarray(
+                [
+                    [projected_min[0], projected_min[1]],
+                    [projected_max[0], projected_min[1]],
+                    [projected_max[0], projected_max[1]],
+                    [projected_min[0], projected_max[1]],
+                ],
+                dtype=float,
+            )
+        else:
+            mu, e1, e2, _normal_n, s, rotation, translation = self.map2d_params
+            offsets = corners_3d - mu
+            plane_points = np.column_stack((offsets @ e1, offsets @ e2))
+            plane_min = np.min(plane_points, axis=0)
+            plane_max = np.max(plane_points, axis=0)
+            plane_rectangle = np.asarray(
+                [
+                    [plane_min[0], plane_min[1]],
+                    [plane_max[0], plane_min[1]],
+                    [plane_max[0], plane_max[1]],
+                    [plane_min[0], plane_max[1]],
+                ],
+                dtype=float,
+            )
+            footprint = s * (plane_rectangle @ rotation.T) + translation
+
+        edge_0 = float(np.linalg.norm(footprint[1] - footprint[0]))
+        edge_1 = float(np.linalg.norm(footprint[3] - footprint[0]))
+        if edge_0 <= 1e-4 or edge_1 <= 1e-4:
+            return None
+        return tuple((float(point[0]), float(point[1])) for point in footprint)
+
+    def _semantic_footprint_for_target(
+        self,
+        raw_target_xyz: tuple,
+    ) -> tuple:
+        """Return the matched semantic record and its navigation-frame footprint."""
+        record = self._find_semantic_instance(raw_target_xyz)
+        if record is None:
+            return None, None
+        footprint = self._bbox_to_nav_footprint(
+            record['bbox_min'],
+            record['bbox_max'],
+        )
+        if footprint is None:
+            return None, None
+        return record, footprint
+
+    @staticmethod
+    def _normalize_angle(angle: float) -> float:
+        """Normalize a yaw angle to [-pi, pi]."""
+        return math.atan2(math.sin(angle), math.cos(angle))
+
+    def _get_robot_xy(self) -> Optional[tuple]:
+        with self._robot_pose_lock:
+            return self._robot_xy
+
+    @staticmethod
+    def _make_bbox_clearance_goal(
+        target_x: float,
+        target_y: float,
+        robot_xy: tuple,
+        footprint: tuple,
+        clearance: float,
+    ) -> tuple:
+        """Place a goal outside the nearest rectangle edge and face its center."""
+        points = np.asarray(footprint, dtype=float)
+        if points.shape != (4, 2):
+            raise ValueError('bbox footprint must contain four 2D corners')
+
+        rectangle_center = np.mean(points, axis=0)
+        edge_u = points[1] - points[0]
+        edge_v = points[3] - points[0]
+        half_u = float(np.linalg.norm(edge_u)) / 2.0
+        half_v = float(np.linalg.norm(edge_v)) / 2.0
+        if half_u <= 1e-4 or half_v <= 1e-4:
+            raise ValueError('bbox footprint is degenerate')
+
+        unit_u = edge_u / (2.0 * half_u)
+        unit_v = edge_v / (2.0 * half_v)
+        robot = np.asarray(robot_xy, dtype=float)
+        relative_robot = robot - rectangle_center
+        robot_u = float(relative_robot @ unit_u)
+        robot_v = float(relative_robot @ unit_v)
+
+        clamped_u = float(np.clip(robot_u, -half_u, half_u))
+        clamped_v = float(np.clip(robot_v, -half_v, half_v))
+        outside = abs(robot_u) > half_u or abs(robot_v) > half_v
+
+        if outside:
+            boundary = (
+                rectangle_center
+                + clamped_u * unit_u
+                + clamped_v * unit_v
+            )
+            outward = robot - boundary
+            outward_norm = float(np.linalg.norm(outward))
+        else:
+            distance_u = half_u - abs(robot_u)
+            distance_v = half_v - abs(robot_v)
+            if distance_u <= distance_v:
+                sign_u = 1.0 if robot_u >= 0.0 else -1.0
+                boundary = (
+                    rectangle_center
+                    + sign_u * half_u * unit_u
+                    + robot_v * unit_v
+                )
+                outward = sign_u * unit_u
+            else:
+                sign_v = 1.0 if robot_v >= 0.0 else -1.0
+                boundary = (
+                    rectangle_center
+                    + robot_u * unit_u
+                    + sign_v * half_v * unit_v
+                )
+                outward = sign_v * unit_v
+            outward_norm = 1.0
+
+        if outward_norm <= 1e-6:
+            raise ValueError('cannot determine bbox outward direction')
+        outward = outward / outward_norm
+        goal = boundary + max(0.0, float(clearance)) * outward
+        goal_theta = math.atan2(target_y - goal[1], target_x - goal[0])
+        return (
+            float(goal[0]),
+            float(goal[1]),
+            float(goal_theta),
+            (float(boundary[0]), float(boundary[1])),
+        )
+
+    def _make_navigation_goal(
+        self,
+        target_x: float,
+        target_y: float,
+        requested_theta: Optional[float],
+        bbox_footprint: Optional[tuple] = None,
+    ) -> tuple:
+        """Return goal position, heading, whether stand-off was used, and its mode.
+
+        The goal is chosen from the occupancy map's free space on rings around
+        the projected target point: candidates must keep a goal-to-obstacle
+        distance inside ``[nav_min_obstacle_clearance,
+        nav_max_obstacle_clearance]`` and directly face the target surface.
+        The heading always points at the projected target.  Semantic bboxes
+        are intentionally NOT used (unreliable extent/orientation);
+        ``bbox_footprint`` is accepted for compatibility but ignored.
+        Without a map, the legacy fixed center stand-off remains (``fixed``).
+        """
+        goal_theta = (
+            self._normalize_angle(requested_theta)
+            if requested_theta is not None
+            else None
+        )
+
+        robot_xy = self._get_robot_xy()
+
+        if self._occupancy_grid is not None:
+            selection = select_goal_around_point(
+                self._occupancy_grid,
+                (target_x, target_y),
+                robot_xy,
+                self._goal_search_cfg,
+            )
+            if selection is not None:
+                goal_x, goal_y = selection['x'], selection['y']
+                goal_theta = math.atan2(target_y - goal_y, target_x - goal_x)
+                frontal = selection.get('frontal_hit')
+                self.get_logger().info(
+                    "🗺️ Free-space goal (occ_ring): (%.2f, %.2f), "
+                    "obstacle clearance %.2f m, ring radius %.2f m, "
+                    "facing surface at %s (%d candidates evaluated)"
+                    % (
+                        goal_x,
+                        goal_y,
+                        selection['clearance'],
+                        selection['standoff'],
+                        f"{frontal:.2f} m" if frontal is not None else 'n/a',
+                        selection['candidates_checked'],
+                    )
+                )
+                return goal_x, goal_y, goal_theta, True, 'occ_ring', None
+
+            self.get_logger().warn(
+                '⚠️ No free-space goal candidate satisfied the occupancy '
+                'constraints; falling back to the fixed stand-off.'
+            )
+
+        if goal_theta is None and robot_xy is not None:
+            dx = target_x - robot_xy[0]
+            dy = target_y - robot_xy[1]
+            if math.hypot(dx, dy) > 1e-4:
+                goal_theta = math.atan2(dy, dx)
+
+        goal_x, goal_y = target_x, target_y
+        standoff_applied = (
+            goal_theta is not None
+            and self._nav_approach_standoff_distance > 0.0
+        )
+        if standoff_applied:
+            goal_x -= self._nav_approach_standoff_distance * math.cos(goal_theta)
+            goal_y -= self._nav_approach_standoff_distance * math.sin(goal_theta)
+
+        mode = 'fixed' if standoff_applied else 'none'
+        return goal_x, goal_y, goal_theta, standoff_applied, mode, None
+
     def _publish_preview_goal(
         self,
         *,
@@ -425,8 +883,8 @@ class DecisionMakingNode(Node):
     # =============================================================
     # OBJECT QUERY WRAPPER
     # =============================================================
-    def _query_object_position(self, object_name: str, timeout_sec: float = 60.0) -> Optional[tuple]:
-        """Request 3D position AND transform it to 2D Nav Frame."""
+    def _query_object_position(self, object_name: str, timeout_sec: float = 30.0) -> Optional[tuple]:
+        """Return an object's navigation position followed by its raw 3D center."""
         if not self.obj_client.wait_for_service(timeout_sec=3.0):
             self.get_logger().error("❌ ObjectQuery service not available.")
             return None
@@ -466,24 +924,30 @@ class DecisionMakingNode(Node):
             if hasattr(self, 'visualizer') and self.visualizer:
                 # reset to base map and draw marker
                 self.visualizer.reset()
-                self.visualizer.draw_marker(nav_x, nav_y, label=object_name, color=(0, 255, 255), radius=12)
+                self.visualizer.draw_marker(
+                    nav_x,
+                    nav_y,
+                    label=object_name,
+                    color=(0, 255, 255),
+                    radius=self._nav_goal_marker_radius,
+                )
                 # show briefly (non-blocking)
                 # self.visualizer.show(wait_ms=1)
         except Exception as e:
             self.get_logger().warn(f"⚠️ Visualization error: {e}")
 
-        return (nav_x, nav_y, nav_z)
+        return (nav_x, nav_y, nav_z, raw_x, raw_y, raw_z)
 
     # =============================================================
     # NAV / GRASP / PLACE
     # =============================================================
     def _execute_nav(self, cmd: str, for_grasp: bool = False) -> bool:
         """
-        Handles 'goto:x,y,th'.
-        CRITICAL CHANGE: Now applies calibration transform to these coordinates too.
-        for_grasp=True enables the early-exit shortcut when the robot is within
-        grasp_approach_dist of the target (so the arm can reach the object).
-        for_grasp=False (default) waits for the nav to fully succeed.
+        Handles 'goto:x,y,z' or 'goto:x,y,z,yaw'.
+        The first three coordinates are transformed from the semantic 3D map.
+        Bbox-aware goals always face the object's center. An optional yaw in the
+        navigation-map frame only overrides the heading for the fixed stand-off
+        fallback used when no bbox is available.
         """
         # Reset stale distance so a previous nav's final reading cannot
         # trigger the threshold check at the start of this nav.
@@ -492,41 +956,30 @@ class DecisionMakingNode(Node):
             _, payload = cmd.split(':', 1)
             payload = payload.strip()
             
-            x, y, th = 0.0, 0.0, math.nan
+            x, y = 0.0, 0.0
+            requested_theta: Optional[float] = None
             target_z = 0.0
             target_label = payload if payload else "nav_target"
+            raw_target_xyz = None
 
-            # CASE A: Planner sent coordinates (e.g., "goto:-0.27, 1.76, -0.97")
+            # CASE A: Planner sent semantic coordinates
+            # (e.g., "goto:-0.27,1.76,-0.97" or "goto:-0.27,1.76,-0.97,1.57").
             if ',' in payload:
                 parts = [float(v) for v in payload.split(',')]
+                if len(parts) not in (3, 4):
+                    raise ValueError(
+                        "goto coordinate payload must be x,y,z or x,y,z,yaw"
+                    )
                 raw_x, raw_y, raw_z = parts[0], parts[1], parts[2]
-                if len(parts) > 2: 
-                    # We typically don't transform theta unless the map is rotated 90/180 deg
-                    # For now, we pass theta through, or you can add self.yaw to it if needed.
-                    th = parts[2] 
+                if len(parts) == 4:
+                    requested_theta = parts[3]
+                raw_target_xyz = (raw_x, raw_y, raw_z)
 
-                # === APPLY TRANSFORM HERE ===
-                # The planner sends RAW 3D coordinates. We must convert to NAV coordinates.
+                # The planner sends raw 3D coordinates. Convert them to navigation coordinates.
                 x, y, target_z = self._apply_transform_3d(raw_x, raw_y, raw_z)
                 target_label = "nav_target"
                 
                 self.get_logger().info(f"🔄 Transformed: ({raw_x:.2f}, {raw_y:.2f}, {raw_z:.2f}) -> ({x:.2f}, {y:.2f})")
-                # show marker on map for this nav target
-                try:
-                    if hasattr(self, 'visualizer') and self.visualizer:
-                        self.visualizer.reset()
-                        self.visualizer.draw_marker(x, y, label='NAV_TARGET', color=(0, 0, 255), radius=14)
-                        if th is not None:
-                            # draw a simple orientation arrow (approx)
-                            end_px, end_py = self.visualizer.world_to_pixel(x + 0.5 * math.cos(th), y + 0.5 * math.sin(th))
-                            start_px, start_py = self.visualizer.world_to_pixel(x, y)
-                            with self.visualizer._lock:
-                                cv2.arrowedLine(
-                                    self.visualizer._buffer,
-                                    (start_px, start_py), (end_px, end_py),
-                                    (0, 0, 255), 3, tipLength=0.3)
-                except Exception:
-                    pass
             
             # CASE B: Object Name "goto:chair" (Fallback if planner didn't resolve it)
             else:
@@ -535,9 +988,117 @@ class DecisionMakingNode(Node):
                 if not pos:
                     self._clear_preview_goal(reason=f"query_failed:{payload}")
                     return False
-                x, y, target_z = pos
-                th = 0.0 
+                x, y, target_z, raw_x, raw_y, raw_z = pos
+                raw_target_xyz = (raw_x, raw_y, raw_z)
                 target_label = payload
+
+            bbox_record = None
+            bbox_footprint = None
+            if raw_target_xyz is not None:
+                bbox_record, bbox_footprint = self._semantic_footprint_for_target(
+                    raw_target_xyz
+                )
+            if bbox_record is not None:
+                # Use the table's full-precision center for both the goal heading
+                # and preview, even if fmt_goto rounded the transmitted center.
+                x, y, target_z = self._apply_transform_3d(*bbox_record['center'])
+                target_label = (
+                    f"{bbox_record['name']}[{bbox_record['instance_id']}]"
+                )
+
+            target_x, target_y = x, y
+            # The bbox footprint is no longer used for goal selection (only
+            # drawn for debugging); the goal comes from the occupancy map
+            # around the projected target point.
+            (
+                x,
+                y,
+                target_theta,
+                standoff_applied,
+                standoff_mode,
+                bbox_boundary,
+            ) = self._make_navigation_goal(
+                target_x,
+                target_y,
+                requested_theta,
+            )
+            if target_theta is None and self._nav_approach_standoff_distance > 0.0:
+                self.get_logger().warn(
+                    "⚠️ No robot pose yet; navigating directly to the target, "
+                    "so the stand-off distance was not applied."
+                )
+            elif standoff_mode == 'fixed':
+                self.get_logger().info(
+                    "📏 Applying fallback %.2f m fixed stand-off: "
+                    "target=(%.2f, %.2f), "
+                    "nav_goal=(%.2f, %.2f)"
+                    % (
+                        self._nav_approach_standoff_distance,
+                        target_x,
+                        target_y,
+                        x,
+                        y,
+                    )
+                )
+
+            # Show the actual navigation endpoint and its final heading.
+            try:
+                if hasattr(self, 'visualizer') and self.visualizer:
+                    self.visualizer.reset()
+                    if bbox_footprint is not None:
+                        footprint_pixels = np.asarray(
+                            [
+                                self.visualizer.world_to_pixel(point[0], point[1])
+                                for point in bbox_footprint
+                            ],
+                            dtype=np.int32,
+                        ).reshape((-1, 1, 2))
+                        with self.visualizer._lock:
+                            cv2.polylines(
+                                self.visualizer._buffer,
+                                [footprint_pixels],
+                                True,
+                                (0, 165, 255),
+                                2,
+                            )
+                        self.visualizer.draw_marker(
+                            target_x,
+                            target_y,
+                            label='OBJECT_CENTER',
+                            color=(0, 255, 255),
+                            radius=self._nav_goal_marker_radius,
+                        )
+                    marker_label = (
+                        'FREESPACE_GOAL'
+                        if standoff_mode == 'occ_ring'
+                        else 'STANDOFF_GOAL'
+                        if standoff_applied
+                        else 'NAV_TARGET'
+                    )
+                    self.visualizer.draw_marker(
+                        x,
+                        y,
+                        label=marker_label,
+                        color=(0, 0, 255),
+                        radius=self._nav_goal_marker_radius,
+                    )
+                    if target_theta is not None:
+                        end_px, end_py = self.visualizer.world_to_pixel(
+                            x + 0.5 * math.cos(target_theta),
+                            y + 0.5 * math.sin(target_theta),
+                        )
+                        start_px, start_py = self.visualizer.world_to_pixel(x, y)
+                        with self.visualizer._lock:
+                            cv2.arrowedLine(
+                                self.visualizer._buffer,
+                                (start_px, start_py),
+                                (end_px, end_py),
+                                (0, 0, 255),
+                                3,
+                                tipLength=0.3,
+                            )
+            except Exception as e:
+                self.get_logger().warn(f"⚠️ Navigation target visualization error: {e}")
 
             self._publish_preview_goal(
                 event="active",
@@ -558,9 +1119,11 @@ class DecisionMakingNode(Node):
             goal = Navigate.Goal()
             goal.target_x = float(x)
             goal.target_y = float(y)
-            goal.target_theta = float(th)
+            goal.target_theta = float(target_theta) if target_theta is not None else 0.0
+            goal.has_target_theta = target_theta is not None
 
-            self.get_logger().info(f"🚀 Sending Nav Goal: ({x:.2f}, {y:.2f}, {th:.2f})")
+            yaw_text = f", yaw={target_theta:.2f} rad" if target_theta is not None else ", yaw=auto"
+            self.get_logger().info(f"🚀 Sending Nav Goal: ({x:.2f}, {y:.2f}{yaw_text})")
             
             fut = self.nav_client.send_goal_async(goal, feedback_callback=self._on_nav_feedback)
             start = time.time()
@@ -587,9 +1150,14 @@ class DecisionMakingNode(Node):
                     self._clear_preview_goal(reason="nav_timeout")
                     return False
                 
-                # Early-exit shortcut: only when navigating toward an object
-                # that will be grasped next (not when heading to a place location).
-                if for_grasp and self._nav_distance_remaining < self._grasp_threshold:
+                # Finish the navigation goal by default so the navigation server
+                # can complete its final turn.  The legacy early-exit behavior is
+                # opt-in for deployments that deliberately need it.
+                if (
+                    for_grasp
+                    and not self._nav_complete_grasp_goal
+                    and self._nav_distance_remaining < self._grasp_threshold
+                ):
                     self.get_logger().info(f"Within grasp threshold ({self._nav_distance_remaining:.2f}m), proceeding to grasp.")
                     gh.cancel_goal_async()
                     threshold_triggered = True

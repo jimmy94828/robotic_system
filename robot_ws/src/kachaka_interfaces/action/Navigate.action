@@ -1,7 +1,10 @@
-# Goal: The destination pose. Use NaN target_theta to face the target from the current pose.
+# Goal: The destination coordinates
 float64 target_x
 float64 target_y
+# Final heading in radians, expressed in the same frame as target_x and target_y.
 float64 target_theta
+# When false, the navigation server derives a heading that faces the destination.
+bool has_target_theta
 ---
 # Result: Final status after the action completes
 bool success

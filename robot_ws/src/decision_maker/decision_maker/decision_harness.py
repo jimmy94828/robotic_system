@@ -8,8 +8,12 @@ observations so the closed-loop agent can replan with better context.
 from __future__ import annotations
 
 import copy
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
+
+from .decision_agent import parse_direct_grasp_place_command
+from .task_decomposer import is_human_query_target, requests_handover
 
 
 class LightweightPlanningHarness:
@@ -86,9 +90,13 @@ class LightweightPlanningHarness:
                 "Emit exactly one next capability call, never a full plan.",
                 "Use observations/history before choosing the next call.",
                 "For direct grasp-only commands, call grasp_place(action=grasp) from the current view; no destination is required.",
+                "For grasp-X-and-place-on-Y commands with no source, grasp X from the current view first, then query/navigate Y and place X.",
+                "If grasp X has an explicit on/from/in/at source S, query/navigate the source before grasping.",
                 "For source-aware transfers, query object first; if not found, query/navigate source.",
+                "Never object_query a person/human/receiver; query their referenced location instead.",
                 "After grasp in transfer tasks, query/navigate destination before place or handover.",
-                "Use handover, not place, for hand over/give/pass-to-person tasks.",
+                "Ordinary bring/move/take-to-place tasks must end with place.",
+                "Use handover only for explicit handover/give/pass or human-receiver tasks.",
                 "Use finish only after the task goal is achieved.",
             ],
             "skill_constraints": {
@@ -119,22 +127,25 @@ class LightweightPlanningHarness:
                 "Multiple objects become one subtask per object.",
                 "Preserve then/and then/after that order.",
                 "Preserve source and destination for from/on/in/at-source transfers.",
+                "grasp X and place it on Y with no source becomes type=direct_grasp_place and starts with grasp.",
+                "grasp X on/from S and place it on Y preserves S and requires source navigation.",
                 "hand over/give/pass tasks become type=handover and must stay handover subtasks.",
+                "bring/move/take to a place, surface, or furniture stays type=bring/move and ends with place.",
             ],
             "output_schema": {
                 "original_task": task_instruction,
                 "subtasks": [
                     {
                         "subtask_id": 1,
-                        "text": "handover pringles on table to sofa",
-                        "type": "handover",
+                        "text": "bring pringles on table to chair",
+                        "type": "bring",
                         "object": "pringles",
                         "source": "table",
-                        "destination": "sofa",
+                        "destination": "chair",
                     }
                 ],
             },
-            "supported_subtask_types": ["bring", "move", "handover", "conditional", "query", "other"],
+            "supported_subtask_types": ["bring", "move", "handover", "direct_grasp_place", "conditional", "query", "other"],
             "supported_capabilities_after_decomposition": list(supported_capabilities),
             "extra_context": extra_context or {},
         }
@@ -156,6 +167,11 @@ class LightweightPlanningHarness:
             text = subtask.get("text")
             if not isinstance(text, str) or not text.strip():
                 return False, f"subtask {expected_id} must contain non-empty text."
+            if (
+                str(subtask.get("type", "")).lower() == "handover"
+                or text.strip().lower().startswith(("handover ", "hand over ", "give ", "pass "))
+            ) and not requests_handover(original_task):
+                return False, "handover is not allowed without explicit handover language or a human receiver."
 
         if _looks_like_multi_object_task(original_task) and len(subtasks) == 1:
             subtask = subtasks[0]
@@ -252,6 +268,11 @@ class LightweightPlanningHarness:
                 return False, "finish is not allowed immediately after a failed capability."
             return True, "finish verified"
 
+        if capability == "object_query" and is_human_query_target(
+            capability_call.get("target", "")
+        ):
+            return False, "object_query cannot target a person; query the referenced location instead."
+
         if history:
             previous = history[-1]
             if (
@@ -264,6 +285,22 @@ class LightweightPlanningHarness:
             target = capability_call.get("target")
             if target and target not in current_state.get("known_poses", {}):
                 return True, "navigation target has no cached pose; executor may perform live lookup."
+
+        if capability == "grasp_place":
+            action = capability_call.get("action")
+            task_requests_handover = requests_handover(current_state.get("task", ""))
+            if action == "handover" and not task_requests_handover:
+                return (
+                    False,
+                    "handover is not allowed because the task does not explicitly request "
+                    "handover or identify a human receiver.",
+                )
+            if action == "place" and task_requests_handover:
+                return (
+                    False,
+                    "place is not allowed because the task explicitly requests a handover "
+                    "or identifies a human receiver.",
+                )
 
         if capability == "grasp_place" and capability_call.get("action") in {"place", "handover"}:
             held_object = current_state.get("held_object")
@@ -350,11 +387,24 @@ class LightweightPlanningHarness:
 
 def _looks_like_multi_object_task(text: str) -> bool:
     normalized = f" {text.strip().lower()} "
+    # An action chain such as "grasp X and place it on Y" contains one object.
+    # Check it before commas because verbose prefixes may end in punctuation,
+    # e.g. "It is a grasp and place task, please grasp ...".
+    action_chain = re.search(
+        r"\band\s+(?:then\s+)?(?:place|put|hand|handover|give|pass|navigate|go)\b",
+        normalized,
+    )
+    if action_chain is not None:
+        return False
     return " and " in normalized or "," in normalized
 
 
 def _destination_from_task(text: str) -> str | None:
     normalized = str(text or "").strip().lower()
+    direct_transfer = parse_direct_grasp_place_command(normalized)
+    if direct_transfer:
+        return direct_transfer[1]
+
     if " to " not in normalized:
         return None
     destination = normalized.rsplit(" to ", 1)[1].strip()

@@ -16,6 +16,7 @@ Constraints:
 
 - `target` is required.
 - Use symbolic names.
+- Do not query people (`person`, `human`, `me`, or receiver pronouns); query their referenced location instead.
 - Do not use combined phrases such as `pringles on table` as a target. Use `table` for source lookup and `pringles` for grasp.
 
 ## navigation

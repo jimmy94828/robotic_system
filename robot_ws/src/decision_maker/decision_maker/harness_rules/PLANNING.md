@@ -18,6 +18,16 @@ For tasks like `grasp the bottle`, `grab bottle`, or `pick up bottle` with no so
 2. Do not run `object_query` or `navigation` first; the object is expected to be in the current camera view.
 3. Finish after the grasp action succeeds.
 
+## Direct Grasp-And-Place Tasks
+
+For `grasp <object> and place it on <destination>`:
+
+1. Call `grasp_place(action=grasp)` immediately; its pre-action view check handles view-angle adjustment.
+2. Do not query or navigate to the object/source first.
+3. After grasp succeeds, call `object_query` for the destination.
+4. Navigate to the destination.
+5. Call `grasp_place(action=place)` with the object and destination, then finish.
+
 ## Transfer Tasks
 
 For tasks like `bring <object> on <source> to <destination>`:
@@ -31,6 +41,12 @@ For tasks like `bring <object> on <source> to <destination>`:
 7. Navigate to the destination.
 8. Place the object at the destination.
 9. Finish only after place succeeds.
+
+The final action for `bring`, `move`, `take`, or `carry` to a place, surface, or furniture is always `grasp_place(action=place)`. Use `action=handover` only when the task explicitly says `handover`, `hand over`, `give`, or `pass`, or identifies a human receiver.
+
+For an explicit handover task, follow the same query, navigation, and grasp sequence, then use `grasp_place(action=handover)` after reaching the receiver location.
+
+For `hand it to the person sitting/seated on <location>`, the destination is the location. Query and navigate to that location; never query `person`.
 
 For tasks like `move <object> from <source> to <destination>`:
 

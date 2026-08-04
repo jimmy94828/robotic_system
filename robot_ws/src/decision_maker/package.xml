@@ -25,6 +25,7 @@
   <exec_depend>unique_identifier_msgs</exec_depend>
   <exec_depend>nav2_msgs</exec_depend> -->
   <exec_depend>ros2launch</exec_depend>
+  <exec_depend>kachaka_interfaces</exec_depend>
   <exec_depend>decision_maker_interfaces</exec_depend>
   <exec_depend>mm_interface</exec_depend>
   <exec_depend>object_query_interfaces</exec_depend>

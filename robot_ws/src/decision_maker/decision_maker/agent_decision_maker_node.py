@@ -155,7 +155,21 @@ class AgentDecisionMakingNode(DecisionMakingNode):
         self.view_critic_image_topic = (
             self.get_parameter("view_critic_image_topic").get_parameter_value().string_value
         )
-        self.declare_parameter("view_adjust_max_yaw_deg", 240.0)
+        self.declare_parameter("view_adjust_min_yaw_deg", 10.0)
+        self.view_adjust_min_yaw_deg = max(
+            0.0,
+            self.get_parameter("view_adjust_min_yaw_deg").get_parameter_value().double_value,
+        )
+        self.declare_parameter("view_adjust_scan_step_deg", 15.0)
+        self.view_adjust_scan_step_deg = max(
+            self.view_adjust_min_yaw_deg,
+            abs(
+                self.get_parameter("view_adjust_scan_step_deg")
+                .get_parameter_value()
+                .double_value
+            ),
+        )
+        self.declare_parameter("view_adjust_max_yaw_deg", 60.0)
         self.view_adjust_max_yaw_deg = (
             self.get_parameter("view_adjust_max_yaw_deg").get_parameter_value().double_value
         )
@@ -275,6 +289,8 @@ class AgentDecisionMakingNode(DecisionMakingNode):
         **extra,
     ) -> None:
         payload = {
+            "event": "task_result",
+            "terminal": True,
             "task": task_instruction,
             "success": bool(success),
             "status": "success" if success else "failed",
@@ -1052,6 +1068,14 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             "y": float(pose_tuple[1]),
             "theta": float(pose_tuple[2]) if len(pose_tuple) > 2 else 0.0,
         }
+        if len(pose_tuple) >= 6:
+            # Raw 3D semantic-map center; lets navigation match the instance
+            # bbox in the semantic table for occupancy-aware goal selection.
+            pose["raw_xyz"] = [
+                float(pose_tuple[3]),
+                float(pose_tuple[4]),
+                float(pose_tuple[5]),
+            ]
         current_state.setdefault("known_poses", {})[target] = pose
         return {
             "last_action": "object_query",
@@ -1098,7 +1122,8 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             return result
 
         if pose:
-            success = self._execute_nav_pose(pose)
+            apply_standoff = bool(target)
+            success = self._execute_nav_pose(pose, apply_standoff=apply_standoff)
             result = {
                 "last_action": "navigation",
                 "pose": pose,
@@ -1110,6 +1135,8 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             return result
 
         if target:
+            # _execute_nav resolves the object itself (query + bbox matching
+            # + occupancy-aware goal selection).
             success = self._execute_nav(f"goto:{target}")
             return {
                 "last_action": "navigation",
@@ -1451,9 +1478,23 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             ):
                 return {"type": "move_backward", "distance_m": 0.15, "fallback": True}
 
-        yaw_scan = [60.0, -120.0, 180.0, -240.0]
+        yaw_scan = self._view_yaw_scan()
         yaw = yaw_scan[adjustments_used % len(yaw_scan)]
         return {"type": "rotate", "yaw_deg": yaw, "fallback": True}
+
+    def _view_yaw_scan(self) -> list[float]:
+        """Return small, alternating relative turns that expand the searched view."""
+        max_yaw = abs(float(self.view_adjust_max_yaw_deg))
+        step = abs(float(self.view_adjust_scan_step_deg))
+        if max_yaw <= 0.0:
+            return [0.0]
+        step = min(max_yaw, max(float(self.view_adjust_min_yaw_deg), step))
+        return [
+            min(max_yaw, step),
+            -min(max_yaw, 2.0 * step),
+            min(max_yaw, 3.0 * step),
+            -min(max_yaw, 4.0 * step),
+        ]
 
     def _shape_view_adjustment_scan(
         self,
@@ -1496,7 +1537,7 @@ class AgentDecisionMakingNode(DecisionMakingNode):
         if partial_or_local_view:
             return adjustment
 
-        yaw_scan = [60.0, -120.0, 180.0, -240.0]
+        yaw_scan = self._view_yaw_scan()
         yaw = yaw_scan[adjustments_used % len(yaw_scan)]
         original_yaw = adjustment.get("yaw_deg")
         shaped = dict(adjustment)
@@ -1658,16 +1699,16 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             "- Fail grasp view check only when no plausible target-like object is visible, it is mostly outside the image, or it is too occluded/blurred to localize.\n"
             "- For place: pass when a reasonable empty placement surface is visible.\n"
             "- For handover: pass when a receiving human hand is visible.\n"
-            "- If not sufficient, return one simple adjustment: rotate, move_forward, or move_backward. Use large rotate adjustments because small turns may be ignored by Kachaka. Keep rotate within [-240, 240] degrees and movement within [0.05, 0.20] m.\n"
-            "- If the target is not visible at all, prefer rotate over move_forward/move_backward. First try a large turn such as +60 or -60 degrees. If the next view still does not show the target, use a large opposite sweep such as -120 degrees, then +180 degrees, then -240 degrees to alternate and expand the search.\n"
-            "- Avoid tiny rotate adjustments. If rotation is needed, use at least 45 degrees unless only a very small correction is clearly sufficient.\n"
+            f"- If not sufficient, return one simple adjustment: rotate, move_forward, or move_backward. Keep rotate within [-{abs(self.view_adjust_max_yaw_deg):.0f}, {abs(self.view_adjust_max_yaw_deg):.0f}] degrees and movement within [0.05, 0.20] m.\n"
+            f"- Prefer small local rotation corrections near {self.view_adjust_scan_step_deg:.0f} degrees. If the target is not visible at all, alternate directions and expand gradually rather than making one large turn.\n"
+            f"- Avoid ineffective tiny rotations below {self.view_adjust_min_yaw_deg:.0f} degrees unless no rotation is needed.\n"
             "- Return adjustment=null when sufficient_view=true.\n\n"
             "Return only valid JSON with this schema:\n"
             "{\n"
             '  "sufficient_view": true or false,\n'
             '  "confidence": 0.0,\n'
             '  "reason": "short explanation",\n'
-            '  "adjustment": null or {"type": "rotate", "yaw_deg": 60.0} or {"type": "move_forward", "distance_m": 0.10} or {"type": "move_backward", "distance_m": 0.10}\n'
+            '  "adjustment": null or {"type": "rotate", "yaw_deg": 15.0} or {"type": "move_forward", "distance_m": 0.10} or {"type": "move_backward", "distance_m": 0.10}\n'
             "}\n"
         )
 
@@ -1806,8 +1847,16 @@ class AgentDecisionMakingNode(DecisionMakingNode):
             except (TypeError, ValueError):
                 yaw_deg = 0.0
             max_yaw = abs(float(self.view_adjust_max_yaw_deg))
-            if 1e-3 < abs(yaw_deg) < 45.0:
-                yaw_deg = math.copysign(45.0, yaw_deg)
+            if max_yaw <= 0.0:
+                return {
+                    "last_action": "view_adjustment",
+                    "success": False,
+                    "message": "rotate adjustment is disabled because view_adjust_max_yaw_deg <= 0",
+                    "adjustment": adjustment,
+                }
+            min_yaw = min(max_yaw, abs(float(self.view_adjust_min_yaw_deg)))
+            if 1e-3 < abs(yaw_deg) < min_yaw:
+                yaw_deg = math.copysign(min_yaw, yaw_deg)
             yaw_deg = max(-max_yaw, min(max_yaw, yaw_deg))
             adjusted_pose = {
                 "x": float(robot_pose["x"]),
@@ -1915,19 +1964,67 @@ class AgentDecisionMakingNode(DecisionMakingNode):
         }
         return dict(mock_poses.get(target, {"x": 1.0, "y": 1.0, "theta": 0.0}))
 
-    def _execute_nav_pose(self, pose: dict, timeout_sec: float = 150.0) -> bool:
+    def _execute_nav_pose(self, pose: dict, timeout_sec: float = 300.0, apply_standoff: bool = False) -> bool:
         try:
             if not self.nav_client.wait_for_server(timeout_sec=10.0):
                 self.get_logger().error("❌ Nav server not available.")
                 return False
 
-            goal = Navigate.Goal()
-            goal.target_x = float(pose["x"])
-            goal.target_y = float(pose["y"])
-            # Object-query poses do not provide a reliable yaw. NaN asks the
-            # navigation node to face the target from the current robot pose.
-            goal.target_theta = float(pose.get("target_theta", pose.get("yaw", math.nan)))
+            target_x = float(pose["x"])
+            target_y = float(pose["y"])
 
+            requested_theta = pose.get("target_theta", pose.get("yaw"))
+            if requested_theta is not None:
+                try:
+                    requested_theta = float(requested_theta)
+                    if not math.isfinite(requested_theta):
+                        requested_theta = None
+                except (TypeError, ValueError):
+                    requested_theta = None
+
+            standoff_applied = False
+
+            if apply_standoff:
+                # Goal and heading come from the occupancy map around the
+                # projected target point (no bbox involved).
+                (
+                    goal_x,
+                    goal_y,
+                    goal_theta,
+                    standoff_applied,
+                    standoff_mode,
+                    bbox_boundary,
+                ) = self._make_navigation_goal(
+                    target_x,
+                    target_y,
+                    requested_theta,
+                )
+            else:
+                goal_x = target_x
+                goal_y = target_y
+                goal_theta = requested_theta
+
+            goal = Navigate.Goal()
+            goal.target_x = goal_x
+            goal.target_y = goal_y
+            goal.target_theta = (
+                float(goal_theta)
+                if goal_theta is not None
+                else math.nan
+            )
+            goal.has_target_theta = goal_theta is not None
+            if standoff_applied:
+                self.get_logger().info(
+                    "📏 Applying %.2f m stand-off to pose navigation: "
+                    "target=(%.2f, %.2f), nav_goal=(%.2f, %.2f)"
+                    % (
+                        self._nav_approach_standoff_distance,
+                        target_x,
+                        target_y,
+                        goal.target_x,
+                        goal.target_y,
+                    )
+                )
             self.get_logger().info(
                 f"🧭 Sending Nav Goal from pose: "
                 f"({goal.target_x:.2f}, {goal.target_y:.2f}, {goal.target_theta:.2f})"

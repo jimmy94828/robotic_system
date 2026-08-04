@@ -169,6 +169,17 @@ class QwenClient:
         history: List[dict],
         last_execution_result: dict | None,
     ) -> dict:
+        direct_transfer = parse_direct_grasp_place_command(text)
+        if direct_transfer:
+            obj, destination = direct_transfer
+            return _expected_direct_grasp_place_capability(
+                obj,
+                destination,
+                len(history),
+                current_state,
+                last_execution_result,
+            )
+
         transfer_sequence = _try_parse_transfer_sequence(text)
         if transfer_sequence is not None:
             call = _expected_transfer_sequence_capability(
@@ -574,8 +585,13 @@ class QwenClient:
                 "grasp_place: action must be grasp/place/handover; grasp/handover need target; place needs target+destination.",
                 "finish: task_done=true only after task completion.",
                 "For direct commands like 'grasp the bottle', 'grab bottle', or 'pick up bottle' with no source/destination, call grasp_place action=grasp immediately from the current view; do not object_query or navigate first.",
+                "For 'grasp X and place it on Y' with no source, assume the robot is already in front of X: grasp first, then query/navigate Y and place X.",
+                "For 'grasp X on/from S and place it on Y', query/navigate X with S as fallback before grasping, then query/navigate Y and place X.",
+                "For 'grasp X from S and hand it to a person sitting on Y', use handover and query/navigate Y, never the person.",
+                "Never call object_query for person/human/me/him/her/receiver targets; use their referenced location.",
                 "For source-aware transfers, first try object_query(object); if it fails, query/navigate source.",
                 "After grasp in a transfer task, query/navigate destination before final action. For direct grasp-only tasks, finish after grasp succeeds.",
+                "For bring/move/take/carry to a place, surface, or furniture, final grasp_place action must be place.",
                 "If task says hand over/give/pass/pick up and hand over, final grasp_place action must be handover, not place.",
                 "Do not navigate to destination after failed grasp unless the object is held.",
             ],
@@ -765,6 +781,21 @@ def normalize_capability_call(
     call: Dict[str, Any],
 ) -> Dict[str, Any]:
     """Ground next capability calls for common transfer commands."""
+    direct_transfer = parse_direct_grasp_place_command(original_task)
+    if direct_transfer:
+        obj, destination = direct_transfer
+        expected = _expected_direct_grasp_place_capability(
+            obj,
+            destination,
+            len(history),
+            current_state,
+            last_execution_result,
+        )
+        if call.get("capability") == expected.get("capability") and call.get("reason"):
+            expected = dict(expected)
+            expected["reason"] = call["reason"]
+        return expected
+
     direct_grasp_target = _try_parse_direct_grasp_command(original_task)
     if direct_grasp_target:
         script = [
@@ -829,6 +860,60 @@ def _expected_transfer_capability(
         current_state,
         last_execution_result,
     )
+
+
+def _expected_direct_grasp_place_capability(
+    obj: str,
+    destination: str,
+    step_index: int,
+    current_state: dict,
+    last_execution_result: dict | None,
+) -> dict:
+    """Build a transfer that starts with grasp because the object is in view."""
+    script = [
+        {
+            "capability": "grasp_place",
+            "action": "grasp",
+            "target": obj,
+            "reason": f"Grasp {obj} from the current view.",
+        },
+        {
+            "capability": "object_query",
+            "target": destination,
+            "reason": f"Need to locate the destination before placing {obj}.",
+        },
+        {
+            "capability": "navigation",
+            "target": destination,
+            "reason": f"Navigate to the destination for {obj}.",
+        },
+        {
+            "capability": "grasp_place",
+            "action": "place",
+            "target": obj,
+            "destination": destination,
+            "reason": f"Place {obj} at the destination.",
+        },
+        {
+            "capability": "finish",
+            "task_done": True,
+            "reason": "The direct grasp-and-place task is complete.",
+        },
+    ]
+    call = dict(script[min(step_index, len(script) - 1)])
+    if call.get("capability") == "navigation":
+        pose = current_state.get("known_poses", {}).get(destination)
+        if (
+            not pose
+            and last_execution_result
+            and last_execution_result.get("last_action") == "object_query"
+            and last_execution_result.get("target") == destination
+            and last_execution_result.get("success")
+        ):
+            pose = last_execution_result.get("result", {}).get("pose")
+        if pose:
+            call["pose"] = pose
+    return call
 
 
 def _expected_transfer_sequence_capability(
@@ -1020,6 +1105,57 @@ def _required_string(step: Dict[str, Any], key: str, index: int) -> str:
 _PREPOSITIONS = r"(?:on|in|at|near|by|inside|from|above|below|under|beside|next\s+to)"
 
 
+def parse_direct_grasp_place_command(task_instruction: str) -> tuple[str, str] | None:
+    """Parse grasp-first transfers whose object is assumed to be in view."""
+    text = task_instruction.strip().lower()
+    text = re.sub(r"[.!?]+$", "", text).strip()
+    text = re.sub(
+        r"^it\s+is\s+a\s+grasp\s+and\s+place\s+task\s*,?\s*(?:please\s+)?",
+        "",
+        text,
+    )
+    match = re.match(
+        r"^(?:please\s+)?(?:grasp|grab|pick\s+up|pickup)\s+(.+?)\s+and\s+"
+        r"(?:place|put)\s+(?:it|them|the\s+object|(?:the\s+)?[\w-]+)\s+"
+        r"(?:on|onto|at|in|into|to)\s+(.+)$",
+        text,
+    )
+    if not match:
+        return None
+
+    object_phrase, destination = match.groups()
+    prep_match = re.search(r"\s+" + _PREPOSITIONS + r"\s+", object_phrase)
+    if prep_match:
+        # An explicit source means this is a normal source-aware transfer. It
+        # must not use the shortcut that assumes the object is already in view.
+        return None
+    obj = _clean_phrase(object_phrase)
+    destination = _clean_phrase(destination)
+    if not obj or not destination:
+        return None
+    return obj, destination
+
+
+def parse_source_grasp_place_command(task_instruction: str) -> tuple[str, str, str] | None:
+    """Parse grasp-from-source commands followed by placement at a destination."""
+    text = task_instruction.strip().lower()
+    text = re.sub(r"[.!?]+$", "", text).strip()
+    match = re.match(
+        r"^(?:please\s+)?(?:grasp|grab|pick\s+up|pickup)\s+(.+?)\s+"
+        r"(?:from|on|in|at)\s+(.+?)\s+and\s+"
+        r"(?:place|put)\s+(?:it|them|the\s+object|(?:the\s+)?[\w-]+)\s+"
+        r"(?:on|onto|at|in|into|to)\s+(.+)$",
+        text,
+    )
+    if not match:
+        return None
+
+    obj, source, destination = (_clean_phrase(value) for value in match.groups())
+    if not obj or not source or not destination:
+        return None
+    return obj, source, destination
+
+
 def _try_parse_direct_grasp_command(task_instruction: str) -> str | None:
     text = task_instruction.strip().lower()
     text = re.sub(r"[.!?]+$", "", text).strip()
@@ -1075,17 +1211,15 @@ def _try_parse_transfer_command(task_instruction: str) -> tuple[str, str, str, s
 
 def _try_parse_transfer_sequence(task_instruction: str) -> List[tuple[str, str, str, str, str | None]] | None:
     text = task_instruction.strip().lower()
-    pickup_handover = re.match(
-        r"^(?:pick up|get|grab)\s+(.+?)\s+(?:from|on|in|at)\s+(.+?)\s+and\s+(?:hand\s+it\s+over|handover\s+it|give\s+it|pass\s+it)\s+to\s+(.+)$",
-        text,
-    )
+    source_grasp_place = parse_source_grasp_place_command(text)
+    if source_grasp_place:
+        obj, source, destination = source_grasp_place
+        return [(obj, obj, destination, "place", source)]
+
+    pickup_handover = parse_pickup_handover_command(text)
     if pickup_handover:
-        obj, source, destination = pickup_handover.groups()
-        obj = _clean_phrase(obj)
-        source = _clean_phrase(source)
-        destination = _clean_handover_destination(destination)
-        if obj and source and destination:
-            return [(obj, obj, destination, "handover", source)]
+        obj, source, destination = pickup_handover
+        return [(obj, obj, destination, "handover", source)]
 
     if text.startswith("move "):
         match = re.match(r"^move\s+(.+?)\s+from\s+(.+?)\s+to\s+(.+)$", text)
@@ -1112,9 +1246,37 @@ def _try_parse_transfer_sequence(task_instruction: str) -> List[tuple[str, str, 
     return None
 
 
+def parse_pickup_handover_command(task_instruction: str) -> tuple[str, str, str] | None:
+    """Parse pickup-from-source followed by a human handoff at a location."""
+    text = task_instruction.strip().lower()
+    text = re.sub(r"[.!?]+$", "", text).strip()
+    match = re.match(
+        r"^(?:please\s+)?(?:grasp|pick\s+up|get|grab)\s+(.+?)\s+"
+        r"(?:from|on|in|at)\s+(.+?)\s+and\s+"
+        r"(?:hand\s+(?:it|them)\s+(?:over\s+)?to|"
+        r"handover\s+(?:it|them)\s+to|give\s+(?:it|them)\s+to|"
+        r"pass\s+(?:it|them)\s+to)\s+(.+)$",
+        text,
+    )
+    if not match:
+        return None
+
+    obj, source, receiver = match.groups()
+    obj = _clean_phrase(obj)
+    source = _clean_phrase(source)
+    destination = _clean_handover_destination(receiver)
+    if not obj or not source or not destination:
+        return None
+    return obj, source, destination
+
+
 def _clean_handover_destination(text: str) -> str:
     cleaned = _clean_phrase(re.split(r"\s+" + _PREPOSITIONS + r"\s+", text.strip().lower())[0])
-    match = re.search(r"\b(?:me|person|user|human)\s+(?:at|on|in|near|by)\s+(.+)$", text.strip().lower())
+    match = re.search(
+        r"\b(?:me|him|her|them|us|person|user|human|operator|recipient)"
+        r"(?:\s+(?:sitting|seated))?\s+(?:at|on|in|near|by)\s+(.+)$",
+        text.strip().lower(),
+    )
     if match:
         return _clean_phrase(match.group(1))
     return cleaned

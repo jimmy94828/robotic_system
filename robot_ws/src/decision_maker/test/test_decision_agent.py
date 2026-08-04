@@ -232,6 +232,91 @@ def test_placeholder_iterative_sequence_for_transfer_task():
     assert calls[5]["destination"] == "sofa"
 
 
+def test_direct_grasp_place_starts_with_grasp_then_moves_to_destination():
+    agent = DecisionAgent(QwenClient())
+    task = "grasp the pringle and place it on the chair."
+    history = []
+    state = {"known_poses": {}}
+    last = None
+    calls = []
+
+    for _ in range(5):
+        call = agent.decide_next_capability(task, state, history, last)
+        calls.append(call)
+        if call["capability"] == "object_query":
+            pose = {"x": 1.0, "y": 2.0, "theta": 0.0}
+            state["known_poses"][call["target"]] = pose
+            last = {
+                "last_action": "object_query",
+                "target": call["target"],
+                "success": True,
+                "result": {"pose": pose},
+            }
+        else:
+            last = {"last_action": call["capability"], "success": True}
+        history.append({"call": call, "result": last})
+
+    assert [call["capability"] for call in calls] == [
+        "grasp_place",
+        "object_query",
+        "navigation",
+        "grasp_place",
+        "finish",
+    ]
+    assert calls[0]["action"] == "grasp"
+    assert calls[0]["target"] == "pringle"
+    assert calls[1]["target"] == "chair"
+    assert calls[2]["target"] == "chair"
+    assert calls[2]["pose"] == {"x": 1.0, "y": 2.0, "theta": 0.0}
+    assert calls[3] == {
+        "capability": "grasp_place",
+        "action": "place",
+        "target": "pringle",
+        "destination": "chair",
+        "reason": "Place pringle at the destination.",
+    }
+
+
+def test_grasp_place_with_source_navigates_to_source_before_grasp():
+    agent = DecisionAgent(QwenClient())
+    task = "grasp the pringles on the table and place it on the chair"
+    history = []
+    state = {"known_poses": {}}
+    last = None
+    calls = []
+
+    for _ in range(7):
+        call = agent.decide_next_capability(task, state, history, last)
+        calls.append(call)
+        if call["capability"] == "object_query":
+            pose = {"x": 1.0, "y": 2.0, "theta": 0.0}
+            state["known_poses"][call["target"]] = pose
+            last = {
+                "last_action": "object_query",
+                "target": call["target"],
+                "success": True,
+                "result": {"pose": pose},
+            }
+        else:
+            last = {"last_action": call["capability"], "success": True}
+        history.append({"call": call, "result": last})
+
+    assert [call["capability"] for call in calls] == [
+        "object_query",
+        "navigation",
+        "grasp_place",
+        "object_query",
+        "navigation",
+        "grasp_place",
+        "finish",
+    ]
+    assert calls[0]["target"] == "pringles"
+    assert calls[2]["action"] == "grasp"
+    assert calls[3]["target"] == "chair"
+    assert calls[5]["action"] == "place"
+    assert calls[5]["destination"] == "chair"
+
+
 def test_iterative_transfer_overrides_bad_first_qwen_guess():
     agent = DecisionAgent(BadTransferClient())
 

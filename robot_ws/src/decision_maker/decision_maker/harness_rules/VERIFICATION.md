@@ -11,6 +11,9 @@ The harness checks high-level consistency before or after capability execution.
 - `place` without `destination` is invalid.
 - `handover` without `target` is invalid.
 - `finish` without `task_done=true` is invalid.
+- `object_query` targeting a person/human/receiver is invalid; query the referenced location.
+- Reject `action=handover` unless the task explicitly requests handover/give/pass or identifies a human receiver.
+- Reject `action=place` when the task explicitly requests a handover or identifies a human receiver.
 
 ## Order Constraints
 

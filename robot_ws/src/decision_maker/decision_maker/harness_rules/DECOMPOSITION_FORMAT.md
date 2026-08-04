@@ -26,10 +26,12 @@ The task decomposer must return exactly one JSON object. Do not return markdown,
 - `subtasks`: ordered non-empty list.
 - `subtask_id`: integer starting at 1 and increasing by 1.
 - `text`: atomic natural-language subtask to pass to the existing agent planner.
-- `type`: one of `bring`, `move`, `conditional`, `query`, or `other`.
+- `type`: one of `bring`, `move`, `handover`, `direct_grasp_place`, `conditional`, `query`, or `other`.
 - `object`: object name if known, otherwise null.
 - `source`: source location if known, otherwise null.
 - `destination`: destination location if known, otherwise null.
+
+Use `handover` only for explicit handover/give/pass commands or an explicitly identified human receiver. Transfers to places, surfaces, and furniture use `bring` or `move` and finish with place.
 
 ## Examples
 
