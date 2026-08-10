@@ -18,8 +18,6 @@ if [ -d "/robot_ws/src" ]; then
    source install/setup.bash
 fi
 
-export PYTHONPATH=$PYTHONPATH:/opt/conda/envs/robot_ros/lib/python3.10/site-packages
-
 # run the codes
 # (A) 直接跑控制程式
 # ex: python3 src/your_pkg/your_kachaka_controller.py
@@ -27,4 +25,4 @@ export PYTHONPATH=$PYTHONPATH:/opt/conda/envs/robot_ros/lib/python3.10/site-pack
 # (B) 跑Kachaka ROS2 topic/service
 # ex: ros2 run kachaka_ros2_bridge ros2_bridge
 
-tail -f /dev/null
+exec /bin/bash

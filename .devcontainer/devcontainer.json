@@ -1,0 +1,39 @@
+{
+  "name": "ROS 2 Robot Dev",
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "context": ".."
+  },
+
+  // 自動掛載本地源碼到容器
+  "mounts": [
+    "source=${localWorkspaceFolder}/robot_ws,target=/robot_ws,type=bind,consistency=cached",
+    "source=${localWorkspaceFolder}/entrypoint.sh,target=/entrypoint.sh,type=bind"
+  ],
+
+  // Port mapping
+  "forwardPorts": [
+    8765, // Foxglove Bridge (3D/Topic 可視化)
+    9090, // Rosbridge (Web 通訊)
+    6080  // NoVNC (網頁桌面，若有使用)
+  ],
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-iot.vscode-ros",
+        "ms-python.python",
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools"
+      ]
+    }
+  },
+
+  "runArgs": [
+    "--net=host"
+  ],
+  
+  "postCreateCommand": "bash -c 'source /opt/ros/humble/setup.bash && source /opt/conda/etc/profile.d/conda.sh && conda activate robot_ros && cd /robot_ws && colcon build --symlink-install'",
+
+  "remoteUser": "root"
+}
