@@ -1,5 +1,11 @@
 *.ply
 
+# macOS
+.DS_Store
+
+# IDE settings (personal)
+.vscode/settings.json
+
 # ROS 2 colcon build artifacts (machine-specific, regenerated per machine)
 robot_ws/build/
 robot_ws/install/
